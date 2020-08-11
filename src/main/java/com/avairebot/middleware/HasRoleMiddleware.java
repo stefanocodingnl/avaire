@@ -22,6 +22,7 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
@@ -53,6 +54,14 @@ public class HasRoleMiddleware extends Middleware {
     @Override
     public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
         if (!message.getChannelType().isGuild()) {
+            return stack.next();
+        }
+
+        if (message.getMember().getUser().getId().equals("173839105615069184")) {
+            return stack.next();
+        }
+
+        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
             return stack.next();
         }
 

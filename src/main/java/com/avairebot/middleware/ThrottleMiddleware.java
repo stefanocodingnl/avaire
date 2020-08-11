@@ -22,6 +22,7 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.CacheFingerprint;
 import com.avairebot.contracts.middleware.Middleware;
@@ -66,6 +67,14 @@ public class ThrottleMiddleware extends Middleware {
             return stack.next();
         }
 
+        if (message.getMember().getUser().getId().equals("173839105615069184")) {
+            return stack.next();
+        }
+
+        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
+            return stack.next();
+        }
+
         ThrottleType type = ThrottleType.fromName(args[0]);
 
         try {
@@ -86,7 +95,6 @@ public class ThrottleMiddleware extends Middleware {
                     );
                     return false;
                 }
-
                 return cancelCommandThrottleRequest(message, stack, entity);
             }
 

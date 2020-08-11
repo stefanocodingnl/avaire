@@ -44,7 +44,14 @@ public class GuildTransformer extends Transformer {
     private final Map<String, String> selfAssignableRoles = new HashMap<>();
     private final Map<Integer, String> levelRoles = new HashMap<>();
     private final Map<String, Map<String, String>> modules = new HashMap<>();
+
     private final List<ChannelTransformer> channels = new ArrayList<>();
+    private final List<String> badWordsExact = new ArrayList<>();
+    private final List<String> badWordsWildcard = new ArrayList<>();
+
+    private final List<String> piaWordsExact = new ArrayList<>();
+    private final List<String> piaWordsWildcard = new ArrayList<>();
+
     private final Set<Long> levelExemptChannels = new HashSet<>();
     private final Set<Long> levelExemptRoles = new HashSet<>();
 
@@ -59,14 +66,19 @@ public class GuildTransformer extends Transformer {
     private boolean levelAlerts = false;
     private boolean levelHierarchy = false;
     private boolean musicMessages = true;
+    private boolean filter = false;
     private String levelChannel = null;
     private String autorole = null;
     private String modlog = null;
     private String musicChannelText = null;
     private String musicChannelVoice = null;
     private String muteRole = null;
+    private String onWatchRole = null;
+    private String onWatch = null;
+    private String gamenightRole = null;
     private String djRole = null;
     private int modlogCase = 0;
+    private int onWatchCase = 0;
     private int defaultVolume = 100;
     private double levelModifier = -1;
     private DJGuildLevel djGuildLevel = null;
@@ -102,10 +114,18 @@ public class GuildTransformer extends Transformer {
             autorole = data.getString("autorole");
             modlog = data.getString("modlog");
             muteRole = data.getString("mute_role");
+            gamenightRole = data.getString("gamenight_role");
             musicChannelText = data.getString("music_channel_text");
             musicChannelVoice = data.getString("music_channel_voice");
             musicMessages = data.getBoolean("music_messages", true);
             modlogCase = data.getInt("modlog_case");
+
+            onWatchCase = data.getInt("on_watch_case");
+            onWatchRole = data.getString("on_watch_role");
+            onWatch = data.getString("on_watch");
+
+            filter = data.getBoolean("filter");
+
             djGuildLevel = DJGuildLevel.fromId(data.getInt("dj_level", DJGuildLevel.getNormal().getId()));
             djRole = data.getString("dj_role");
             defaultVolume = data.getInt("default_volume", 100);
@@ -127,6 +147,36 @@ public class GuildTransformer extends Transformer {
                 for (Map.Entry<String, String> item : dbAliases.entrySet()) {
                     aliases.put(item.getKey().toLowerCase(), item.getValue());
                 }
+            }
+
+            if (data.getString("filter_exact", null) != null) {
+                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                    data.getString("filter_exact"),
+                    new TypeToken<ArrayList<String>>(){}.getType());
+
+                badWordsExact.addAll(dbFilter);
+            }
+            if (data.getString("filter_wildcard", null) != null) {
+                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                    data.getString("filter_wildcard"),
+                    new TypeToken<ArrayList<String>>(){}.getType());
+
+                badWordsWildcard.addAll(dbFilter);
+            }
+
+            if (data.getString("piaf_exact", null) != null) {
+                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                    data.getString("piaf_exact"),
+                    new TypeToken<ArrayList<String>>(){}.getType());
+
+                piaWordsExact.addAll(dbFilter);
+            }
+            if (data.getString("piaf_wildcard", null) != null) {
+                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                    data.getString("piaf_wildcard"),
+                    new TypeToken<ArrayList<String>>(){}.getType());
+
+                piaWordsWildcard.addAll(dbFilter);
             }
 
             if (data.getString("prefixes", null) != null) {
@@ -272,6 +322,14 @@ public class GuildTransformer extends Transformer {
         return levelHierarchy;
     }
 
+    public boolean isFilter() {
+        return filter;
+    }
+
+    public void setFilter(boolean filter) {
+        this.filter = filter;
+    }
+
     public void setLevelHierarchy(boolean levelHierarchy) {
         this.levelHierarchy = levelHierarchy;
     }
@@ -348,17 +406,51 @@ public class GuildTransformer extends Transformer {
         return modlogCase;
     }
 
+    public int getOnWatchCase() {
+        return onWatchCase;
+    }
+
+    public String getOnWatchLog() {
+        return onWatch;
+    }
+
+    public void setOnWatch(String onWatchChannelId) {
+        this.onWatch = onWatchChannelId;
+    }
+
     public void setModlogCase(int modlogCase) {
         this.modlogCase = modlogCase;
+    }
+
+    public void setOnWatchCase(int onWatchCase) {
+        this.onWatchCase = onWatchCase;
+    }
+
+    public void setOnWatchRole(String onWatchRole) {
+        this.onWatchRole = onWatchRole;
     }
 
     public String getMuteRole() {
         return muteRole;
     }
 
+    public String getOnWatchRole() {
+        return onWatchRole;
+    }
+
     public void setMuteRole(String muteRole) {
         this.muteRole = muteRole;
     }
+
+    public String getGamenightRole() {
+        return gamenightRole;
+    }
+
+    public void setGamenightRole(String gamenightRole){
+        this.gamenightRole = gamenightRole;
+    }
+
+
 
     public Map<String, String> getSelfAssignableRoles() {
         return selfAssignableRoles;
@@ -370,6 +462,22 @@ public class GuildTransformer extends Transformer {
 
     public Map<String, String> getAliases() {
         return aliases;
+    }
+
+    public List<String> getBadWordsExact() {
+        return badWordsExact;
+    }
+
+    public List<String> getBadWordsWildcard() {
+        return badWordsWildcard;
+    }
+
+    public List<String> getPIAWordsWildcard() {
+        return piaWordsWildcard;
+    }
+
+    public List<String> getPIAWordsExact() {
+        return piaWordsExact;
     }
 
     public List<ChannelTransformer> getChannels() {

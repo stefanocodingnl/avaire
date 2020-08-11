@@ -63,6 +63,7 @@ import com.avairebot.level.LevelManager;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.middleware.*;
 import com.avairebot.mute.MuteManager;
+import com.avairebot.onwatch.OnWatchManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
 import com.avairebot.scheduler.ScheduleHandler;
@@ -77,6 +78,7 @@ import com.avairebot.utilities.AutoloaderUtil;
 import com.avairebot.vote.VoteManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
@@ -85,17 +87,18 @@ import io.sentry.SentryClient;
 import io.sentry.logback.SentryAppender;
 import lavalink.client.io.Link;
 import lavalink.client.player.LavalinkPlayer;
-
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.SelfUser;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.SessionControllerAdapter;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.gitlab4j.api.GitLabApi;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,6 +126,8 @@ public class AvaIre {
 
     protected static AvaIre avaire;
 
+
+    private final EventWaiter waiter;
     private static Environment applicationEnvironment;
     private final Settings settings;
     private final Configuration config;
@@ -135,10 +140,12 @@ public class AvaIre {
     private final PluginManager pluginManager;
     private final VoteManager voteManager;
     private final MuteManager muteManger;
+    private final OnWatchManager onWatchManger;
     private final ShardEntityCounter shardEntityCounter;
     private final EventEmitter eventEmitter;
     private final BotAdmin botAdmins;
     private final WebServlet servlet;
+    private GitLabApi gitLabApi;
     private Carbon shutdownTime = null;
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
     private ShardManager shardManager = null;
@@ -159,6 +166,7 @@ public class AvaIre {
         this.eventEmitter = new EventEmitter(this);
         this.cache = new CacheManager(this);
         this.levelManager = new LevelManager();
+        this.waiter = new EventWaiter();
 
         log.info("Loading configuration");
         constants = new ConstantsConfiguration(this);
@@ -230,6 +238,8 @@ public class AvaIre {
         MiddlewareHandler.register("throttle", new ThrottleMiddleware(this));
         MiddlewareHandler.register("musicChannel", new IsMusicChannelMiddleware(this));
         MiddlewareHandler.register("isDMMessage", new IsDMMessageMiddleware(this));
+        MiddlewareHandler.register("isOfficialPinewoodGuild", new IsOfficialPinewoodGuildMiddleware(this));
+        MiddlewareHandler.register("isValidPIAMember", new IsValidPIAMemberMiddleware(this));
 
         String defaultPrefix = getConfig().getString("default-prefix", DiscordConstants.DEFAULT_COMMAND_PREFIX);
         if (getConfig().getString("system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX).equals(defaultPrefix)) {
@@ -240,12 +250,17 @@ public class AvaIre {
 
         log.info("Registering default command categories");
         CategoryHandler.addCategory(this, "Administration", defaultPrefix);
+        CategoryHandler.addCategory(this, "Automod", defaultPrefix);
+        CategoryHandler.addCategory(this, "OnWatch", defaultPrefix);
         CategoryHandler.addCategory(this, "Help", defaultPrefix);
         CategoryHandler.addCategory(this, "Fun", defaultPrefix);
-        CategoryHandler.addCategory(this, "Interaction", defaultPrefix);
         CategoryHandler.addCategory(this, "Music", defaultPrefix);
+        CategoryHandler.addCategory(this, "Interaction", defaultPrefix);
+        CategoryHandler.addCategory(this, "GlobalMod", defaultPrefix);
         CategoryHandler.addCategory(this, "Search", defaultPrefix);
         CategoryHandler.addCategory(this, "Utility", defaultPrefix);
+        CategoryHandler.addCategory(this, "Pinewood", defaultPrefix);
+        CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
@@ -397,12 +412,18 @@ public class AvaIre {
         } else {
             getSentryLogbackAppender().stop();
         }
-
+        if (config.getString("apiKeys.gitlabKey").length() > 0) {
+            log.info("GitLab API Key found, initializing Gitlab API");
+            gitLabApi = new GitLabApi("https://gitlab.com", config.getString("apiKeys.gitlabKey", ""));
+        }
         log.info("Preparing vote manager");
         voteManager = new VoteManager(this);
 
         log.info("Preparing mute manager");
         muteManger = new MuteManager(this);
+
+        log.info("Preparing on watch manager");
+        onWatchManger = new OnWatchManager(this);
 
         log.info("Preparing Lavalink");
         AudioHandler.setAvaire(this);
@@ -432,6 +453,14 @@ public class AvaIre {
 
     public static Logger getLogger() {
         return log;
+    }
+
+    public final EventWaiter getWaiter() {
+        return waiter;
+    }
+
+    public final GitLabApi getGitLabApi() {
+        return gitLabApi;
     }
 
     public static Environment getEnvironment() {
@@ -535,6 +564,10 @@ public class AvaIre {
 
     public MuteManager getMuteManger() {
         return muteManger;
+    }
+
+    public OnWatchManager getOnWatchManger() {
+        return onWatchManger;
     }
 
     public WebServlet getServlet() {
@@ -669,15 +702,17 @@ public class AvaIre {
     }
 
     private ShardManager buildShardManager() throws LoginException {
-        DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault(getConfig().getString("discord.token"))
+        DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.create(getConfig().getString("discord.token"), EnumSet.allOf(GatewayIntent.class))
             .setSessionController(new SessionControllerAdapter())
             .setActivity(Activity.watching("my code start up..."))
             .setBulkDeleteSplittingEnabled(false)
+            .setMemberCachePolicy(MemberCachePolicy.ALL)
             .setEnableShutdownHook(false)
+            .disableCache(CacheFlag.ACTIVITY)
+            .addEventListeners(waiter)
             .setAutoReconnect(true)
             .setContextEnabled(true)
-            //.setDisabledCacheFlags(CacheFlag.ACTIVITY) # Removed due to deprecation of method.
-            .setDisabledIntents(GatewayIntent.GUILD_PRESENCES) // Changed to intent in favor of the cache deprecation.
+            .setDisabledIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MESSAGE_TYPING) // Changed to intent in favor of the cache deprecation.
             .setShardsTotal(settings.getShardCount());
 
         if (settings.getShards() != null) {

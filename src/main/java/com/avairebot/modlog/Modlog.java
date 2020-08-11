@@ -33,13 +33,14 @@ import com.avairebot.factories.MessageFactory;
 import com.avairebot.handlers.events.ModlogActionEvent;
 import com.avairebot.language.I18n;
 import com.avairebot.utilities.RestActionUtil;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import   net.dv8tion.jda.api.EmbedBuilder;
+import   net.dv8tion.jda.api.entities.Guild;
+import   net.dv8tion.jda.api.entities.Message;
+import   net.dv8tion.jda.api.entities.TextChannel;
+import   net.dv8tion.jda.api.entities.User;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
@@ -224,6 +225,127 @@ public class Modlog {
         return "" + transformer.getModlogCase();
     }
 
+    @Nullable
+    public static String logcolor(AvaIre avaire, Guild guild, GuildTransformer transformer, ModlogAction action, Color color) {
+        if (transformer.getModlog() == null) {
+            return null;
+        }
+
+        TextChannel channel = guild.getTextChannelById(transformer.getModlog());
+        if (channel == null) {
+            return null;
+        }
+
+        if (!channel.canTalk()) {
+            return null;
+        }
+
+        transformer.setModlogCase(transformer.getModlogCase() + 1);
+
+        String[] split = null;
+        EmbedBuilder builder = MessageFactory.createEmbeddedBuilder()
+            .setTitle(I18n.format("{0} {1} | Case #{2}",
+                action.getType().getEmote(),
+                action.getType().getName(guild),
+                transformer.getModlogCase()
+            ))
+            .setColor(color)
+            .setTimestamp(Instant.now());
+
+        switch (action.getType()) {
+            case WARN:
+            case KICK:
+            case BAN:
+            case SOFT_BAN:
+            case UNBAN:
+            case UNMUTE:
+                builder
+                    .addField("User", action.getStringifiedTarget(), true)
+                    .addField("Moderator", action.getStringifiedModerator(), true)
+                    .addField("Reason", formatReason(transformer, action.getMessage()), false);
+                break;
+
+            case MUTE:
+            case TEMP_MUTE:
+                //noinspection ConstantConditions
+                split = action.getMessage().split("\n");
+                builder
+                    .addField("User", action.getStringifiedTarget(), true)
+                    .addField("Moderator", action.getStringifiedModerator(), true);
+
+                if (split[0].length() > 0) {
+                    builder.addField("Expires At", split[0], true);
+                }
+
+                builder.addField("Reason", formatReason(transformer, String.join("\n",
+                    Arrays.copyOfRange(split, 1, split.length)
+                )), false);
+                break;
+
+            case PURGE:
+                builder
+                    .addField("Moderator", action.getStringifiedModerator(), true)
+                    .addField("Action", action.getMessage(), true)
+                    .addField("Reason", formatReason(transformer, null), false);
+                action.setMessage(null);
+                break;
+
+            case VOICE_KICK:
+                //noinspection ConstantConditions
+                split = action.getMessage().split("\n");
+                builder
+                    .addField("User", action.getStringifiedTarget(), true)
+                    .addField("Moderator", action.getStringifiedModerator(), true)
+                    .addField("Voice Channel", split[0], false)
+                    .addField("Reason", formatReason(transformer, String.join("\n",
+                        Arrays.copyOfRange(split, 1, split.length)
+                    )), false);
+
+                action.setMessage(String.join("\n",
+                    Arrays.copyOfRange(split, 1, split.length)
+                ));
+                break;
+
+            case PARDON:
+                //noinspection ConstantConditions
+                split = action.getMessage().split("\n");
+                String[] modlogParts = split[0].split(":");
+                builder
+                    .addField("Pardoned Case ID", I18n.format("#[{0}](https://discordapp.com/channels/{1}/{2}/{3})",
+                        modlogParts[0], transformer.getId(), transformer.getModlog(), modlogParts[1]
+                    ), true)
+                    .addField("Moderator", action.getStringifiedModerator(), true)
+                    .addField("Reason", formatReason(transformer, String.join("\n",
+                        Arrays.copyOfRange(split, 1, split.length)
+                    )), false);
+
+                action.setMessage(String.join("\n",
+                    Arrays.copyOfRange(split, 1, split.length)
+                ));
+                break;
+        }
+
+        avaire.getEventEmitter().push(new ModlogActionEvent(
+            guild.getJDA(), action, transformer.getModlogCase()
+        ));
+
+        channel.sendMessage(builder.build()).queue(success -> {
+            try {
+                avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
+                    .where("id", guild.getId())
+                    .update(statement -> {
+                        statement.set("modlog_case", transformer.getModlogCase());
+                    });
+
+                logActionToTheDatabase(avaire, guild, action, success, transformer.getModlogCase());
+            } catch (SQLException ignored) {
+                //
+            }
+        }, RestActionUtil.ignore);
+
+        return "" + transformer.getModlogCase();
+    }
+
     /**
      * Notifies the given user about a modlog action by DMing them
      * a message, if the user have DM messages disabled, nothing
@@ -303,5 +425,43 @@ public class Modlog {
             return null;
         }
         return reason;
+    }
+
+    /**
+     * Notifies the given user about a modlog action by DMing them
+     * a message, if the user have DM messages disabled, nothing
+     * will be sent and the method will fail silently.
+     *
+     * @param user   The user that should be notified about a modlog action.
+     * @param guild  The guild that the modlog action happened in.
+     * @param action The modlog action that the user should be notified of.
+     * @param caseId The case ID that is attached to the modlog action.
+     * @param color  The color the embed is for the message
+     */
+    public static void notifyUser(User user, Guild guild, ModlogAction action, @Nullable String caseId, Color color) {
+        String type = action.getType().getNotifyName(guild);
+        if (type == null || user.isBot()) {
+            return;
+        }
+
+        user.openPrivateChannel().queue(channel -> {
+            EmbedBuilder message = MessageFactory.createEmbeddedBuilder()
+                .setColor(color)
+                .setDescription(String.format("%s You have been **%s** %s " + guild.getName(),
+                    action.getType().getEmote(),
+                    type,
+                    action.getType().equals(ModlogType.WARN)
+                        ? "in" : "from"
+                ))
+                .addField("Moderator", action.getModerator().getName() + "#" + action.getModerator().getDiscriminator(), true)
+                .addField("Reason", action.getMessage(), true)
+                .setTimestamp(Instant.now());
+
+            if (caseId != null) {
+                message.setFooter("Case ID #" + caseId, null);
+            }
+
+            channel.sendMessage(message.build()).queue(null, RestActionUtil.ignore);
+        }, RestActionUtil.ignore);
     }
 }

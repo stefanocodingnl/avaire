@@ -61,6 +61,74 @@ modlog-types:
         name: "Unmute"
         action: "Unmuted"
 
+on-watch-types:
+    onWatch:
+        name: "On Watch!"
+        action: "On Watch"
+    unOnWatch:
+        name: "Un watched"
+        action: "Unwatched"
+    tempOnWatch:
+        name: "Temp Watch"
+        action: "Temporary On Watch"
+
+
+onwatch:
+    WatchRoleCommand:
+        onCooldown: "You have recently use a command option that created and/or modified roles and channel permissions, you have to wait **:cooldown** before you can use this command again."
+        roleDoesntExists: "Invalid role given, the `{0}` role doesn't exists."
+        rolePositionedHigher: "The {0} role is positioned higher than any role I have, so I can't assign the role to anyone."
+        cantCreateRoleDueToPermissions: "I can't create the \"On Watch\" role because I don't have the \"Manage Roles\" permissions for the server."
+        noMuteRoleSet: "There are currently no \"On Watch\" role set for the server, you can set the role you wanna use as the mute role using `:command set <role>`, or you can make the bot create a new \"On Watch\" role using `:command create-role`."
+        usingRoleMessage: "The server is using the :role role for \"On Watch\"."
+        roleHasBeenRemoved: "The \"On Watch\" role has been removed, the \"On Watch\" feature is now disabled until another \"On Watch\" role is assigned."
+        roleHasBeenCreated: "The :role role has been successfully created, and all the channel permissions to prevent users with the role from talking in channels have automatically been setup for the channels I have access to."
+        nowUsingRole: "The :role role will now be used for \"On Watch\" users."
+        nowUsingExistingRole: "A role called `On Watch` already exists on the server, now using the :role role for \"On Watch\" cases, if you want the bot to setup all the channel override permissions to prevent users with the role from talking in the channels, you can use the\n`:command setup-permissions` command."
+    OnWatchCommand:
+        requiresModlogToBeSet: "This command requires a \"On Watch\" log channel to be set, a \"On Watch\" log channel can be set using the `{0}watchlog` command."
+        requireMuteRoleToBeSet: "No \"On Watch\" role have been setup for the server, you can setup a \"On Watch\" role using the `{0}watchrole` command."
+        higherOrSameRole: "You can't \"On Watch\" people with a higher, or the same role as yourself."
+        muteRoleIsPositionedHigher: "The {0} role used for \"On Watch\" cases are positioned higher in the role hierarchy than any roles I have, so I can't automatically assign the role to other users, please fix this or use another role for \"On Watch\" cases."
+        invalidUserMentioned: "Invalid user mentioned, you must mention a user on the server you want to \"On Watch\" to use this command."
+        invalidTimeGiven: "Invalid time given, the time must be at least one minute or more."
+        userHasBeenMuted: ":target has been set \"On Watch\" :time!"
+        time:
+            permanently: "permanently"
+            forFormat: "for {0}"
+    WatchlogCommand:
+        mustMentionTextChannel: "Invalid channel argument given, you must mention a valid text channel"
+        cantSendEmbedMessages: "I can't send embedded messages in the specified channel, please change my permission level for the {0} channel if you want to use it as a \"On Watch\" log channel."
+        enable: ":user **\"On Watch\"** is now enabled and set to the :on_watch channel."
+        enabled: ":user **\"On Watch\"** is currently enabled and set to the :on_watch channel."
+        disable: ":user **\"On Watch\"** is now disabled for the server."
+        disabled: ":user **\"On Watch\"** is currently disabled."
+
+    WatchlogHistoryCommand:
+        mustMentionUser: "You must mention a valid `user` that you want to display the \"On Watch\" history for."
+        noHistory: "No \"On Watch\" history was found for this user."
+        title: "{0}#{1} History ({2})"
+        entry: "**{1}** | **#{0}** | **Moderator:** {2}\n**Date:** {3}\n**Reason:** {4}"
+        noReasonGiven: "No reason was given."
+
+    WatchlogReasonCommand:
+        modlogNotEnabled: "No \"On Watch\" channel has been set, you must set a \"On Watch\" channel to use this command."
+        invalidCaseId: "Invalid case ID given, the ID must be greater than 0 and less than {0}"
+        couldntFindCaseWithId: "Couldn't find a \"On Watch\" case with an ID of {0} where you were the moderator, are you sure that you're the moderator for the given \"On Watch\" case?"
+        couldntFindModlogChannel: "Couldn't find the \"On Watch\" channel, was it removed?"
+        success: "The \"On Watch\" case with an ID of **:id** was successfully edited and the reason was set to `:reason`"
+        modlogCaseWasPardoned: "The \"On Watch\" case with an ID of `{0}` has been pardoned, you can't edit pardoned modlog cases."
+        failedToEdit: "Failed to edit \"On Watch\" message: {0}"
+        failedToFindMessage: "Couldn't find the message for the given \"On Watch\" case, was it deleted?"
+    UnWatchCommand:
+        requiresModlogToBeSet: "This command requires a \"On Watch\" channel to be set, a \"On Watch\" channel can be set using the `{0}watchlog` command."
+        requireMuteRoleToBeSet: "No mute role have been setup for the server, you can setup a mute role using the `{0}watchrole` command."
+        muteRoleIsPositionedHigher: "The {0} role used for mutes are positioned higher in the role hierarchy than any roles I have, so I can't automatically remove the role from other users, please fix this or use another role for \"On Watch\" cases."
+        invalidUserMentioned: "Invalid user mentioned, you must mention a user on the server you want to remove the \"On Watch\" from to use this command."
+        userDoesntHaveMuteRole: "{0} doesn't appear to have the mute role, they may already have been removed from the \"On Watch\" role!"
+        userHasBeenUnmuted: ":target has been removed from \"On Watch\"!"
+        userAutoUnmutedReason: "*Automatic removal of \"On Watch\" after the set time has elapsed*"
+
 administration:
     common:
         invalidRole: ":user Invalid role, I couldn't find any role called **:role**"
@@ -540,7 +608,6 @@ interaction:
     CuddleCommand: '**{0}** cuddles **{1}**'
     DivorceCommand: '**{0}** divorces **{1}**'
     EatCommand: '**{0}** eats some food with **{1}**'
-    HandHoldCommand: '**{0}** holds hands with **{1}**'
     HelloCommand: '**{0}** says hello to **{1}**'
     HighFiveCommand: '**{0}** high fives **{1}**'
     HugCommand: '**{0}** hugs **{1}**'
@@ -559,6 +626,10 @@ interaction:
     SlapCommand: '**{0}** slaps **{1}**'
     TickleCommand: '**{0}** tickles **{1}**'
     TriggeredCommand: '**{0}** is triggered by **{1}**'
+    UwUCommand: '**{0}** UwUs at **{1}**'
+    GiggleCommand: '**{0}** giggles at **{1}**'
+    StareCommand: '**{0}** stares at **{1}**'
+    CongratsCommand: '**{1}** is being congratulated by **{0}** for becoming an SD!'
 
 music:
     internal:
@@ -837,7 +908,7 @@ utility:
 
     InviteCommand:
         message: 'You can invite me to your server by [clicking here](:oauth) or using the link below:\n\n:oauth\n\n:note'
-        note: 'If you would like try out newly developed features before everyone else, you could also try the *__Cutting Edge__* bot which gets new features added almost daily, you can invite that bot by [clicking here](:edgeInvite) or using the link below:\n\n:edgeInvite'
+        note: '\n :)'
 
     IPInfoCommand:
         hostname: 'Hostname'
@@ -983,7 +1054,7 @@ utility:
 
     VersionCommand:
         current: 'I am currently `:difference` :type versions behind!'
-        getLatest: 'You can get the latest version of me on github at [avaire/avaire](https://github.com/avaire/avaire)'
+        getLatest: 'You can get the latest version of me on github at [avaire/avaire](https://gitlab.com/pinewood-builders/discord/xeus)'
         usingLatest: "You're using the latest version of AvaIre!"
         latestVersion: 'The latest version of AvaIre is v{0}'
         latestChanges: 'Latest changes:'

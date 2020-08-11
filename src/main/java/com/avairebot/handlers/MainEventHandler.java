@@ -22,10 +22,13 @@
 package com.avairebot.handlers;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.contracts.handlers.EventHandler;
 import com.avairebot.database.controllers.PlayerController;
 import com.avairebot.handlers.adapter.*;
 import com.avairebot.metrics.Metrics;
+import com.avairebot.pinewood.waiters.FeedbackWaiters;
+import com.avairebot.pinewood.waiters.HandbookReportWaiters;
 import net.dv8tion.jda.api.events.*;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
@@ -37,12 +40,14 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateRegionEvent;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -55,6 +60,7 @@ import net.dv8tion.jda.api.events.user.update.UserUpdateAvatarEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateDiscriminatorEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateNameEvent;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 
 public class MainEventHandler extends EventHandler {
@@ -84,6 +90,8 @@ public class MainEventHandler extends EventHandler {
         this.jdaStateEventAdapter = new JDAStateEventAdapter(avaire);
         this.changelogEventAdapter = new ChangelogEventAdapter(avaire);
         this.reactionEmoteEventAdapter = new ReactionEmoteEventAdapter(avaire);
+        new HandbookReportWaiters(avaire);
+        new FeedbackWaiters(avaire);
     }
 
     @Override
@@ -160,7 +168,7 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
-    public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+    public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
         if (!avaire.getSettings().isMusicOnlyMode()) {
             memberEvent.onGuildMemberLeave(event);
         }
@@ -171,8 +179,19 @@ public class MainEventHandler extends EventHandler {
         if (changelogEventAdapter.isChangelogMessage(event.getChannel())) {
             changelogEventAdapter.onMessageReceived(event);
         }
-
         messageEvent.onMessageReceived(event);
+        if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID)) {
+            messageEvent.onPBFeedbackPinEvent(event);
+        }
+        if (event.isFromGuild()) {
+            if (Constants.guilds.contains(event.getGuild().getId())) {
+                if (!event.getAuthor().isBot()) {
+                    messageEvent.onLocalFilterMessageReceived(event);
+                    messageEvent.onGlobalFilterMessageReceived(event);
+                }
+            }
+        }
+
     }
 
     @Override
@@ -194,8 +213,13 @@ public class MainEventHandler extends EventHandler {
         if (changelogEventAdapter.isChangelogMessage(event.getChannel())) {
             changelogEventAdapter.onMessageUpdate(event);
         }
-
         messageEvent.onMessageUpdate(event);
+
+        if (Constants.guilds.contains(event.getGuild().getId())) {
+            messageEvent.onGuildMessageUpdate(event);
+            messageEvent.onGlobalFilterEditReceived(event);
+            messageEvent.onLocalFilterEditReceived(event);
+        }
     }
 
     @Override
@@ -259,15 +283,42 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
+    public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
+        if (isValidMessageReactionEvent(event)) {
+            if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID)) {
+                reactionEmoteEventAdapter.onPBFeedbackMessageEvent(event);
+            }
+            if (isValidReportChannel(event)) {
+                reactionEmoteEventAdapter.onReportsReactionAdd(event);
+            }
+        }
+    }
+
+    @Override
     public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
         if (isValidMessageReactionEvent(event)) {
             reactionEmoteEventAdapter.onMessageReactionRemove(event);
         }
     }
 
-    private boolean isValidMessageReactionEvent(GenericMessageReactionEvent event) {
-        return !event.getUser().isBot()
-            && event.getGuild() != null
-            && event.getReactionEmote().getEmote() != null;
+
+
+    private boolean isValidReportChannel(GuildMessageReactionAddEvent event) {
+        return event.getChannel().getId().equals(Constants.PBST_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PET_REPORT_CHANNEL)
+            || event.getChannel().getId().equals(Constants.TMS_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PB_REPORT_CHANNEL) || event.getChannel().getName().equals("handbook-violator-reports");
     }
+
+    private boolean isValidMessageReactionEvent(MessageReactionAddEvent event) {
+        return event.isFromGuild()
+            && event.getReactionEmote().isEmote()
+            && !event.getMember().getUser().isBot();
+    }
+    private boolean isValidMessageReactionEvent(MessageReactionRemoveEvent event) {
+        return event.isFromGuild()
+            && event.getReactionEmote().isEmote();
+    }
+    private boolean isValidMessageReactionEvent(GuildMessageReactionAddEvent event) {
+        return !event.getUser().isBot();
+    }
+
 }

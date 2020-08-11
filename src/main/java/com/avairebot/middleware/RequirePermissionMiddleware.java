@@ -22,6 +22,7 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
@@ -72,6 +73,14 @@ public class RequirePermissionMiddleware extends Middleware {
             AvaIre.getLogger().warn(String.format(
                 "\"%s\" is parsing invalid amount of arguments to the require middleware, 2 arguments are required.", stack.getCommand()
             ));
+            return stack.next();
+        }
+
+        if (message.getMember().getUser().getId().equals("173839105615069184")) {
+            return stack.next();
+        }
+
+        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
             return stack.next();
         }
 

@@ -104,6 +104,12 @@ dependencies {
     compile group: 'io.sentry', name: 'sentry-logback', version: '1.7.10'
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
 
+    //JDA Utils
+    compile 'com.jagrosh:jda-utilities:3.0.4'
+
+    //Gitlab API
+    compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.12.3'
+
     // Tests
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
     compile("org.junit.platform:junit-platform-launcher:1.1.0")

@@ -51,10 +51,10 @@ public class GetGuilds extends SparkRoute {
                 guild.put("icon", guildById.getIconUrl());
 
                 JSONObject owner = new JSONObject();
-                owner.put("id", guildById.getOwner().getUser().getId());
-                owner.put("username", guildById.getOwner().getUser().getName());
-                owner.put("discriminator", guildById.getOwner().getUser().getDiscriminator());
-                owner.put("avatar", guildById.getOwner().getUser().getEffectiveAvatarUrl());
+                owner.put("id", guildById.retrieveOwner().submit().getNow(null).getUser().getId());
+                owner.put("username", guildById.retrieveOwner().submit().getNow(null).getUser().getName());
+                owner.put("discriminator", guildById.retrieveOwner().submit().getNow(null).getUser().getDiscriminator());
+                owner.put("avatar", guildById.retrieveOwner().submit().getNow(null).getUser().getEffectiveAvatarUrl());
                 guild.put("owner", owner);
 
                 JSONObject counter = new JSONObject();

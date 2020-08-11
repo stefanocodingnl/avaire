@@ -113,11 +113,12 @@ public class MentionableUtil {
         if (!context.getMentionedUsers().isEmpty() && userRegEX.matcher(args[index]).matches()) {
             String userId = part.substring(2, part.length() - 1);
             if (userId.charAt(0) == '!') {
-                userId = userId.substring(1, userId.length());
+                userId = userId.substring(1);
             }
 
             try {
                 Member member = context.getGuild().getMemberById(userId);
+
                 return member == null ? null : member.getUser();
             } catch (NumberFormatException e) {
                 return null;
@@ -139,7 +140,7 @@ public class MentionableUtil {
                 return null;
             }
 
-            List<Member> effectiveName = context.getGuild().getMembersByEffectiveName(parts[0], true);
+            List<Member> effectiveName = context.getGuild().retrieveMembersByPrefix(parts[0], 1).get();
 
             if (effectiveName.isEmpty()) {
                 return null;
@@ -151,7 +152,7 @@ public class MentionableUtil {
             return null;
         }
 
-        List<Member> members = context.getGuild().getMembersByName(parts[0], true);
+        List<Member> members = context.getGuild().retrieveMembersByPrefix(parts[0], 1).get();
         for (Member member : members) {
             if (member.getUser().getDiscriminator().equals(parts[1])) {
                 return member.getUser();

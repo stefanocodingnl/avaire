@@ -32,6 +32,7 @@ import com.avairebot.language.I18n;
 import com.avairebot.time.Carbon;
 import com.avairebot.vote.VoteCacheEntity;
 import com.avairebot.vote.VoteEntity;
+import net.dv8tion.jda.api.entities.Member;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -81,6 +82,8 @@ public class VoteCommand extends Command {
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
         VoteCacheEntity voteEntity = avaire.getVoteManager().getVoteEntity(context.getAuthor());
+
+
 
         if (args.length > 0 && args[0].equalsIgnoreCase("check")) {
             return checkUser(context, voteEntity);

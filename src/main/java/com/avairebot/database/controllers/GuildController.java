@@ -56,7 +56,9 @@ public class GuildController {
         "guilds.music_channel_text", "guilds.music_channel_voice", "guilds.music_messages", "guilds.prefixes", "guilds.aliases",
         "guilds.level_exempt_channels", "guilds.level_exempt_roles", "guilds.modlog_case", "guilds.modlog", "guilds.mute_role",
         "guilds.autorole", "guilds.level_channel", "guilds.level_alerts", "guilds.levels", "guilds.hierarchy",
-        "guilds.default_volume", "guilds.dj_level", "guilds.dj_role"
+        "guilds.default_volume", "guilds.dj_level", "guilds.dj_role", "guilds.gamenight_role", "guilds.on_watch_role",
+        "guilds.on_watch_case", "guilds.on_watch", "guilds.filter_wildcard", "guilds.filter_exact",
+        "guilds.filter", "guilds.piaf_wildcard", "guilds.piaf_exact"
     };
 
     /**
@@ -145,7 +147,7 @@ public class GuildController {
                     avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
                         .insert(statement -> {
                             statement.set("id", guild.getId())
-                                .set("owner", guild.getOwner().getUser().getId())
+                                .set("owner", guild.retrieveOwner().submit().getNow(null).getUser().getId())
                                 .set("name", guild.getName(), true)
                                 .set("roles_data", buildRoleData(guild.getRoles()), true)
                                 .set("channels_data", buildChannelData(guild.getTextChannels()), true);

@@ -94,7 +94,7 @@ public class GuildStateEventAdapter extends EventAdapter {
             return;
         }
 
-        User owner = event.getGuild().getOwner().getUser();
+            User owner = event.getGuild().retrieveOwner().submit().getNow(null).getUser();
 
         double guildMembers = event.getGuild().getMembers().stream().filter(member -> !member.getUser().isBot()).count();
         double guildBots = event.getGuild().getMembers().stream().filter(member -> member.getUser().isBot()).count();
