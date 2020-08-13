@@ -41,13 +41,19 @@ public class PBSTMemberCountQueueTask implements Task {
 
     @Override
     public void handle(AvaIre avaire) {
-        if (avaire.getShardManager() != null) {
-            Guild g = avaire.getShardManager().getGuildById("742658223466872853");
+        if (avaire.areWeReadyYet()) {
+            Guild g = avaire.getShardManager().getGuildById("669672893730258964");
             if (g != null) {
                 TextChannel tc = g.getTextChannelById("742658223466872853");
                 if (tc != null) {
-                    tc.sendMessage("Retrieving member count <a:loading:742658561414266890>").submit()
-                        .thenAcceptAsync((d) -> d.editMessage("PBST Currently has " + getMemberCount() + " members in the group!").submit()).whenComplete((a, b) -> {
+                    tc.sendMessage("<a:loading:742658561414266890> Retrieving member count").submit()
+                        .thenAcceptAsync((d) -> {
+                            try {
+                                Thread.sleep(4000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            d.editMessage("PBST Currently has " + getMemberCount() + " members in the group!").submit();}).whenComplete((a, b) -> {
                         if (b != null) {
                             b.printStackTrace();
                         }

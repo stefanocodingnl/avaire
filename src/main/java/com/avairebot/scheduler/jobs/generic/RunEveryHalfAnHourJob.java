@@ -32,7 +32,7 @@ public class RunEveryHalfAnHourJob extends Job {
     private final PBSTMemberCountQueueTask pbstMemberCountQueueTask = new PBSTMemberCountQueueTask();
 
     public RunEveryHalfAnHourJob(AvaIre avaire) {
-        super(avaire, 0, 5, TimeUnit.SECONDS);
+        super(avaire, 0, 30, TimeUnit.MINUTES);
     }
 
     @Override
