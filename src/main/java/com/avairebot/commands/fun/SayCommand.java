@@ -94,7 +94,7 @@ public class SayCommand extends Command {
         }
 
         GuildChannel channel = MentionableUtil.getChannel(context.getMessage(), args);
-        if (channel == null || !(channel instanceof TextChannel)) {
+        if (!(channel instanceof TextChannel)) {
             return handleNormalCommand(context, args);
         }
 

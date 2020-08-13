@@ -277,7 +277,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
             msg.delete().queue();
         }
         if (e.getReactionEmote().getName().equals("\uD83D\uDCAC")) {
-            if (!e.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+            if (!(e.getMember().hasPermission(Permission.MESSAGE_MANAGE) || isValidReportManagerRole(e) || msg.getEmbeds().get(0).getFooter().getText().equalsIgnoreCase(e.getMember().getEffectiveName()))) {
                 e.getMember().getUser().openPrivateChannel().queue(v -> v.sendMessage(new EmbedBuilder().setDescription("Sorry, but you need to be an SD or higher to comment on a suggestion!").build()).queue());
                 e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
                 return;
