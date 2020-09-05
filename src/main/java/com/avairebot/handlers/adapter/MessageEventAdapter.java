@@ -37,6 +37,7 @@ import com.avairebot.database.transformers.ChannelTransformer;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.handlers.DatabaseEventHolder;
+import com.avairebot.language.I18n;
 import com.avairebot.middleware.MiddlewareStack;
 import com.avairebot.middleware.ThrottleMiddleware;
 import com.avairebot.modlog.Modlog;
@@ -47,6 +48,7 @@ import com.avairebot.shared.DiscordConstants;
 import com.avairebot.utilities.ArrayUtil;
 import com.avairebot.utilities.RestActionUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
@@ -57,6 +59,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -402,13 +405,8 @@ public class MessageEventAdapter extends EventAdapter {
             reason
         );
 
-        String caseId = Modlog.log(avaire, m.getGuild(), databaseEventHolder, modlogAction);
 
-        if (caseId == null) {
-            return;
-        }
-
-        Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, caseId);
+        Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER");
     }
 
     private void warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color) {
@@ -425,13 +423,21 @@ public class MessageEventAdapter extends EventAdapter {
             reason
         );
 
-        String caseId = Modlog.logcolor(avaire, m.getGuild(), databaseEventHolder, modlogAction, color);
+        EmbedBuilder builder = MessageFactory.createEmbeddedBuilder()
+            .setTitle(I18n.format("{0} {1} | Case #{2}",
+                ":loudspeaker:",
+                m.getGuild().getName(),
+                "FILTER"
+            ))
+            .setColor(color)
+            .setTimestamp(Instant.now())
+            .addField("User", m.getMember().getEffectiveName(), true)
+            .addField("Moderator", "Xeus", true)
+            .addField("Reason", reason, false);
 
-        if (caseId == null) {
-            return;
-        }
+        m.getGuild().getTextChannelById(databaseEventHolder.getModlog()).sendMessage(builder.build()).queue();
 
-        Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, caseId, color);
+        Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER", color);
     }
 
     private void invokeMiddlewareStack(MiddlewareStack stack) {

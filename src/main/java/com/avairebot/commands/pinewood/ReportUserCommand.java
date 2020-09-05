@@ -56,7 +56,7 @@ public class ReportUserCommand extends Command {
 
     @Override
     public List <String> getTriggers() {
-        return Arrays.asList("report", "ru");
+        return Arrays.asList("report-user", "ru");
     }
 
     @Nonnull

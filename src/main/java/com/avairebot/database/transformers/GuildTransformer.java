@@ -52,6 +52,8 @@ public class GuildTransformer extends Transformer {
     private final List<String> piaWordsExact = new ArrayList<>();
     private final List<String> piaWordsWildcard = new ArrayList<>();
 
+    private final List<String> reportPermissionRoles = new ArrayList<>();
+
     private final Set<Long> levelExemptChannels = new HashSet<>();
     private final Set<Long> levelExemptRoles = new HashSet<>();
 
@@ -81,6 +83,7 @@ public class GuildTransformer extends Transformer {
     private int onWatchCase = 0;
     private int defaultVolume = 100;
     private double levelModifier = -1;
+    private long reportCategory = 0;
     private DJGuildLevel djGuildLevel = null;
 
     public GuildTransformer(Guild guild) {
@@ -119,6 +122,8 @@ public class GuildTransformer extends Transformer {
             musicChannelVoice = data.getString("music_channel_voice");
             musicMessages = data.getBoolean("music_messages", true);
             modlogCase = data.getInt("modlog_case");
+
+            reportCategory = data.getLong("report_discord_category");
 
             onWatchCase = data.getInt("on_watch_case");
             onWatchRole = data.getString("on_watch_role");
@@ -177,6 +182,14 @@ public class GuildTransformer extends Transformer {
                     new TypeToken<ArrayList<String>>(){}.getType());
 
                 piaWordsWildcard.addAll(dbFilter);
+            }
+
+            if (data.getString("report_discord", null) != null) {
+                ArrayList<String> dbRoles = AvaIre.gson.fromJson(
+                    data.getString("report_discord"),
+                    new TypeToken<ArrayList<String>>(){}.getType());
+
+                reportPermissionRoles.addAll(dbRoles);
             }
 
             if (data.getString("prefixes", null) != null) {
@@ -450,7 +463,11 @@ public class GuildTransformer extends Transformer {
         this.gamenightRole = gamenightRole;
     }
 
+    public long getReportCategory() {return reportCategory;}
 
+    public void setReportCategory(long id) {
+        this.reportCategory = id;
+    }
 
     public Map<String, String> getSelfAssignableRoles() {
         return selfAssignableRoles;
@@ -479,6 +496,8 @@ public class GuildTransformer extends Transformer {
     public List<String> getPIAWordsExact() {
         return piaWordsExact;
     }
+
+    public List<String> getReportPermissionRoles() {return reportPermissionRoles;}
 
     public List<ChannelTransformer> getChannels() {
         return channels;

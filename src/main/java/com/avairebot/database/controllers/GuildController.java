@@ -58,7 +58,7 @@ public class GuildController {
         "guilds.autorole", "guilds.level_channel", "guilds.level_alerts", "guilds.levels", "guilds.hierarchy",
         "guilds.default_volume", "guilds.dj_level", "guilds.dj_role", "guilds.gamenight_role", "guilds.on_watch_role",
         "guilds.on_watch_case", "guilds.on_watch", "guilds.filter_wildcard", "guilds.filter_exact",
-        "guilds.filter", "guilds.piaf_wildcard", "guilds.piaf_exact"
+        "guilds.filter", "guilds.piaf_wildcard", "guilds.piaf_exact", "guilds.report_discord", "guilds.report_discord_category"
     };
 
     /**

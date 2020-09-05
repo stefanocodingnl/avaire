@@ -76,6 +76,7 @@ public class FeedbackWaiters {
                             r.addReaction("✅").queue();
                             r.addReaction("❌").queue();
                             r.addReaction("trash:694314074179240027").queue();
+                        r.addReaction("\uD83D\uDCAC").queue();
                             r.addReaction("\uD83D\uDD04").queue();
 
                             context.channel.sendMessage(context.makeSuccess("[Your feedback has been sent in the feedback channel](" + r.getJumpUrl() + "): \n```" + message + "```").buildEmbed()).queue();

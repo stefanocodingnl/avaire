@@ -261,6 +261,7 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Utility", defaultPrefix);
         CategoryHandler.addCategory(this, "Pinewood", defaultPrefix);
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
+        CategoryHandler.addCategory(this, "Reports", defaultPrefix);
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
@@ -708,7 +709,6 @@ public class AvaIre {
             .setBulkDeleteSplittingEnabled(false)
             .setMemberCachePolicy(MemberCachePolicy.ALL)
             .setEnableShutdownHook(false)
-            .disableCache(CacheFlag.ACTIVITY)
             .addEventListeners(waiter)
             .setAutoReconnect(true)
             .setContextEnabled(true)

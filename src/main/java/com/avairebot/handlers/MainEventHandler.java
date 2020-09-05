@@ -288,6 +288,9 @@ public class MainEventHandler extends EventHandler {
             if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID)) {
                 reactionEmoteEventAdapter.onPBFeedbackMessageEvent(event);
             }
+            if (event.getChannel().getId().equals(Constants.REWARD_REQUESTS_CHANNEL_ID)) {
+                reactionEmoteEventAdapter.onPBSTRequestRewardMessageAddEvent(event);
+            }
             if (isValidReportChannel(event)) {
                 reactionEmoteEventAdapter.onReportsReactionAdd(event);
             }
