@@ -144,6 +144,8 @@ public class HandbookReportWaiters {
                 return "The Mayhem Syndicate <:TMSHandbook:690134424041422859>";
             case "pet":
                 return "Pinewood Emergency Team <:PETHandbook:690134297465585704>";
+            case "exploit-abuse":
+                return "Pinewood Builders";
         }
         return ":gear: Development Guild :gear:";
     }

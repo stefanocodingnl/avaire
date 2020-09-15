@@ -110,6 +110,8 @@ dependencies {
     //Gitlab API
     compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.12.3'
 
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12'
+
     // Tests
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
     compile("org.junit.platform:junit-platform-launcher:1.1.0")

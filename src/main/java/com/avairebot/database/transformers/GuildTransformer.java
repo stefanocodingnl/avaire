@@ -47,13 +47,22 @@ public class GuildTransformer extends Transformer {
 
     private final List<ChannelTransformer> channels = new ArrayList<>();
     private final List<String> badWordsExact = new ArrayList<>();
-    private final List<String> badWordsWildcard = new ArrayList<>();
+    private final List <String> badWordsWildcard = new ArrayList <>();
 
-    private final List<String> piaWordsExact = new ArrayList<>();
-    private final List<String> piaWordsWildcard = new ArrayList<>();
+    private final List <String> piaWordsExact = new ArrayList <>();
+    private final List <String> piaWordsWildcard = new ArrayList <>();
 
-    private final Set<Long> levelExemptChannels = new HashSet<>();
-    private final Set<Long> levelExemptRoles = new HashSet<>();
+    private final List <String> reportPermissionRoles = new ArrayList <>();
+
+    private final Set <Long> levelExemptChannels = new HashSet <>();
+    private final Set <Long> levelExemptRoles = new HashSet <>();
+
+    private final Set <Long> lockableChannels = new HashSet <>();
+    private final Set <Long> lockableChannelsRoles = new HashSet <>();
+
+    private final Set <Long> moderatorRoles = new HashSet <>();
+    private final Set <Long> managerRoles = new HashSet <>();
+    private final Set <Long> administratorRoles = new HashSet <>();
 
     private final GuildTypeTransformer guildType;
     private boolean partner;
@@ -77,10 +86,12 @@ public class GuildTransformer extends Transformer {
     private String onWatch = null;
     private String gamenightRole = null;
     private String djRole = null;
+    private String filterLog = null;
     private int modlogCase = 0;
     private int onWatchCase = 0;
     private int defaultVolume = 100;
     private double levelModifier = -1;
+    private long reportCategory = 0;
     private DJGuildLevel djGuildLevel = null;
 
     public GuildTransformer(Guild guild) {
@@ -120,11 +131,14 @@ public class GuildTransformer extends Transformer {
             musicMessages = data.getBoolean("music_messages", true);
             modlogCase = data.getInt("modlog_case");
 
+            reportCategory = data.getLong("report_discord_category");
+
             onWatchCase = data.getInt("on_watch_case");
             onWatchRole = data.getString("on_watch_role");
             onWatch = data.getString("on_watch");
 
             filter = data.getBoolean("filter");
+            filterLog = data.getString("filter_log");
 
             djGuildLevel = DJGuildLevel.fromId(data.getInt("dj_level", DJGuildLevel.getNormal().getId()));
             djRole = data.getString("dj_role");
@@ -177,6 +191,14 @@ public class GuildTransformer extends Transformer {
                     new TypeToken<ArrayList<String>>(){}.getType());
 
                 piaWordsWildcard.addAll(dbFilter);
+            }
+
+            if (data.getString("report_discord", null) != null) {
+                ArrayList<String> dbRoles = AvaIre.gson.fromJson(
+                    data.getString("report_discord"),
+                    new TypeToken<ArrayList<String>>(){}.getType());
+
+                reportPermissionRoles.addAll(dbRoles);
             }
 
             if (data.getString("prefixes", null) != null) {
@@ -246,13 +268,98 @@ public class GuildTransformer extends Transformer {
                 }
             }
 
-            if (data.getString("modules", null) != null) {
-                HashMap<String, Map<String, String>> dbModules = AvaIre.gson.fromJson(
-                    data.getString("modules"),
-                    new TypeToken<HashMap<String, Map<String, String>>>() {
+            if (data.getString("lockable_channels", null) != null) {
+                List <String> dbLockableChannelsChannels = AvaIre.gson.fromJson(
+                    data.getString("lockable_channels"),
+                    new TypeToken <List <String>>() {
                     }.getType());
 
-                for (Map.Entry<String, Map<String, String>> item : dbModules.entrySet()) {
+                for (String channelId : dbLockableChannelsChannels) {
+                    try {
+                        lockableChannels.add(
+                            Long.parseLong(channelId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
+            if (data.getString("lockable_channels_roles", null) != null) {
+                List <String> dbLockableChannelRoles = AvaIre.gson.fromJson(
+                    data.getString("lockable_channels_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String channelId : dbLockableChannelRoles) {
+                    try {
+                        lockableChannelsRoles.add(
+                            Long.parseLong(channelId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
+            if (data.getString("moderator_roles", null) != null) {
+                List <String> modRoles = AvaIre.gson.fromJson(
+                    data.getString("moderator_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String roleId : modRoles) {
+                    try {
+                        moderatorRoles.add(
+                            Long.parseLong(roleId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
+            if (data.getString("manager_roles", null) != null) {
+                List <String> manRoles = AvaIre.gson.fromJson(
+                    data.getString("manager_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String roleId : manRoles) {
+                    try {
+                        managerRoles.add(
+                            Long.parseLong(roleId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
+            if (data.getString("admin_roles", null) != null) {
+                List <String> adminRoles = AvaIre.gson.fromJson(
+                    data.getString("admin_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String roleId : adminRoles) {
+                    try {
+                        administratorRoles.add(
+                            Long.parseLong(roleId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
+            if (data.getString("modules", null) != null) {
+                HashMap <String, Map <String, String>> dbModules = AvaIre.gson.fromJson(
+                    data.getString("modules"),
+                    new TypeToken <HashMap <String, Map <String, String>>>() {
+                    }.getType());
+
+                for (Map.Entry <String, Map <String, String>> item : dbModules.entrySet()) {
                     modules.put(item.getKey(), item.getValue());
                 }
             }
@@ -354,12 +461,32 @@ public class GuildTransformer extends Transformer {
         this.levelModifier = levelModifier;
     }
 
-    public Set<Long> getLevelExemptChannels() {
+    public Set <Long> getLevelExemptChannels() {
         return levelExemptChannels;
     }
 
-    public Set<Long> getLevelExemptRoles() {
+    public Set <Long> getLevelExemptRoles() {
         return levelExemptRoles;
+    }
+
+    public Set <Long> getLockableChannels() {
+        return lockableChannels;
+    }
+
+    public Set <Long> getLockableChannelRoles() {
+        return lockableChannelsRoles;
+    }
+
+    public Set <Long> getModeratorRoles() {
+        return moderatorRoles;
+    }
+
+    public Set <Long> getManagerRoles() {
+        return managerRoles;
+    }
+
+    public Set <Long> getAdministratorRoles() {
+        return administratorRoles;
     }
 
     public String getAutorole() {
@@ -446,21 +573,35 @@ public class GuildTransformer extends Transformer {
         return gamenightRole;
     }
 
-    public void setGamenightRole(String gamenightRole){
+    public void setGamenightRole(String gamenightRole) {
         this.gamenightRole = gamenightRole;
     }
 
+    public long getReportCategory() {
+        return reportCategory;
+    }
 
+    public void setReportCategory(long id) {
+        this.reportCategory = id;
+    }
 
-    public Map<String, String> getSelfAssignableRoles() {
+    public String getFilterLog() {
+        return filterLog;
+    }
+
+    public void setFilterLog(String s) {
+        this.filterLog = s;
+    }
+
+    public Map <String, String> getSelfAssignableRoles() {
         return selfAssignableRoles;
     }
 
-    public Map<String, String> getPrefixes() {
+    public Map <String, String> getPrefixes() {
         return prefixes;
     }
 
-    public Map<String, String> getAliases() {
+    public Map <String, String> getAliases() {
         return aliases;
     }
 
@@ -479,6 +620,8 @@ public class GuildTransformer extends Transformer {
     public List<String> getPIAWordsExact() {
         return piaWordsExact;
     }
+
+    public List<String> getReportPermissionRoles() {return reportPermissionRoles;}
 
     public List<ChannelTransformer> getChannels() {
         return channels;
@@ -573,4 +716,6 @@ public class GuildTransformer extends Transformer {
 
         return AvaIre.gson.toJson(objects);
     }
+
+
 }

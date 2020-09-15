@@ -87,6 +87,7 @@ public class Constants {
     // PBST Channels
     public static final String FEEDBACK_CHANNEL_ID = "732681775523823696";
     public static final String FEEDBACK_APPROVED_CHANNEL_ID = "732954258701287464";
+    public static final String REWARD_REQUESTS_CHANNEL_ID = "722606219319181392";
 
     // Official Pinewood Guilds
     public static final ArrayList <String> guilds = new ArrayList<String>() {{
@@ -101,6 +102,7 @@ public class Constants {
         add("697546632040022186"); // PWA (Wiki Administration)
         add("669672893730258964"); // PB Dev Lair
         add("699379074505637908"); // PTE (PBST Tier Evals)
+        add("750471488095780966"); // PBA (Pinewood Builders Appeals)
     }};
 
     // BYPASS USERS

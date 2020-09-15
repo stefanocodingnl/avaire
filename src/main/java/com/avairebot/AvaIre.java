@@ -87,17 +87,16 @@ import io.sentry.SentryClient;
 import io.sentry.logback.SentryAppender;
 import lavalink.client.io.Link;
 import lavalink.client.player.LavalinkPlayer;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
-import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.SessionControllerAdapter;
-import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.gitlab4j.api.GitLabApi;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -238,8 +237,12 @@ public class AvaIre {
         MiddlewareHandler.register("throttle", new ThrottleMiddleware(this));
         MiddlewareHandler.register("musicChannel", new IsMusicChannelMiddleware(this));
         MiddlewareHandler.register("isDMMessage", new IsDMMessageMiddleware(this));
+
         MiddlewareHandler.register("isOfficialPinewoodGuild", new IsOfficialPinewoodGuildMiddleware(this));
         MiddlewareHandler.register("isValidPIAMember", new IsValidPIAMemberMiddleware(this));
+        MiddlewareHandler.register("isAdminOrHigher", new IsAdminOrHigherMiddleware(this));
+        MiddlewareHandler.register("isManagerOrHigher", new IsManagerOrHigherMiddleware(this));
+        MiddlewareHandler.register("isModOrHigher", new IsModOrHigherMiddleware(this));
 
         String defaultPrefix = getConfig().getString("default-prefix", DiscordConstants.DEFAULT_COMMAND_PREFIX);
         if (getConfig().getString("system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX).equals(defaultPrefix)) {
@@ -261,6 +264,7 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Utility", defaultPrefix);
         CategoryHandler.addCategory(this, "Pinewood", defaultPrefix);
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
+        CategoryHandler.addCategory(this, "Reports", defaultPrefix);
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
@@ -708,7 +712,6 @@ public class AvaIre {
             .setBulkDeleteSplittingEnabled(false)
             .setMemberCachePolicy(MemberCachePolicy.ALL)
             .setEnableShutdownHook(false)
-            .disableCache(CacheFlag.ACTIVITY)
             .addEventListeners(waiter)
             .setAutoReconnect(true)
             .setContextEnabled(true)
