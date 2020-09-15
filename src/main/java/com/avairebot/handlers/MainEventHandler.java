@@ -29,7 +29,10 @@ import com.avairebot.handlers.adapter.*;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.pinewood.waiters.FeedbackWaiters;
 import com.avairebot.pinewood.waiters.HandbookReportWaiters;
-import net.dv8tion.jda.api.events.*;
+import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.ReconnectedEvent;
+import net.dv8tion.jda.api.events.ResumedEvent;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.api.events.channel.text.update.TextChannelUpdateNameEvent;
@@ -39,7 +42,6 @@ import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateRegionEvent;
@@ -48,7 +50,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.role.RoleCreateEvent;
@@ -59,6 +60,7 @@ import net.dv8tion.jda.api.events.role.update.RoleUpdatePositionEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateAvatarEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateDiscriminatorEvent;
 import net.dv8tion.jda.api.events.user.update.UserUpdateNameEvent;
+import net.dv8tion.jda.api.events.user.update.UserUpdateOnlineStatusEvent;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -175,6 +177,11 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
+    public void onUserUpdateOnlineStatus(UserUpdateOnlineStatusEvent event) {
+        memberEvent.onGuildMemberChangeStatus(event);
+    }
+
+    @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (changelogEventAdapter.isChangelogMessage(event.getChannel())) {
             changelogEventAdapter.onMessageReceived(event);
@@ -214,11 +221,12 @@ public class MainEventHandler extends EventHandler {
             changelogEventAdapter.onMessageUpdate(event);
         }
         messageEvent.onMessageUpdate(event);
-
-        if (Constants.guilds.contains(event.getGuild().getId())) {
-            messageEvent.onGuildMessageUpdate(event);
-            messageEvent.onGlobalFilterEditReceived(event);
-            messageEvent.onLocalFilterEditReceived(event);
+        if (event.isFromGuild()) {
+            if (Constants.guilds.contains(event.getGuild().getId())) {
+                messageEvent.onGuildMessageUpdate(event);
+                messageEvent.onGlobalFilterEditReceived(event);
+                messageEvent.onLocalFilterEditReceived(event);
+            }
         }
     }
 
@@ -305,7 +313,6 @@ public class MainEventHandler extends EventHandler {
     }
 
 
-
     private boolean isValidReportChannel(GuildMessageReactionAddEvent event) {
         return event.getChannel().getId().equals(Constants.PBST_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PET_REPORT_CHANNEL)
             || event.getChannel().getId().equals(Constants.TMS_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PB_REPORT_CHANNEL) || event.getChannel().getName().equals("handbook-violator-reports");
@@ -316,10 +323,12 @@ public class MainEventHandler extends EventHandler {
             && event.getReactionEmote().isEmote()
             && !event.getMember().getUser().isBot();
     }
+
     private boolean isValidMessageReactionEvent(MessageReactionRemoveEvent event) {
         return event.isFromGuild()
             && event.getReactionEmote().isEmote();
     }
+
     private boolean isValidMessageReactionEvent(GuildMessageReactionAddEvent event) {
         return !event.getUser().isBot();
     }

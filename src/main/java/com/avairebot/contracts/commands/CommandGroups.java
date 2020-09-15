@@ -40,7 +40,8 @@ public enum CommandGroups implements CommandGroup {
     MUSIC_SKIP("Skip Track"),
     MISCELLANEOUS("Misc"),
     EVALUATIONS("Evaluations"),
-    REPORTS("Reports");
+    REPORTS("Reports"),
+    CHANNEL_LOCK("Channel Lock");
 
     private final String name;
 

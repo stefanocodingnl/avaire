@@ -60,8 +60,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -393,7 +393,7 @@ public class MessageEventAdapter extends EventAdapter {
 
     private void warnUser(Message m, GuildTransformer databaseEventHolder, String reason) {
 
-        if (databaseEventHolder.getModlog() == null) {
+        if (databaseEventHolder.getFilterLog() == null) {
             return;
         }
 
@@ -411,7 +411,7 @@ public class MessageEventAdapter extends EventAdapter {
 
     private void warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color) {
 
-        if (databaseEventHolder.getModlog() == null) {
+        if (databaseEventHolder.getFilterLog() == null) {
             return;
         }
 
@@ -435,7 +435,7 @@ public class MessageEventAdapter extends EventAdapter {
             .addField("Moderator", "Xeus", true)
             .addField("Reason", reason, false);
 
-        m.getGuild().getTextChannelById(databaseEventHolder.getModlog()).sendMessage(builder.build()).queue();
+        m.getGuild().getTextChannelById(databaseEventHolder.getFilterLog()).sendMessage(builder.build()).queue();
 
         Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER", color);
     }

@@ -411,7 +411,7 @@ administration:
         mustMentionUse: "You must mention a user you want warn."
         warnBots: "You can't warn bots!"
         failedToLogWarning: "Failed to log warning to the set modlog channel, does the modlog channel still exists, can I still send messages in the channel?"
-        message: ":target has been **warned** for \":reason\""
+        message: ":target has been **warned**!"
         failedToSendDM: "Failed to DM the user with the warning, they most likely have their private settings set to disable all DMs from this server."
 
     WelcomeCommand:

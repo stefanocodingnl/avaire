@@ -19,13 +19,14 @@
  *
  */
 
-package com.avairebot.commands.system;
+package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
 import com.avairebot.blacklist.Scope;
 import com.avairebot.chat.SimplePaginator;
 import com.avairebot.commands.CommandMessage;
-import com.avairebot.contracts.commands.SystemCommand;
+import com.avairebot.commands.CommandPriority;
+import com.avairebot.contracts.commands.Command;
 import com.avairebot.language.I18n;
 import com.avairebot.utilities.NumberUtil;
 
@@ -34,7 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BlacklistCommand extends SystemCommand {
+public class BlacklistCommand extends Command {
 
     public BlacklistCommand(AvaIre avaire) {
         super(avaire);
@@ -51,7 +52,7 @@ public class BlacklistCommand extends SystemCommand {
     }
 
     @Override
-    public List<String> getUsageInstructions() {
+    public List <String> getUsageInstructions() {
         return Arrays.asList(
             "`:command list` - Lists users and servers on the blacklist",
             "`:command remove <id>` - Removes the entry with the given ID from the blacklist",
@@ -60,7 +61,15 @@ public class BlacklistCommand extends SystemCommand {
     }
 
     @Override
-    public List<String> getExampleUsage() {
+    public List <String> getMiddleware() {
+        return Arrays.asList(
+            "isOfficialPinewoodGuild",
+            "isValidPIAMember"
+        );
+    }
+
+    @Override
+    public List <String> getExampleUsage() {
         return Arrays.asList(
             "`:command add G 123` - Blacklists the guild with an ID of 123",
             "`:command add U 321 Doing stuff` - Blacklists the user with an ID of 321 for \"Doing stuff\""
@@ -68,8 +77,13 @@ public class BlacklistCommand extends SystemCommand {
     }
 
     @Override
-    public List<String> getTriggers() {
+    public List <String> getTriggers() {
         return Collections.singletonList("blacklist");
+    }
+
+    @Override
+    public CommandPriority getCommandPriority() {
+        return CommandPriority.NORMAL;
     }
 
     @Override
