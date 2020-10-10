@@ -103,6 +103,7 @@ public class WatchlogReasonCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
+            "isModOrHigher",
             "throttle:user,1,5"
         );
     }

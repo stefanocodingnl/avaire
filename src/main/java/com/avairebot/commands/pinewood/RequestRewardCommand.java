@@ -97,7 +97,7 @@ public class RequestRewardCommand extends Command {
                             if (action.getMessage().getContentRaw().equalsIgnoreCase("cancel")) { action.getChannel().sendMessage("Cancelled report!").queue();
                                 return;
                             }
-                            v.getChannel().sendMessage("The user did something good? How many points do you think he earned? :flushed:").queue(c -> {
+                            v.getChannel().sendMessage("How many points do you think he earned? :flushed:").queue(c -> {
                                 startRequestDescriptionWaiter(action.getMessage().getContentRaw(), c, context);
                             });
                         }, 1, TimeUnit.MINUTES, () -> v.getChannel().sendMessage(getTimeOutMessage()).queue());

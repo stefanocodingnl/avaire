@@ -141,7 +141,7 @@ public class RoleSettingsCommand extends SystemCommand {
             if (r.hasPermission(Permission.MANAGE_SERVER) && !r.hasPermission(Permission.ADMINISTRATOR)) {
                 managers.add(r.getIdLong());
             }
-            if (r.hasPermission(Permission.MESSAGE_MANAGE) && !r.hasPermission(Permission.ADMINISTRATOR)) {
+            if (r.hasPermission(Permission.MESSAGE_MANAGE) && !r.hasPermission(Permission.ADMINISTRATOR) && !r.hasPermission(Permission.MANAGE_SERVER)) {
                 mods.add(r.getIdLong());
             }
         }

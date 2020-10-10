@@ -28,45 +28,45 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class AddFilterlogToGuildsTableMigration implements Migration {
-
-    @Override
-    public String created_at() {
-        return "Thu, Sep 10, 2020 4:32 PM";
-    }
-
-    @Override
-    public boolean up(Schema schema) throws SQLException {
-        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "filter_log")) {
+    public class AddFilterlogToGuildsTableMigration implements Migration {
+    
+        @Override
+        public String created_at() {
+            return "Thu, Sep 10, 2020 4:32 PM";
+        }
+    
+        @Override
+        public boolean up(Schema schema) throws SQLException {
+            if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "filter_log")) {
+                return true;
+            }
+    
+            if (schema.getDbm().getConnection() instanceof MySQL) {
+                schema.getDbm().queryUpdate(String.format(
+                    "ALTER TABLE `%s` ADD `filter_log` VARCHAR(32) NULL DEFAULT NULL AFTER `modlog`;",
+                    Constants.GUILD_TABLE_NAME
+                ));
+            } else {
+                schema.getDbm().queryUpdate(String.format(
+                    "ALTER TABLE `%s` ADD `filter_log` VARCHAR(32) NULL DEFAULT NULL;",
+                    Constants.GUILD_TABLE_NAME
+                ));
+            }
+    
             return true;
         }
-
-        if (schema.getDbm().getConnection() instanceof MySQL) {
+    
+        @Override
+        public boolean down(Schema schema) throws SQLException {
+            if (!schema.hasColumn(Constants.GUILD_TABLE_NAME, "filter_log")) {
+                return true;
+            }
+    
             schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `filter_log` VARCHAR(32) NULL DEFAULT NULL AFTER `modlog`;",
+                "ALTER TABLE `%s` DROP `filter_log`;",
                 Constants.GUILD_TABLE_NAME
             ));
-        } else {
-            schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `filter_log` VARCHAR(32) NULL DEFAULT NULL;",
-                Constants.GUILD_TABLE_NAME
-            ));
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean down(Schema schema) throws SQLException {
-        if (!schema.hasColumn(Constants.GUILD_TABLE_NAME, "filter_log")) {
+    
             return true;
         }
-
-        schema.getDbm().queryUpdate(String.format(
-            "ALTER TABLE `%s` DROP `filter_log`;",
-            Constants.GUILD_TABLE_NAME
-        ));
-
-        return true;
     }
-}

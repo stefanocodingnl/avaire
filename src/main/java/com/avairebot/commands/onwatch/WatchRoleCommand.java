@@ -100,7 +100,7 @@ public class WatchRoleCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "require:user,general.manage_server,general.manage_roles",
+            "isManagerOrHigher",
             "throttle:guild,1,5"
         );
     }

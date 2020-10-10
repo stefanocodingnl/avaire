@@ -34,8 +34,8 @@ public class IsAdminOrHigherMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (!isAdminOrHigher(stack, message)) {
-            return sendMustBeManagerOrHigherMessage(message);
+        if (isAdminOrHigher(stack, message)) {
+            return stack.next();
         }
 
         if (args.length == 0) {

@@ -74,6 +74,7 @@ public class GlobalPruneCommand extends Command {
         add("505828893576527892"); // MMFA
         add("498476405160673286"); // PBM/
         add("572104809973415943"); // TMS
+        add("758057400635883580"); // PBOP
     }};
 
     private final ArrayList <String> roles = new ArrayList <String>() {{
@@ -84,6 +85,7 @@ public class GlobalPruneCommand extends Command {
         add("438153651433897984");
         add("571737591989403648");
         add("547621009902272543");
+        add("758065350322684015");
     }};
 
     public final HashMap <Guild, Role> role = new HashMap <>();
@@ -91,11 +93,17 @@ public class GlobalPruneCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+        if (guild.size()>0) {
+            guild.clear();
+        }
         for (String s : guilds) {
             Guild g = avaire.getShardManager().getGuildById(s);
             if (g != null) {
                 guild.add(g);
             }
+        }
+        if (role.size()>0) {
+            role.clear();
         }
         for (Guild g : guild) {
             for (String r : roles) {
@@ -110,11 +118,17 @@ public class GlobalPruneCommand extends Command {
             Iterator <Map.Entry <Guild, Role>> it = role.entrySet().iterator();
             while (it.hasNext()) {
                 it.forEachRemaining(p -> {
-                    p.getKey().prune(30, false, p.getValue()).queue(v -> {
+                    p.getKey().prune(30, true, p.getValue()).queue(v -> {
                         context.makeSuccess("Pruned " + v + " members from " + p.getKey().getName()).queue();
                     });
+                    guild.remove(p.getKey());
                 });
                 //it.remove(); // avoids a ConcurrentModificationException
+            }
+            for (Guild g : guild) {
+                g.prune(30, true).reason("Global prune, executed by: " + context.getMember().getEffectiveName()).queue( v -> {
+                    context.makeSuccess("Pruned " + v + " members from " + g.getName()).queue();
+                });
             }
         }
         context.makeSuccess("Pruned members globally!").queue();

@@ -35,8 +35,8 @@ public class IsModOrHigherMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (!isModOrHigher(stack, message) && !message.getMember().hasPermission(Permission.ADMINISTRATOR)) {
-            return sendMustBeModOrHigherMessage(message);
+        if (isModOrHigher(stack, message) && !message.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            return stack.next();
         }
 
         if (args.length == 0) {

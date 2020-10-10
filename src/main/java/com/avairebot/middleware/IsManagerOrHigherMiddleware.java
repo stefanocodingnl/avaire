@@ -35,8 +35,8 @@ public class IsManagerOrHigherMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (!isManagerOrHigher(stack, message) && !message.getMember().hasPermission(Permission.ADMINISTRATOR)) {
-            return sendMustBeManagerOrHigherMessage(message);
+        if (isManagerOrHigher(stack, message) && !message.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            return stack.next();
         }
 
         if (args.length == 0) {
@@ -69,7 +69,6 @@ public class IsManagerOrHigherMiddleware extends Middleware {
                 roles.add(r);
             }
         }
-
         return roles.stream().anyMatch(message.getMember().getRoles()::contains);
     }
 

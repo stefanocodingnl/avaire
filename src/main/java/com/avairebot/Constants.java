@@ -65,9 +65,9 @@ public class Constants {
     public static final String PACKAGE_JOB_PATH = "com.avairebot.scheduler";
 
     // Emojis
-    public static final String EMOTE_ONLINE = "<:online:324986081378435072>";
-    public static final String EMOTE_AWAY = "<:away:324986135346675712>";
-    public static final String EMOTE_DND = "<:dnd:324986174806425610>";
+    public static final String EMOTE_ONLINE = "<:online:755423744511574026>";
+    public static final String EMOTE_AWAY = "<:away:755424036497915965>";
+    public static final String EMOTE_DND = "<:dnd:755423916973097031>";
 
     // Purchase Types
     public static final String RANK_BACKGROUND_PURCHASE_TYPE = "rank-background";
@@ -76,7 +76,7 @@ public class Constants {
     public static final String AUDIO_HAS_SENT_NOW_PLAYING_METADATA = "has-sent-now-playing";
 
     // Command source link
-    public static final String SOURCE_URI = "https://gitlab.com/pinewood-builders/discord/xeus/tree/develop/src/main/java/com/avairebot/commands/%s/%s.java";
+    public static final String SOURCE_URI = "https://gitlab.com/pinewood-builders/discord/xeus/-/blob/master/src/main/java/com/avairebot/commands/%s/%s.java";
 
     // Report channels
     public static final String PBST_REPORT_CHANNEL = "692087638806757487";
@@ -84,9 +84,20 @@ public class Constants {
     public static final String PET_REPORT_CHANNEL = "706945921191247882";
     public static final String PB_REPORT_CHANNEL = "463097738645471234";
 
+    // PET CHANNELS
+    public static final String PET_FEEDBACK_CHANNEL_ID = "760045128609169440";
+
     // PBST Channels
     public static final String FEEDBACK_CHANNEL_ID = "732681775523823696";
     public static final String FEEDBACK_APPROVED_CHANNEL_ID = "732954258701287464";
+
+    // PB Channels
+    public static final String PB_FEEDBACK_CHANNEL_ID = "755499634075631678";
+    public static final String PB_BUG_REPORT_CHANNEL_ID = "755500156173942825";
+
+    // PBOP Channels
+    public static final String PBOP_FEEDBACK_CHANNEL_ID = "758239103501598761";
+
     public static final String REWARD_REQUESTS_CHANNEL_ID = "722606219319181392";
 
     // Official Pinewood Guilds
@@ -103,6 +114,7 @@ public class Constants {
         add("669672893730258964"); // PB Dev Lair
         add("699379074505637908"); // PTE (PBST Tier Evals)
         add("750471488095780966"); // PBA (Pinewood Builders Appeals)
+        add("758057400635883580"); // PBOP
     }};
 
     // BYPASS USERS
@@ -127,7 +139,6 @@ public class Constants {
     public static final ArrayList<Integer> SUGGESTION_MANAGERS = new ArrayList<Integer>() {{
         add(1612687);
     }};
-
 
 
 }

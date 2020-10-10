@@ -60,7 +60,7 @@ public class ToggleAutoModCommand extends Command {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
             "throttle:user,2,5",
-            "require:user,general.manage_server"
+            "isManagerOrHigher"
         );
     }
 

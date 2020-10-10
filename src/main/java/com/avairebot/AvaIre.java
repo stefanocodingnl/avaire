@@ -113,13 +113,13 @@ import java.util.concurrent.ScheduledFuture;
 public class AvaIre {
 
     public static final Gson gson = new GsonBuilder()
-        .registerTypeAdapter(
-            PlaylistTransformer.PlaylistSong.class,
-            new PlaylistSongSerializer()
-        )
-        .disableHtmlEscaping()
-        .serializeNulls()
-        .create();
+            .registerTypeAdapter(
+                    PlaylistTransformer.PlaylistSong.class,
+                    new PlaylistSongSerializer()
+            )
+            .disableHtmlEscaping()
+            .serializeNulls()
+            .create();
 
     private static final Logger log = LoggerFactory.getLogger(AvaIre.class);
 
@@ -173,8 +173,8 @@ public class AvaIre {
         if (!config.exists() || !constants.exists()) {
             getLogger().info("The {} or {} configuration files is missing!", "config.yml", "constants.yml");
             getLogger().info(settings.isGenerateJsonFileMode()
-                ? "Creating files and skipping terminating process due to command generation flag. "
-                : "Creating files and terminating program..."
+                    ? "Creating files and skipping terminating process due to command generation flag. "
+                    : "Creating files and terminating program..."
             );
 
             config.saveDefaultConfig();

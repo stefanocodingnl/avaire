@@ -75,8 +75,8 @@ public class GetGroupMemberCountsCommand extends Command {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                pbst.editMessage("<:PB:543160237805535284>: " + PB + "\n" +
-                    "<:pbst:452100887025025038>: " + PBST + "\n" +
+                pbst.editMessage("<:PB:757736074641408022>: " + PB + "\n" +
+                    "<:PBSTHandbook:690133745805819917>: " + PBST + "\n" +
                     "<:TMS:572920815595683841>: " + TMS + "\n" +
                     "<:PET:694389856071319593>: " + PET + "\n" +
                     "<:PridePBM:720733180016984066>: " + PBM + "").queue();

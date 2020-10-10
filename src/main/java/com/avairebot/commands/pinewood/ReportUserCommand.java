@@ -80,12 +80,12 @@ public class ReportUserCommand extends Command {
         if (checkAccountAge(context)) {
             context.makeError("Sorry, but only discord accounts that are older then 3 days are allowed to make actual reports.\nIf this is an important violation, please contact a trainer.").queue();
         }
-        context.makeInfo("For what division would you like to create a report?\n**Please remember when using this feature, that the people who get reported may not know about the handbook in the first place, make sure you've told them in the first place!**\n\nIf you want to report an exploiter, react with <:PB:543160237805535284>").setColor(new Color(0, 255, 0)).queue(
+        context.makeInfo("For what division would you like to create a report?\n**Please remember when using this feature, that the people who get reported may not know about the handbook in the first place, make sure you've told them in the first place!**\n\nIf you want to report an exploiter, react with <:PB:757736074641408022>").setColor(new Color(0, 255, 0)).queue(
             p -> {
                 p.addReaction("PBSTHandbook:690133745805819917").queue();
                 p.addReaction("TMSHandbook:690134424041422859").queue();
                 p.addReaction("PETHandbook:690134297465585704").queue();
-                p.addReaction("PB:543160237805535284").queue();
+                p.addReaction("PB:757736074641408022").queue();
 
                 if (Environment.fromName(avaire.getConfig().getString("environment", Environment.PRODUCTION.getName())).equals(Environment.DEVELOPMENT)) {
                     p.addReaction(":gear:").queue();
@@ -93,6 +93,8 @@ public class ReportUserCommand extends Command {
                 waitEmoji(context);
             }
         );
+
+        
         return false;
     }
 

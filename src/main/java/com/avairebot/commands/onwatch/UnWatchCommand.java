@@ -91,7 +91,7 @@ public class UnWatchCommand extends OnWatchableCommand {
     public List <String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "require:user,text.manage_messages",
+            "isModOrHigher",
             "require:bot,general.manage_roles",
             "throttle:guild,1,4"
         );

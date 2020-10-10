@@ -116,7 +116,6 @@ public class DatabaseManager {
     public void setRetries(int retries) {
         this.queryRetries = retries;
     }
-
     public QueryBuilder newQueryBuilder() {
         return new QueryBuilder(this);
     }

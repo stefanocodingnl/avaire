@@ -66,14 +66,21 @@ public class PBSTFeedbackCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-            context.makeInfo("Hello! And welcome to the feedback/suggestion selection menu :smile:\nYou can select from 2 places to suggest on: \n" +
-                "- <:xeus:737770956671418438> -> Suggestions for the Discord Bots\n" +
-                "- <:PBSTHandbook:690133745805819917> -> Suggestions for PBST").queue( p -> {
+            context.makeInfo("Hello! And welcome to the feedback/suggestion selection menu :smile:\nYou can select from 5 places to suggest on: \n" +
+                "- <:xeus:737770956671418438> -> Suggestions for Xeus.\n" +
+                "- <:PBSTHandbook:690133745805819917> -> Suggestions for PBST.\n" +
+                "- <:PETHandbook:690134297465585704> -> Suggestions for PET.\n" +
+                "- <:PB:757736074641408022> -> Anything involving PB.\n" +
+                "- \uD83D\uDEE2 -> PBOP (Pinewood Builders Oil Platform)").queue( p -> {
                     p.addReaction("xeus:737770956671418438").queue();
                     p.addReaction("PBSTHandbook:690133745805819917").queue();
+                    p.addReaction("PETHandbook:690134297465585704").queue();
+                    p.addReaction("PB:757736074641408022").queue();
+                    p.addReaction("\uD83D\uDEE2").queue();
 
                     FeedbackWaiters.getInstance().startFeedbackVersionListener(context, p);
             });
+
         return true;
     }
 

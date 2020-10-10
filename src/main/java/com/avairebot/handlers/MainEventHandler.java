@@ -177,18 +177,16 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
-    public void onUserUpdateOnlineStatus(UserUpdateOnlineStatusEvent event) {
-        memberEvent.onGuildMemberChangeStatus(event);
-    }
-
-    @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (changelogEventAdapter.isChangelogMessage(event.getChannel())) {
             changelogEventAdapter.onMessageReceived(event);
         }
         messageEvent.onMessageReceived(event);
-        if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID)) {
-            messageEvent.onPBFeedbackPinEvent(event);
+        if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
+                event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
+                event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID)) {
+
+                    messageEvent.onPBFeedbackPinEvent(event);
         }
         if (event.isFromGuild()) {
             if (Constants.guilds.contains(event.getGuild().getId())) {
@@ -293,7 +291,10 @@ public class MainEventHandler extends EventHandler {
     @Override
     public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
         if (isValidMessageReactionEvent(event)) {
-            if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID)) {
+            if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
+                    event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
+                    event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID) ||
+                    event.getChannel().getId().equals(Constants.PET_FEEDBACK_CHANNEL_ID)) {
                 reactionEmoteEventAdapter.onPBFeedbackMessageEvent(event);
             }
             if (event.getChannel().getId().equals(Constants.REWARD_REQUESTS_CHANNEL_ID)) {
@@ -304,6 +305,7 @@ public class MainEventHandler extends EventHandler {
             }
         }
     }
+
 
     @Override
     public void onMessageReactionRemove(MessageReactionRemoveEvent event) {

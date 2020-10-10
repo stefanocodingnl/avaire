@@ -69,6 +69,8 @@ public class GlobalBanCommand extends Command {
         add("505828893576527892"); // MMFA
         add("498476405160673286"); // PBM
         add("572104809973415943"); // TMS
+        add("758057400635883580"); // PBOP
+        add("669672893730258964"); // PB Dev
     }};
 
 
@@ -81,9 +83,12 @@ public class GlobalBanCommand extends Command {
             context.makeError("Sorry, but you didn't give any member id to globbaly ban!").queue();
             return true;
         }
-        if (args.length > 1) {
-            context.makeError("Sorry, but you can only globally ban 1 member at a time!").queue();
+        if (args.length == 1) {
+            context.makeError("Please supply a reason for the global ban!").queue();
             return true;
+        }
+        if (guild.size() > 0) {
+            guild.clear();
         }
         for (String s : guilds) {
             Guild g = avaire.getShardManager().getGuildById(s);
@@ -91,8 +96,11 @@ public class GlobalBanCommand extends Command {
                 guild.add(g);
             }
         }
+
+        final String reason = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+
         for (Guild g : guild) {
-            g.ban(args[0], 0).reason("Global Ban, executed by: " + context.member.getEffectiveName()).queue();
+            g.ban(args[0], 0).reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: " + reason).queue();
             context.makeSuccess(args[0] + " has been banned from: **" + g.getName() + "**").queue();
         }
         return true;

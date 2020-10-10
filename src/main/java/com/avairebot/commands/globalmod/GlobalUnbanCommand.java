@@ -69,6 +69,7 @@ public class GlobalUnbanCommand extends Command {
         add("505828893576527892"); // MMFA
         add("498476405160673286"); // PBM
         add("572104809973415943"); // TMS
+        add("758057400635883580"); // PBOP
     }};
 
 
@@ -77,15 +78,19 @@ public class GlobalUnbanCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+
+        avaire.getShardManager().getTextChannelById("469477422018854924").sendMessage(avaire.getShardManager().getGuildById("438134543837560832").getMemberById("729415564266700893").getAsMention()).embed(context.makeError("Your suggestion has been **DENIED**\n[Click here to see your suggestion](<https://gitlab.com/pinewood-builders/discord/xeus/-/issues/39>)").buildEmbed()).queue();
         if (args.length < 1) {
-            context.makeError("Sorry, but you didn't give any member id to globbaly ban!").queue();
+            context.makeError("Sorry, but you didn't give any member id to globbaly unban!").queue();
             return true;
         }
         if (args.length > 1) {
-            context.makeError("Sorry, but you can only globally ban 1 member at a time!").queue();
+            context.makeError("Sorry, but you can only globally unban 1 member at a time!").queue();
             return true;
         }
-
+        if (guild.size() > 0) {
+            guild.clear();
+        }
         for (String s : guilds) {
             Guild g = avaire.getShardManager().getGuildById(s);
             if (g != null) {

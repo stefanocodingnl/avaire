@@ -63,17 +63,16 @@ public class EvalsInviteCommand extends Command {
     @Override
     public List <String> getMiddleware() {
         return Arrays.asList(
-            "throttle:user,1,1",
+            "throttle:user,1,10",
             "isOfficialPinewoodGuild"
         );
     }
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-
-
         if (!context.member.getUser().getId().equals("173839105615069184")) {
             context.makeError("This is a command limited to Stefano#7366.").queue();
+            return true;
         }
         if (context.message.getMentionedMembers().size() < 1) {
             context.makeError("You didn't mention any members.").queue();
@@ -85,8 +84,8 @@ public class EvalsInviteCommand extends Command {
                 ArrayList <String> members = new ArrayList <>();
                 for (Member m : context.getMessage().getMentionedMembers()) {
                     TimeUnit.SECONDS.sleep(3);
-                    if (!m.getRoles().contains(context.guild.getRoleById("438136063077384202"))) {
-                        context.makeError("The user " + m.getEffectiveName() + " doesn't have the T3 rank!").queue();
+                    if (!(m.getRoles().contains(context.guild.getRoleById("438136063077384202")) || m.getRoles().contains(context.guild.getRoleById("438136062859280394")))) {
+                        context.makeError("The user " + m.getEffectiveName() + " doesn't have the T3 or T2 rank!").queue();
                         continue;
                     }
 

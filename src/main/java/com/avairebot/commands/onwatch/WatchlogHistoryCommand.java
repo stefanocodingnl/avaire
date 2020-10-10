@@ -91,7 +91,7 @@ public class WatchlogHistoryCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "require:user,text.manage_messages",
+            "isModOrHigher",
             "throttle:channel,1,5"
         );
     }

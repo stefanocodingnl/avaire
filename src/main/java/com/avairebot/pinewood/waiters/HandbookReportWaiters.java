@@ -153,16 +153,16 @@ public class HandbookReportWaiters {
     private static boolean checkEvidenceAcceptance(CommandMessage context, PrivateMessageReceivedEvent pm) {
         String message = pm.getMessage().getContentRaw();
         if (!(message.startsWith("https://youtu.be") ||
-            message.startsWith("http://youtu.be") ||
-            message.startsWith("https://www.youtube.com/") ||
-            message.startsWith("http://www.youtube.com/") ||
-            message.startsWith("https://youtube.com/") ||
-            message.startsWith("http://youtube.com/") ||
-            message.startsWith("https://streamable.com/")||
-            message.contains("cdn.discordapp.com") ||
-            message.contains("media.discordapp.com") ||
-            message.contains("gyazo.com") ||
-            message.contains("prntscr.com") || message.contains("imgur.com"))) {
+                message.startsWith("http://youtu.be") ||
+                message.startsWith("https://www.youtube.com/") ||
+                message.startsWith("http://www.youtube.com/") ||
+                message.startsWith("https://youtube.com/") ||
+                message.startsWith("http://youtube.com/") ||
+                message.startsWith("https://streamable.com/")||
+                message.contains("cdn.discordapp.com") ||
+                message.contains("media.discordapp.com") ||
+                message.contains("gyazo.com") ||
+                message.contains("prntscr.com") || message.contains("imgur.com"))) {
             pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again").buildEmbed()).queue();
             return false;
         }

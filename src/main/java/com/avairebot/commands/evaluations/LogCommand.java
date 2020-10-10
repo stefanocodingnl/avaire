@@ -69,7 +69,7 @@ public class LogCommand extends Command {
     public List <String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "hasAnyRole:Evaluation Host,Evaluators,Trainer",
+            "isModOrHigher",
             "throttle:user,1,1"
         );
     }
