@@ -36,13 +36,11 @@ import com.avairebot.utilities.RoleUtil;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 @CacheFingerprint(name = "kick-command")
 public class VoiceKickCommand extends Command {
@@ -119,7 +117,6 @@ public class VoiceKickCommand extends Command {
         String reason = generateMessage(args);
         String voiceChannelName = user.getVoiceState().getChannel().getName();
         String voiceChannelId = user.getVoiceState().getChannel().getId();
-
 
         context.getGuild().kickVoiceMember(user)
             .queue(empty ->

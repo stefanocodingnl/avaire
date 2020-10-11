@@ -37,8 +37,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.TimeUtil;
+import net.dv8tion.jda.api.utils.MiscUtil;
 
 import javax.annotation.Nonnull;
 import java.util.*;

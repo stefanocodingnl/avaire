@@ -33,10 +33,11 @@ import com.avairebot.utilities.MentionableUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.GuildChannel;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
