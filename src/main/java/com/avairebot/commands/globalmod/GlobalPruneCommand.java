@@ -99,7 +99,7 @@ public class GlobalPruneCommand extends Command {
         for (String s : guilds) {
             Guild g = avaire.getShardManager().getGuildById(s);
             if (g != null) {
-                guild.add(g);
+                g.loadMembers(gu -> {guild.add(gu.getGuild());});
             }
         }
         if (role.size()>0) {
@@ -112,7 +112,6 @@ public class GlobalPruneCommand extends Command {
                 }
             }
         }
-
 
         if (role.size() > 0) {
             Iterator <Map.Entry <Guild, Role>> it = role.entrySet().iterator();

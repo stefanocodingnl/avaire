@@ -25,7 +25,6 @@ import com.avairebot.AvaIre;
 import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.SystemCommand;
-import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.Collections;
 import java.util.List;

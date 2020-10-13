@@ -44,6 +44,7 @@ public class Constants {
     public static final String REACTION_ROLES_TABLE_NAME = "reaction_roles";
     public static final String PURCHASES_TABLE_NAME = "purchases";
     public static final String MUTE_TABLE_NAME = "mutes";
+    public static final String MOTS_VOTES_TABLE_NAME = "mots_votes";
 
     public static final String ON_WATCH_TABLE_NAME = "on_watch";
     public static final String ON_WATCH_LOG_TABLE_NAME = "on_watch_logs";

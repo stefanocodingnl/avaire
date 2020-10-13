@@ -2,17 +2,12 @@ package com.avairebot.commands.pinewood;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
-import com.avairebot.Environment;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import com.google.gson.JsonObject;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.Event;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent;
 import org.json.JSONArray;
@@ -26,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.avairebot.pinewood.waiters.HandbookReportWaiters.*;
 import static com.avairebot.utils.JsonReader.readJsonFromUrl;
 
 public class RequestRewardCommand extends Command {

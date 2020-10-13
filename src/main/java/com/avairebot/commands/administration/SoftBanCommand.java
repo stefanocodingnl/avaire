@@ -25,6 +25,11 @@ import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandHandler;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.*;
+import com.avairebot.contracts.commands.BanableCommand;
+import com.avairebot.contracts.commands.CacheFingerprint;
+import com.avairebot.contracts.commands.Command;
+import com.avairebot.contracts.commands.CommandGroup;
+import com.avairebot.contracts.commands.CommandGroups;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -64,8 +69,8 @@ public class SoftBanCommand extends BanableCommand {
     @Override
     public List<Class<? extends Command>> getRelations() {
         return Arrays.asList(
-            UnbanCommand.class,
-            BanCommand.class
+            com.avairebot.commands.administration.UnbanCommand.class,
+            com.avairebot.commands.administration.BanCommand.class
         );
     }
 
@@ -92,7 +97,7 @@ public class SoftBanCommand extends BanableCommand {
     @SuppressWarnings("ConstantConditions")
     public boolean onCommand(CommandMessage message, String[] args) {
         message.setI18nCommandPrefix(
-            CommandHandler.getCommand(BanCommand.class)
+            CommandHandler.getCommand(com.avairebot.commands.administration.BanCommand.class)
         );
 
         return ban(avaire, this, message, args, true);

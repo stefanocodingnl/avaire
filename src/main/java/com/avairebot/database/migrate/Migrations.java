@@ -39,7 +39,7 @@ public class Migrations {
     private static final Logger log = LoggerFactory.getLogger(Migrations.class);
 
     private final DatabaseManager dbm;
-    private final List<MigrationContainer> migrations;
+    private final List<com.avairebot.database.migrate.MigrationContainer> migrations;
 
     private final String migrationTableName = "avaire_migrations";
     private boolean ranSetup = false;
@@ -62,7 +62,7 @@ public class Migrations {
     public void register(Migration... migration) {
         ENTIRE_LOOP:
         for (Migration migrate : migration) {
-            for (MigrationContainer container : migrations) {
+            for (com.avairebot.database.migrate.MigrationContainer container : migrations) {
                 if (container.match(migrate)) {
                     container.setMigration(migrate);
 
@@ -70,7 +70,7 @@ public class Migrations {
                 }
             }
 
-            migrations.add(new MigrationContainer(migrate));
+            migrations.add(new com.avairebot.database.migrate.MigrationContainer(migrate));
         }
     }
 
@@ -94,7 +94,7 @@ public class Migrations {
         updateBatchForLocalMigrations();
 
         boolean ranMigrations = false;
-        for (MigrationContainer migration : getOrderedMigrations(true)) {
+        for (com.avairebot.database.migrate.MigrationContainer migration : getOrderedMigrations(true)) {
             if (migration.getBatch() == 1) {
                 continue;
             }
@@ -134,7 +134,7 @@ public class Migrations {
         updateBatchForLocalMigrations();
 
         boolean ranMigrations = false;
-        for (MigrationContainer migration : getOrderedMigrations(false)) {
+        for (com.avairebot.database.migrate.MigrationContainer migration : getOrderedMigrations(false)) {
             if (migration.getBatch() != 1) {
                 continue;
             }
@@ -176,7 +176,7 @@ public class Migrations {
 
         int ran = 0;
         boolean ranMigrations = false;
-        for (MigrationContainer migration : getOrderedMigrations(false)) {
+        for (com.avairebot.database.migrate.MigrationContainer migration : getOrderedMigrations(false)) {
             if (migration.getBatch() != 1) {
                 continue;
             }
@@ -213,9 +213,9 @@ public class Migrations {
      *                      <code>PreparedStatement</code> or <code>CallableStatement</code>
      */
     public boolean rerun(Migration migration) throws SQLException {
-        MigrationContainer container = new MigrationContainer(migration);
+        com.avairebot.database.migrate.MigrationContainer container = new com.avairebot.database.migrate.MigrationContainer(migration);
 
-        for (MigrationContainer migrationContainer : migrations) {
+        for (com.avairebot.database.migrate.MigrationContainer migrationContainer : migrations) {
             if (migrationContainer.match(migration)) {
                 container.setBatch(migrationContainer.getBatch());
                 break;
@@ -239,15 +239,15 @@ public class Migrations {
      * @param orderByAsc determines if the list should be ordered ascending or descendingly
      * @return the ordered migration list
      */
-    public List<MigrationContainer> getOrderedMigrations(boolean orderByAsc) {
-        List<MigrationContainer> orderedMigrations = new ArrayList<>(migrations);
+    public List<com.avairebot.database.migrate.MigrationContainer> getOrderedMigrations(boolean orderByAsc) {
+        List<com.avairebot.database.migrate.MigrationContainer> orderedMigrations = new ArrayList<>(migrations);
 
-        Collections.sort(orderedMigrations, new MigrationComparator(orderByAsc));
+        Collections.sort(orderedMigrations, new com.avairebot.database.migrate.MigrationComparator(orderByAsc));
 
         return orderedMigrations;
     }
 
-    public List<MigrationContainer> getMigrations() {
+    public List<com.avairebot.database.migrate.MigrationContainer> getMigrations() {
         return migrations;
     }
 
@@ -286,7 +286,7 @@ public class Migrations {
         });
     }
 
-    private void updateRemoteMigrationBatchValue(MigrationContainer migration, int batch) throws SQLException {
+    private void updateRemoteMigrationBatchValue(com.avairebot.database.migrate.MigrationContainer migration, int batch) throws SQLException {
         // If the migration has ran before, but was rolled back(down), this will update the existing row
         if (migration.getBatch() != -1) {
             makeQuery().where("name", migration.getName())

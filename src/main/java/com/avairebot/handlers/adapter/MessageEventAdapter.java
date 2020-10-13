@@ -155,17 +155,6 @@ public class MessageEventAdapter extends EventAdapter {
             if (!event.getChannelType().isGuild()) {
                 sendInformationMessage(event);
             }
-
-
-            if (checkFilter(event.getMessage().getContentRaw())) {
-                if (databaseEventHolder.getGuild().getOnWatchRole() != null) {
-                    Role watchRole = event.getGuild().getRoleById(databaseEventHolder.getGuild().getOnWatchRole());
-                    if (event.getMember().getRoles().contains(watchRole)) {
-                        event.getMessage().delete().queue();
-                    }
-                }
-            }
-
         });
 
     }
@@ -311,6 +300,16 @@ public class MessageEventAdapter extends EventAdapter {
             if (event.getMember().hasPermission(Permission.BAN_MEMBERS)) {
                 return;
             }
+
+            if (checkFilter(event.getContentRaw())) {
+                if (databaseEventHolder.getGuild().getOnWatchRole() != null) {
+                    Role watchRole = event.getGuild().getRoleById(databaseEventHolder.getGuild().getOnWatchRole());
+                    if (event.getMember().getRoles().contains(watchRole)) {
+                        event.delete().queue();
+                    }
+                }
+            }
+
             String message = event.getContentStripped().replaceAll("[!@#$%^&*()\\[\\]\\-=';/\\\\{}:\"><?|+_`~]", " ");
             if (checkGlobalExactFilter(message, guild, event)) {
                 System.out.println("Exact Filter removed: " + message);

@@ -6,6 +6,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.utilities.RestActionUtil;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 
@@ -25,16 +26,16 @@ public class IsAdminOrHigherMiddleware extends Middleware {
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
-        return "**This command can only be executed in official Pinewood servers!**";
+        return "**This command can only be executed by a admin or higher (Pinewood)!**";
     }
 
     @Override
-    public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
+    public boolean handle(@Nonnull Message message, @Nonnull com.avairebot.middleware.MiddlewareStack stack, String... args) {
         if (avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong(), true).isAdmin()) {
             return stack.next();
         }
 
-        if (isAdminOrHigher(stack, message)) {
+        if (isAdminOrHigher(stack, message) || message.getMember().hasPermission(Permission.ADMINISTRATOR)) {
             return stack.next();
         }
 
@@ -49,7 +50,7 @@ public class IsAdminOrHigherMiddleware extends Middleware {
         return stack.next();
     }
 
-    private boolean isAdminOrHigher(MiddlewareStack stack, Message message) {
+    private boolean isAdminOrHigher(com.avairebot.middleware.MiddlewareStack stack, Message message) {
         Set <Long> adminRoles = stack.getDatabaseEventHolder().getGuild().getAdministratorRoles();
 
         List <Role> roles = new ArrayList <>();

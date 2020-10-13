@@ -42,6 +42,7 @@ import net.dv8tion.jda.api.events.channel.text.update.TextChannelUpdateNameEvent
 import net.dv8tion.jda.api.events.channel.text.update.TextChannelUpdatePositionEvent;
 import net.dv8tion.jda.api.events.channel.voice.VoiceChannelDeleteEvent;
 import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
+import net.dv8tion.jda.api.events.guild.GenericGuildEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -53,6 +54,8 @@ import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -88,9 +91,9 @@ public class MainEventHandler extends EventHandler {
     private final ReactionEmoteEventAdapter reactionEmoteEventAdapter;
 
     public static final Cache<Long, Boolean> cache = CacheBuilder.newBuilder()
-        .recordStats()
-        .expireAfterWrite(15, TimeUnit.MINUTES)
-        .build();
+            .recordStats()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .build();
 
     private static final Logger log = LoggerFactory.getLogger(MainEventHandler.class);
 
@@ -206,7 +209,7 @@ public class MainEventHandler extends EventHandler {
                 event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
                 event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID)) {
 
-                    messageEvent.onPBFeedbackPinEvent(event);
+            messageEvent.onPBFeedbackPinEvent(event);
         }
         if (event.isFromGuild()) {
             if (Constants.guilds.contains(event.getGuild().getId())) {
@@ -336,10 +339,11 @@ public class MainEventHandler extends EventHandler {
 
     private boolean isValidMessageReactionEvent(GenericMessageReactionEvent event) {
         return event.isFromGuild() && event.getReactionEmote().isEmote();
+    }
 
     private boolean isValidReportChannel(GuildMessageReactionAddEvent event) {
         return event.getChannel().getId().equals(Constants.PBST_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PET_REPORT_CHANNEL)
-            || event.getChannel().getId().equals(Constants.TMS_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PB_REPORT_CHANNEL) || event.getChannel().getName().equals("handbook-violator-reports");
+                || event.getChannel().getId().equals(Constants.TMS_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PB_REPORT_CHANNEL) || event.getChannel().getName().equals("handbook-violator-reports");
     }
 
     private void prepareGuildMembers(GenericEvent event) {
@@ -349,10 +353,19 @@ public class MainEventHandler extends EventHandler {
             if (genericMessageEvent.isFromGuild()) {
                 loadGuildMembers(genericMessageEvent.getGuild());
             }
+
         } else if (event instanceof GenericRoleEvent) {
             GenericRoleEvent genericRoleEvent = (GenericRoleEvent) event;
 
             loadGuildMembers(genericRoleEvent.getGuild());
+        } else if (event instanceof GenericGuildMessageReactionEvent) {
+            GenericGuildMessageReactionEvent genericGuildMessageReactionEvent = (GenericGuildMessageReactionEvent) event;
+
+            loadGuildMembers(genericGuildMessageReactionEvent.getGuild());
+        } else if (event instanceof GenericGuildEvent) {
+            GenericGuildEvent genericGuildEvent = (GenericGuildEvent) event;
+
+            loadGuildMembers(genericGuildEvent.getGuild());
         }
     }
 
@@ -369,14 +382,14 @@ public class MainEventHandler extends EventHandler {
 
             task.onSuccess(members -> {
                 log.debug("Lazy-loading for guild {} is done, loaded {} members",
-                    guild.getId(), members.size()
+                        guild.getId(), members.size()
                 );
 
                 cache.invalidate(guild.getIdLong());
             });
 
             task.onError(throwable -> log.error("Failed to lazy-load guild members for {}, error: {}",
-                guild.getIdLong(), throwable.getMessage(), throwable
+                    guild.getIdLong(), throwable.getMessage(), throwable
             ));
 
             return true;
@@ -385,13 +398,13 @@ public class MainEventHandler extends EventHandler {
 
     private boolean isValidMessageReactionEvent(MessageReactionAddEvent event) {
         return event.isFromGuild()
-            && event.getReactionEmote().isEmote()
-            && !event.getMember().getUser().isBot();
+                && event.getReactionEmote().isEmote()
+                && !event.getMember().getUser().isBot();
     }
 
     private boolean isValidMessageReactionEvent(MessageReactionRemoveEvent event) {
         return event.isFromGuild()
-            && event.getReactionEmote().isEmote();
+                && event.getReactionEmote().isEmote();
     }
 
     private boolean isValidMessageReactionEvent(GuildMessageReactionAddEvent event) {

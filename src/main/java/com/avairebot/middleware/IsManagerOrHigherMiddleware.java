@@ -26,11 +26,11 @@ public class IsManagerOrHigherMiddleware extends Middleware {
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
-        return "**This command can only be executed in official Pinewood servers!**";
+        return "**This command can only be executed by a manager or higher (Pinewood)!**";
     }
 
     @Override
-    public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
+    public boolean handle(@Nonnull Message message, @Nonnull com.avairebot.middleware.MiddlewareStack stack, String... args) {
         if (avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong(), true).isAdmin()) {
             return stack.next();
         }
@@ -50,7 +50,7 @@ public class IsManagerOrHigherMiddleware extends Middleware {
         return stack.next();
     }
 
-    private boolean isManagerOrHigher(MiddlewareStack stack, Message message) {
+    private boolean isManagerOrHigher(com.avairebot.middleware.MiddlewareStack stack, Message message) {
         Set <Long> adminRoles = stack.getDatabaseEventHolder().getGuild().getAdministratorRoles();
         Set <Long> managerRoles = stack.getDatabaseEventHolder().getGuild().getManagerRoles();
 

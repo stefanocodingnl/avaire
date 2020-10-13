@@ -32,7 +32,6 @@ import com.avairebot.language.I18n;
 import com.avairebot.time.Carbon;
 import com.avairebot.vote.VoteCacheEntity;
 import com.avairebot.vote.VoteEntity;
-import net.dv8tion.jda.api.entities.Member;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
