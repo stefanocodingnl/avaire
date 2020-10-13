@@ -23,10 +23,17 @@ package com.avairebot.scheduler.tasks;
 
 import com.avairebot.AvaIre;
 import com.avairebot.contracts.scheduler.Task;
+import com.avairebot.utilities.NumberUtil;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Arrays;
+
+import static com.avairebot.utils.JsonReader.readArrayJsonFromUrl;
 import static com.avairebot.utils.JsonReader.readJsonFromUrl;
 
 public class PBSTMemberCountQueueTask implements Task {

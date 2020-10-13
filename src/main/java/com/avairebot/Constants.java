@@ -44,7 +44,9 @@ public class Constants {
     public static final String REACTION_ROLES_TABLE_NAME = "reaction_roles";
     public static final String PURCHASES_TABLE_NAME = "purchases";
     public static final String MUTE_TABLE_NAME = "mutes";
+    public static final String MOTS_VOTE_TABLE_NAME = "mots_vote";
     public static final String MOTS_VOTES_TABLE_NAME = "mots_votes";
+    public static final String MOTS_VOTABLE_TABLE_NAME = "mots_votable";
 
     public static final String ON_WATCH_TABLE_NAME = "on_watch";
     public static final String ON_WATCH_LOG_TABLE_NAME = "on_watch_logs";
@@ -140,6 +142,7 @@ public class Constants {
     public static final ArrayList<Integer> SUGGESTION_MANAGERS = new ArrayList<Integer>() {{
         add(1612687);
     }};
+
 
 
 }

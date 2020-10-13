@@ -32,6 +32,7 @@ import com.avairebot.language.I18n;
 import com.avairebot.time.Carbon;
 import com.avairebot.vote.VoteCacheEntity;
 import com.avairebot.vote.VoteEntity;
+import net.dv8tion.jda.api.entities.Member;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -69,7 +70,7 @@ public class VoteCommand extends Command {
 
     @Override
     public List<String> getTriggers() {
-        return Collections.singletonList("vote");
+        return Collections.singletonList("bot-vote");
     }
 
     @Nonnull

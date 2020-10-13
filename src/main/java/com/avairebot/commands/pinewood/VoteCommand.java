@@ -1,4 +1,4 @@
-package com.avairebot.commands.votes;
+package com.avairebot.commands.pinewood;
 
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
@@ -41,7 +41,7 @@ public class VoteCommand extends Command {
     public List<String> getExampleUsage() {
         return Collections.singletonList("`:command `");
     }
-    
+
     @Override
     public List<String> getTriggers() {
         return Collections.singletonList("vote");
@@ -50,17 +50,40 @@ public class VoteCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-                "throttle:user,1,4"
+                "throttle:user,1,25"
         );
     }
 
     @Nonnull
     @Override
     public List<CommandGroup> getGroups() {
-        return Collections.singletonList(CommandGroups.MODERATION);
+        return Collections.singletonList(CommandGroups.MISCELLANEOUS);
     }
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+        if (!context.isGuildMessage()) {
+            context.makeInfo(" TODO: Check if there is a vote on the first argument, if not. Continue down.").queue();
+            return false; // TODO: Check if there is a vote on the first argument, if not. Continue down.
+        }
+
+        if (args.length < 1){
+            context.makeInfo("Please tell a valid option to work with the vote system:\n" +
+                    "- ``create``\n");
+        return false;
+        }
+
+        if (args[0].equalsIgnoreCase("create")) {
+            context.makeInfo("TODO: Make the vote creation system.").queue();
+            return false; // TODO: Make the vote creation system.
+        }
+
+        if (args[0].equalsIgnoreCase("delete")) {
+            context.makeInfo("TODO: Make the vote deletion system.").queue();
+            return false; // TODO: Make the vote deletion system.
+        }
+
+
+        return false;
     }
 }

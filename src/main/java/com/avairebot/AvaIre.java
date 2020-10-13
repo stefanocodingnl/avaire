@@ -44,11 +44,6 @@ import com.avairebot.commands.utility.SourceCommand;
 import com.avairebot.commands.utility.StatsCommand;
 import com.avairebot.commands.utility.UptimeCommand;
 import com.avairebot.config.*;
-import com.avairebot.config.Configuration;
-import com.avairebot.config.ConstantsConfiguration;
-import com.avairebot.config.EnvironmentMacros;
-import com.avairebot.config.EnvironmentOverride;
-import com.avairebot.config.FeatureToggleContextHandler;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.database.migrations.Migration;
 import com.avairebot.contracts.database.seeder.Seeder;
@@ -68,22 +63,6 @@ import com.avairebot.language.I18n;
 import com.avairebot.level.LevelManager;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.middleware.*;
-import com.avairebot.middleware.HasAnyRoleMiddleware;
-import com.avairebot.middleware.HasRoleMiddleware;
-import com.avairebot.middleware.HasVotedTodayMiddleware;
-import com.avairebot.middleware.IsAdminOrHigherMiddleware;
-import com.avairebot.middleware.IsBotAdminMiddleware;
-import com.avairebot.middleware.IsDMMessageMiddleware;
-import com.avairebot.middleware.IsManagerOrHigherMiddleware;
-import com.avairebot.middleware.IsModOrHigherMiddleware;
-import com.avairebot.middleware.IsMusicChannelMiddleware;
-import com.avairebot.middleware.IsOfficialPinewoodGuildMiddleware;
-import com.avairebot.middleware.IsValidPIAMemberMiddleware;
-import com.avairebot.middleware.MiddlewareHandler;
-import com.avairebot.middleware.RequireDJLevelMiddleware;
-import com.avairebot.middleware.RequireOnePermissionMiddleware;
-import com.avairebot.middleware.RequirePermissionMiddleware;
-import com.avairebot.middleware.ThrottleMiddleware;
 import com.avairebot.middleware.global.IsCategoryEnabled;
 import com.avairebot.mute.MuteManager;
 import com.avairebot.onwatch.OnWatchManager;
@@ -92,13 +71,6 @@ import com.avairebot.plugin.PluginManager;
 import com.avairebot.scheduler.ScheduleHandler;
 import com.avairebot.servlet.WebServlet;
 import com.avairebot.servlet.routes.*;
-import com.avairebot.servlet.routes.GetGuildCleanup;
-import com.avairebot.servlet.routes.GetGuilds;
-import com.avairebot.servlet.routes.GetGuildsExists;
-import com.avairebot.servlet.routes.GetLeaderboardPlayers;
-import com.avairebot.servlet.routes.GetPlayerCleanup;
-import com.avairebot.servlet.routes.GetStats;
-import com.avairebot.servlet.routes.PostGuildCleanup;
 import com.avairebot.shard.ShardEntityCounter;
 import com.avairebot.shared.DiscordConstants;
 import com.avairebot.shared.ExitCodes;
@@ -160,8 +132,8 @@ public class AvaIre {
 
 
     private final EventWaiter waiter;
-    private static com.avairebot.Environment applicationEnvironment;
-    private final com.avairebot.Settings settings;
+    private static Environment applicationEnvironment;
+    private final Settings settings;
     private final Configuration config;
     private final ConstantsConfiguration constants;
     private final CacheManager cache;
@@ -182,7 +154,7 @@ public class AvaIre {
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
     private ShardManager shardManager = null;
 
-    public AvaIre(com.avairebot.Settings settings) throws IOException, SQLException, InvalidApplicationEnvironmentException {
+    public AvaIre(Settings settings) throws IOException, SQLException, InvalidApplicationEnvironmentException {
         this.settings = settings;
         AvaIre.avaire = this;
 
@@ -192,7 +164,7 @@ public class AvaIre {
         log.debug("Starting the application with debug logging enabled!");
         log.debug("====================================================\n");
 
-        log.info("Bootstrapping AvaIre v" + com.avairebot.AppInfo.getAppInfo().version);
+        log.info("Bootstrapping AvaIre v" + AppInfo.getAppInfo().version);
         Reflections.log = null;
 
         this.eventEmitter = new EventEmitter(this);
@@ -229,13 +201,13 @@ public class AvaIre {
             config.getStringList("botAccess")
         )));
 
-        applicationEnvironment = com.avairebot.Environment.fromName(config.getString("environment", com.avairebot.Environment.PRODUCTION.getName()));
+        applicationEnvironment = Environment.fromName(config.getString("environment", Environment.PRODUCTION.getName()));
         if (applicationEnvironment == null) {
             throw new InvalidApplicationEnvironmentException(config.getString("environment", "production"));
         }
 
         log.info("Starting application in \"{}\" mode", applicationEnvironment.getName());
-        if (applicationEnvironment.equals(com.avairebot.Environment.DEVELOPMENT)) {
+        if (applicationEnvironment.equals(Environment.DEVELOPMENT)) {
             RestAction.setPassContext(true);
             // Setting the default failure to print stack trace will prevent
             // Sentry catching the error, which makes it pretty hard to
@@ -249,12 +221,12 @@ public class AvaIre {
         database = new DatabaseManager(this);
 
         log.info("Registering database table migrations");
-        AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_MIGRATION_PATH, migration -> {
+        AutoloaderUtil.load(Constants.PACKAGE_MIGRATION_PATH, migration -> {
             database.getMigrations().register((Migration) migration);
         }, false);
 
         log.info("Registering database table seeders");
-        AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_SEEDER_PATH, seeder -> {
+        AutoloaderUtil.load(Constants.PACKAGE_SEEDER_PATH, seeder -> {
             database.getSeeder().register((Seeder) seeder);
         }, true);
 
@@ -308,11 +280,11 @@ public class AvaIre {
             CommandHandler.register(new UptimeCommand(this));
             CommandHandler.register(new SourceCommand(this));
             CommandHandler.register(new ChangePrefixCommand(this));
-            AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_COMMAND_PATH + ".help", command -> CommandHandler.register((Command) command));
-            AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_COMMAND_PATH + ".music", command -> CommandHandler.register((Command) command));
-            AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_COMMAND_PATH + ".system", command -> CommandHandler.register((Command) command));
+            AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH + ".help", command -> CommandHandler.register((Command) command));
+            AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH + ".music", command -> CommandHandler.register((Command) command));
+            AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH + ".system", command -> CommandHandler.register((Command) command));
         } else {
-            AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_COMMAND_PATH, command -> CommandHandler.register((Command) command));
+            AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH, command -> CommandHandler.register((Command) command));
         }
         log.info(String.format("\tRegistered %s commands successfully!", CommandHandler.getCommands().size()));
 
@@ -330,7 +302,7 @@ public class AvaIre {
         }
 
         log.info("Registering jobs...");
-        AutoloaderUtil.load(com.avairebot.Constants.PACKAGE_JOB_PATH, job -> ScheduleHandler.registerJob((Job) job));
+        AutoloaderUtil.load(Constants.PACKAGE_JOB_PATH, job -> ScheduleHandler.registerJob((Job) job));
         log.info(String.format("\tRegistered %s jobs successfully!", ScheduleHandler.entrySet().size()));
 
         log.info("Preparing Intelligence Manager");
@@ -450,11 +422,11 @@ public class AvaIre {
             sentryClient.setEnvironment(getEnvironment().getName());
             switch (getEnvironment()) {
                 case PRODUCTION:
-                    sentryClient.setRelease(com.avairebot.GitInfo.getGitInfo().commitId);
+                    sentryClient.setRelease(GitInfo.getGitInfo().commitId);
                     break;
 
                 default:
-                    sentryClient.setRelease(com.avairebot.AppInfo.getAppInfo().version);
+                    sentryClient.setRelease(AppInfo.getAppInfo().version);
                     break;
             }
 
@@ -513,7 +485,7 @@ public class AvaIre {
         return gitLabApi;
     }
 
-    public static com.avairebot.Environment getEnvironment() {
+    public static Environment getEnvironment() {
         return applicationEnvironment;
     }
 
@@ -521,7 +493,7 @@ public class AvaIre {
         return avaire;
     }
 
-    static String getVersionInfo(@Nullable com.avairebot.Settings settings) {
+    static String getVersionInfo(@Nullable Settings settings) {
         return ConsoleColor.format("%red\n\n" +
             "     ___   ____    ____  ___       __  .______       _______ \n" +
             "    /   \\  \\   \\  /   / /   \\     |  | |   _  \\     |   ____|\n" +
@@ -531,7 +503,7 @@ public class AvaIre {
             "/__/     \\__\\  \\__/ /__/     \\__\\ |__| | _| `._____||_______|\n" +
             ""
             + "%reset"
-            + "\n\tVersion:          " + com.avairebot.AppInfo.getAppInfo().version
+            + "\n\tVersion:          " + AppInfo.getAppInfo().version
             + "\n\tJVM:              " + System.getProperty("java.version")
             + "\n\tJDA:              " + JDAInfo.VERSION
             + "\n\tLavaplayer:       " + PlayerLibrary.VERSION
@@ -576,7 +548,7 @@ public class AvaIre {
         return null;
     }
 
-    public com.avairebot.Settings getSettings() {
+    public Settings getSettings() {
         return settings;
     }
 
@@ -759,7 +731,8 @@ public class AvaIre {
             GatewayIntent.GUILD_INVITES,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MESSAGE_REACTIONS,
-            GatewayIntent.DIRECT_MESSAGES
+            GatewayIntent.DIRECT_MESSAGES,
+            GatewayIntent.DIRECT_MESSAGE_REACTIONS
         ))
             .setToken(getConfig().getString("discord.token"))
             .setSessionController(new SessionControllerAdapter())

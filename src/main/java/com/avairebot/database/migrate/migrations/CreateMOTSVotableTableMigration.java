@@ -6,7 +6,7 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class CreateMOTSVotetableTableMigration implements Migration {
+public class CreateMOTSVotableTableMigration implements Migration {
 
     @Override
     public String created_at() {
@@ -15,20 +15,16 @@ public class CreateMOTSVotetableTableMigration implements Migration {
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        return schema.createIfNotExists(Constants.MOTS_VOTE_TABLE_NAME, table -> {
+        return schema.createIfNotExists(Constants.MOTS_VOTABLE_TABLE_NAME, table -> {
             table.Increments("id");
-            table.String("voted_for");
-            table.Long("vote_message_id");
-            table.Long("voter_user_id");
-            table.String("description");
-            table.Boolean("accepted");
-
-            table.Timestamps();
+            table.String("vote_id");
+            table.String("item");
+            table.String("added_by");
         });
     }
 
     @Override
     public boolean down(Schema schema) throws SQLException {
-        return schema.dropIfExists(Constants.MOTS_VOTES_TABLE_NAME);
+        return schema.dropIfExists(Constants.MOTS_VOTABLE_TABLE_NAME);
     }
 }

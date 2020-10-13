@@ -68,8 +68,8 @@ public class AddSelfAssignableRoleCommand extends Command {
     @Override
     public List<Class<? extends Command>> getRelations() {
         return Arrays.asList(
-            com.avairebot.commands.administration.ListSelfAssignableRolesCommand.class,
-            com.avairebot.commands.administration.RemoveSelfAssignableRoleCommand.class
+            ListSelfAssignableRolesCommand.class,
+            RemoveSelfAssignableRoleCommand.class
         );
     }
 

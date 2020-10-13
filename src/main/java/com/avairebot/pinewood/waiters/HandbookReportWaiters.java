@@ -3,8 +3,10 @@ package com.avairebot.pinewood.waiters;
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.commands.pinewood.ReportUserCommand;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -122,7 +124,7 @@ public class HandbookReportWaiters {
             "**Evidence**: \n" + evidence + "\n\nIs this correct?").buildEmbed()).queue(l -> {
             l.addReaction("✅").queue();
             l.addReaction("❌").queue();
-            avaire.getWaiter().waitForEvent(PrivateMessageReactionAddEvent.class, r -> Objects.equals(r.getUser(), context.getMember().getUser()) && r.getReaction().getMessageId().equals(l.getId()), send -> {
+            avaire.getWaiter().waitForEvent(PrivateMessageReactionAddEvent.class, r -> isValidMember(r, context, l), send -> {
                 if (send.getReactionEmote().getName().equals("❌")) {
                     e.getChannel().sendMessage("Report has been canceled, if you want to restart the report. Do ``c!ru`` in any bot-commands channel.").queue();
                 }
@@ -134,6 +136,15 @@ public class HandbookReportWaiters {
             }, 90, TimeUnit.SECONDS, () -> e.getChannel().sendMessage("You took to long to respond, please restart the report system!").queue());
         });
 
+    }
+
+    private static boolean isValidMember(PrivateMessageReactionAddEvent r, CommandMessage context, Message l) {
+        System.out.println(context.getMember().getUser());
+        System.out.println(r.getUser());
+        System.out.println("----");
+        System.out.println(l.getId());
+        System.out.println(r.getReaction().getMessageId());
+        return context.getMember().getUser().equals(r.getUser()) && r.getReaction().getMessageId().equals(l.getId());
     }
 
     private static String getGroupString(String g) {

@@ -15,12 +15,15 @@ public class CreateMOTSVoteTableMigration implements Migration {
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        return schema.createIfNotExists(Constants.MOTS_VOTES_TABLE_NAME, table -> {
+        return schema.createIfNotExists(Constants.MOTS_VOTE_TABLE_NAME, table -> {
             table.Increments("id");
+            table.String("vote_id");
+            table.String("voted_for");
             table.Long("vote_message_id");
             table.Long("voter_user_id");
             table.String("description");
             table.Boolean("accepted");
+
             table.Timestamps();
         });
     }

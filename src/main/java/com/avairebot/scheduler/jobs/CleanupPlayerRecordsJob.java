@@ -87,7 +87,6 @@ public class CleanupPlayerRecordsJob extends Job {
         try {
             List<InactiveUser> inactiveUsers = new ArrayList<>();
             Guild guild = null;
-            boolean hasMembers = false;
 
             for (DataRow dataRow : getUsersFromDatabase()) {
                 if (guild == null || !guild.getId().equalsIgnoreCase(dataRow.getString("guild_id"))) {
@@ -101,10 +100,6 @@ public class CleanupPlayerRecordsJob extends Job {
 
                 if (guild == null) {
                     inactiveUsers.add(createInactiveUser(dataRow));
-                    continue;
-                }
-
-                if (!guild.isLoaded()) {
                     continue;
                 }
 
