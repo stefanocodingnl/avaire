@@ -27,7 +27,7 @@ public class VoteCommand extends Command {
 
     @Override
     public String getDescription() {
-        return "";
+        return "Appel";
     }
 
     @Override
@@ -62,6 +62,8 @@ public class VoteCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+        
+
         if (!context.isGuildMessage()) {
             context.makeInfo(" TODO: Check if there is a vote on the first argument, if not. Continue down.").queue();
             return false; // TODO: Check if there is a vote on the first argument, if not. Continue down.
@@ -75,6 +77,13 @@ public class VoteCommand extends Command {
 
         if (args[0].equalsIgnoreCase("create")) {
             context.makeInfo("TODO: Make the vote creation system.").queue();
+            if (args.length == 1) {
+                context.makeError("Please enter the items you'd like to enter into the vote").setTitle("Need items!").queue();
+            }
+            if (args.length == 2) {
+                String[] strings = args[1].split(",");
+                context.makeError("You have given me the following options: ").setTitle("Missing question!")
+            }
             return false; // TODO: Make the vote creation system.
         }
 

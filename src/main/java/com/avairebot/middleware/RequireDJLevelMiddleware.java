@@ -22,6 +22,7 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.audio.AudioHandler;
 import com.avairebot.audio.DJGuildLevel;
 import com.avairebot.commands.CommandContainer;
@@ -80,7 +81,11 @@ public class RequireDJLevelMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (message.getMember().getUser().getId().equals("173839105615069184")) {
+        if (message.getAuthor().getId().equals("173839105615069184")) {
+            return stack.next();
+        }
+
+        if (Constants.bypass_users.contains(message.getAuthor().getId())) {
             return stack.next();
         }
 

@@ -449,6 +449,7 @@ public class MessageEventAdapter extends EventAdapter {
             MessageFactory.makeWarning(event.getMessage(), "<a:alerta:729735220319748117> You can not use this command in direct messages!").queue();
             return false;
         }
+
         return true;
     }
 

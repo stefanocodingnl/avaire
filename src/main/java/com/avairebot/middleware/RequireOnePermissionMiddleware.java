@@ -76,11 +76,11 @@ public class RequireOnePermissionMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (message.getMember().getUser().getId().equals("173839105615069184")) {
+        if (message.getAuthor().getId().equals("173839105615069184")) {
             return stack.next();
         }
 
-        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
+        if (Constants.bypass_users.contains(message.getAuthor().getId())) {
             return stack.next();
         }
 
