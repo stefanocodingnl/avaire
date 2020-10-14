@@ -739,7 +739,7 @@ public class AvaIre {
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MESSAGE_REACTIONS,
             GatewayIntent.GUILD_VOICE_STATES,
-            GatewayIntent.DIRECT_MESSAGES
+            GatewayIntent.DIRECT_MESSAGES,
             GatewayIntent.DIRECT_MESSAGE_REACTIONS
         ))
             .setToken(getConfig().getString("discord.token"))
