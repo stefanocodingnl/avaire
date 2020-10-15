@@ -10,6 +10,7 @@ import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
+import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.time.Carbon;
@@ -85,53 +86,27 @@ public class VoteCommand extends Command {
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
         if (!context.isGuildMessage()) {
-            if (args.length < 1) {
-                context.makeError("Hello there! It seems like you tried to run this command directly from the DM's. However, this will only work if you're actually voting for something! Please check if you have entered the correct ID!").queue();
-                return false;
-            }
-            if (args.length == 1) {
-                try {
-                    Collection votes = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[0]).get();
-                    Collection answers = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTABLE_TABLE_NAME).where("vote_id", args[0]).get();
-                    StringBuilder sb = new StringBuilder();
-                    sb.setLength(0);
+            return runDMArguments(context, args);
 
-                    if (votes.size() == 1) {
-                        if (answers.size() < 1) {
-                            context.makeError(":warning: This vote does not seem to have any votable answers, please check the database!").queue();
-                            return false;
-                        }
-
-                        answers.forEach(l -> sb.append("\n - ``").append(l.getString("item")).append("``"));
-
-                        Guild gc = avaire.getShardManager().getGuildById(votes.get(0).getLong("guild_id"));
-
-                        context.makeEmbeddedMessage(new Color(0, 158, 224))
-                            .addField("Question:", votes.get(0).getString("question"), true)
-                            .addField("Possible answers:", sb.toString(), true)
-                            .addField("Connected guild: ", gc != null ? gc.getName() + " - " + gc.getId() : "Guild not found" , false).queue();
-                    } else if (votes.size() < 1) {
-                        context.makeError("This vote does not exist. Try again.").queue();
-                    }
-                    return true;
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                }
-
-                return false; // TODO: Check if there is a vote on the first argument, if not. Continue down.
-            }
         }
 
         if (args.length < 1) {
             context.makeInfo("Please tell a valid option to work with the vote system:\n" +
                 " - ``create``\n" +
                 " - ``delete``\n" +
+                " - ``responses``\n" +
                 " - ``list``\n" +
                 " - ``show``\n" +
                 " - ``set-vote-validation-channel``").queue();
             return false;
         }
+        if (args[0].equalsIgnoreCase("responses")) {
+            if (args.length == 1) {
+                context.makeError("Please give the the ID of the vote you want to remove! (This removes both the awnsers, votes and the vote itself").queue();
+                return false;
+            }
 
+        }
         if (args[0].equalsIgnoreCase("create")) {
             //context.makeInfo("TODO: Make the vote creation system.").queue();
             if (args.length == 1) { //!vote create
@@ -262,9 +237,10 @@ public class VoteCommand extends Command {
                     context.makeEmbeddedMessage(new Color(0, 158, 224))
                         .addField("Question:", votes.get(0).getString("question"), true)
                         .addField("Possible answers:", sb.toString(), true)
-                        .setFooter("Vote with: !vote " + args[1] + " <reason to vote> (In DM's)")
+                        .setFooter("!vote " + args[1] + " <item> (reason) {In DM's}")
                         .setTimestamp(Instant.now()).queue();
                 }
+
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
@@ -301,6 +277,135 @@ public class VoteCommand extends Command {
         if (args[0].equalsIgnoreCase("set-vote-validation-channel")) {
             return runVoteUpdateChannelChannelCommand(context, args);
         }
+        return false;
+    }
+
+    private boolean runDMArguments(CommandMessage context, String[] args) {
+        if (args.length < 1) {
+            context.makeError("Hello there! It seems like you tried to run this command directly from the DM's. However, this will only work if you're actually voting for something! Please check if you have entered the correct ID!").queue();
+            return false;
+        }
+        try {
+            Collection votes = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[0]).get();
+            Collection answers = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTABLE_TABLE_NAME).where("vote_id", args[0]).get();
+            QueryBuilder vote = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).where("voter_user_id", context.getAuthor().getId());
+
+            StringBuilder sb = new StringBuilder();
+            sb.setLength(0);
+
+            if (votes.size() == 1) {
+                if (answers.size() < 1) {
+                    context.makeError(":warning: This vote does not seem to have any votable answers, please check the database!").queue();
+                    return false;
+                }
+                Guild gc = avaire.getShardManager().getGuildById(votes.get(0).getLong("guild_id"));
+                if (args.length < 2) {
+                    answers.forEach(l -> sb.append("\n - ``").append(l.getString("item")).append("``"));
+
+                    context.makeEmbeddedMessage(new Color(0, 158, 224))
+                        .addField("Question:", votes.get(0).getString("question"), true)
+                        .addField("Possible answers:", sb.toString(), true)
+                        .addField("Connected guild: ", gc != null ? gc.getName() + " - " + gc.getId() : "Guild not found", false).queue();
+                }
+                if (args.length >= 2) {
+                    if (gc == null) {
+                        context.makeError("Sorry, but something went wrong in fetching the the guild.").queue();
+                        return false;
+                    }
+
+                    if (!answers.contains(args[1])) {
+                        context.makeError("This is not a votable option!").queue();
+                        return false;
+                    }
+                    GuildTransformer gt = GuildController.fetchGuild(avaire, gc);
+                    if (gt.getVoteValidationChannel() == null) {
+                        QueryBuilder ivote = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME);
+
+                        if (vote.andWhere("vote_id", args[0]).get().size() > 0) {
+                            context.makeInfo(":warning: You've already voted for ``" + vote.andWhere("vote_id", args[0]).get().get(0).get("voted_for") + "``. Your vote will be overridden!").queue();
+                            ivote.useAsync(true)
+                                .where("vote_id", args[0])
+                                .andWhere("voter_user_id", context.getAuthor().getId())
+                                .update(statement -> {
+                                    statement.set("voted_for", args[1]);
+                                });
+                            context.makeSuccess("Changed your vote to: ``" + args[1] + "``").queue();
+                        } else {
+                            ivote.useAsync(true).insert(statement -> {
+                                statement.set("vote_id", args[0]);
+                                statement.set("voted_for", args[1]);
+                                statement.set("voter_user_id", context.getAuthor().getId());
+                                statement.set("accepted", true);
+                            });
+                            context.makeSuccess("You've voted for: ``" + args[1] + "``").queue();
+                        }
+                    } else {
+                        if (args.length == 2) {
+                            context.makeError("Please give a reason why you would like to vote for this person (Retype the command)").queue();
+                            return true;
+                        }
+
+                        if (args.length < 22) {
+                            context.makeError("Please explain in more then 20 words why you'd like to vote for this item! This is to verify valid votes.").queue();
+                            return false;
+                        }
+
+
+
+                        String description = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                        avaire.getShardManager().getTextChannelById(gt.getVoteValidationChannel())
+                            .sendMessage(context.makeEmbeddedMessage(new Color(54, 57, 63)).setAuthor(context.getAuthor().getName() + "#" + context.getAuthor().getDiscriminator() + " - " + args[1], null, context.getAuthor().getEffectiveAvatarUrl())
+                                .setDescription(description).setFooter(args[0]).setTimestamp(Instant.now()).buildEmbed()).queue(message -> {
+                            try {
+                                QueryBuilder ivote = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME);
+
+                                if (vote.andWhere("vote_id", args[0]).get().size() > 0) {
+                                    context.makeInfo(":warning: You've already voted for ``" + vote.get().get(0).getString("voted_for") + "``. Your vote will be overridden!").queue();
+                                    avaire.getShardManager().getTextChannelById(gt.getVoteValidationChannel()).retrieveMessageById(vote.get().get(0).getString("vote_message_id"))
+                                        .queue(m -> {m.delete().queue(t -> {context.makeInfo("Deleted old vote!").queue();});});
+
+                                    ivote.useAsync(true)
+                                        .where("vote_id", args[0])
+                                        .andWhere("voter_user_id", context.getAuthor().getId())
+                                        .update(statement -> {
+                                            statement.set("voted_for", args[1]);
+                                            statement.set("accepted", false);
+                                            statement.set("description", description, true);
+                                            statement.set("vote_message_id", message.getId());
+                                        });
+                                    context.makeSuccess("Changed your vote to ``" + args[1] + "`` with the description: ```"  + description + "```").queue();
+                                } else {
+                                    ivote.useAsync(true).insert(statement -> {
+                                        statement.set("vote_id", args[0]);
+                                        statement.set("voted_for", args[1]);
+                                        statement.set("voter_user_id", context.getAuthor().getId());
+                                        statement.set("description", description, true);
+                                        statement.set("vote_message_id", message.getId());
+                                        statement.set("accepted", false);
+                                    });
+                                    context.makeSuccess("You've voted for ``" + args[1] + "`` with the description: ```" + description + "```").queue();
+                                }
+
+                            } catch (SQLException throwables) {
+                                throwables.printStackTrace();
+                            }
+                            message.addReaction("✅").queue();
+                            message.addReaction("❌").queue();
+                        });
+                    }
+
+                }
+            } else if (votes.size() < 1) {
+                context.makeError("This vote does not exist. Try again.").queue();
+            }
+            return true;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        // TODO: Check if there is a vote on the first argument, if not. Continue down.
+
+
         return false;
     }
 
@@ -372,7 +477,8 @@ public class VoteCommand extends Command {
             .set("channel", modlogChannel.getAsMention());
     }
 
-    private void updateVoteValidation(GuildTransformer transformer, CommandMessage context, String value) throws SQLException {
+    private void updateVoteValidation(GuildTransformer transformer, CommandMessage context, String value) throws
+        SQLException {
         transformer.setVoteValidationChannel(value);
         avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
             .where("id", context.getGuild().getId())
