@@ -77,6 +77,7 @@ public class GuildTransformer extends Transformer {
     private boolean musicMessages = true;
     private boolean filter = false;
     private String levelChannel = null;
+    private String voteValidationChannel = null;
     private String autorole = null;
     private String modlog = null;
     private String musicChannelText = null;
@@ -132,6 +133,7 @@ public class GuildTransformer extends Transformer {
             modlogCase = data.getInt("modlog_case");
 
             reportCategory = data.getLong("report_discord_category");
+            voteValidationChannel = data.getString("vote_validation_channel");
 
             onWatchCase = data.getInt("on_watch_case");
             onWatchRole = data.getString("on_watch_role");
@@ -447,6 +449,14 @@ public class GuildTransformer extends Transformer {
 
     public void setLevelChannel(String levelChannel) {
         this.levelChannel = levelChannel;
+    }
+
+    public String getVoteValidationChannel() {
+        return voteValidationChannel;
+    }
+
+    public void setVoteValidationChannel(String levelChannel) {
+        this.voteValidationChannel = levelChannel;
     }
 
     public Map<Integer, String> getLevelRoles() {

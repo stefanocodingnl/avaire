@@ -6,11 +6,11 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class CreateMOTSVotableTableMigration implements Migration {
+public class CreatePBVotableTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Thursday, April 2nd, 2020 11:38 PM";
+        return "Thursday, October 15th, 2020 19:38 PM";
     }
 
     @Override

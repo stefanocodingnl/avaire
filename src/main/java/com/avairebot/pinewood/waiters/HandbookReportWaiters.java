@@ -20,7 +20,7 @@ public class HandbookReportWaiters {
     private static AvaIre avaire;
 
     public HandbookReportWaiters (AvaIre avaire) {
-        HandbookReportWaiters.avaire = avaire;
+        this.avaire = avaire;
     }
     public static void getPBSTHandbookReportWaiter(CommandMessage context) {
         context.makeInfo("I will send you a message in your private messages, if you did not get a message, make sure you can get messages from non-friends in this server.").queue();
@@ -139,11 +139,6 @@ public class HandbookReportWaiters {
     }
 
     private static boolean isValidMember(PrivateMessageReactionAddEvent r, CommandMessage context, Message l) {
-        System.out.println(context.getMember().getUser());
-        System.out.println(r.getUser());
-        System.out.println("----");
-        System.out.println(l.getId());
-        System.out.println(r.getReaction().getMessageId());
         return context.getMember().getUser().equals(r.getUser()) && r.getReaction().getMessageId().equals(l.getId());
     }
 

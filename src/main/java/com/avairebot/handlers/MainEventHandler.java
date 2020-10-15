@@ -205,17 +205,18 @@ public class MainEventHandler extends EventHandler {
             changelogEventAdapter.onMessageReceived(event);
         }
         messageEvent.onMessageReceived(event);
-        if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
-                event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
-                event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID)) {
 
-            messageEvent.onPBFeedbackPinEvent(event);
-        }
+
         if (event.isFromGuild()) {
             if (Constants.guilds.contains(event.getGuild().getId())) {
                 if (!event.getAuthor().isBot()) {
                     messageEvent.onLocalFilterMessageReceived(event);
                     messageEvent.onGlobalFilterMessageReceived(event);
+                }
+                if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
+                    event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
+                    event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID)) {
+                    messageEvent.onPBFeedbackPinEvent(event);
                 }
             }
         }
@@ -242,6 +243,7 @@ public class MainEventHandler extends EventHandler {
             changelogEventAdapter.onMessageUpdate(event);
         }
         messageEvent.onMessageUpdate(event);
+
         if (event.isFromGuild()) {
             if (Constants.guilds.contains(event.getGuild().getId())) {
                 messageEvent.onGuildMessageUpdate(event);
@@ -326,6 +328,7 @@ public class MainEventHandler extends EventHandler {
             if (isValidReportChannel(event)) {
                 reactionEmoteEventAdapter.onReportsReactionAdd(event);
             }
+            reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
         }
     }
 
