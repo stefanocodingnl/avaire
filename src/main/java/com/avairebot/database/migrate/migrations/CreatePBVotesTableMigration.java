@@ -21,6 +21,7 @@ public class CreatePBVotesTableMigration implements Migration {
             table.Integer("total_votes");
             table.String("vote_id");
             table.Long("guild_id");
+            table.Boolean("active").defaultValue(true);
             //table.DateTime("end_date");
             table.Timestamps();
         });

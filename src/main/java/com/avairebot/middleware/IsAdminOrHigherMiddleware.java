@@ -31,6 +31,10 @@ public class IsAdminOrHigherMiddleware extends Middleware {
 
     @Override
     public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
+        if (!message.getChannelType().isGuild()) {
+            return stack.next();
+        }
+
         if (avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong(), true).isAdmin()) {
             return stack.next();
         }

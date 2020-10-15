@@ -4,21 +4,17 @@ import com.avairebot.AvaIre;
 import com.avairebot.Constants;
 import com.avairebot.chat.PlaceholderMessage;
 import com.avairebot.commands.CommandMessage;
-import com.avairebot.commands.administration.SoftBanCommand;
-import com.avairebot.commands.administration.UnbanCommand;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
+import com.avairebot.database.collection.DataRow;
 import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
-import com.avairebot.time.Carbon;
 import com.avairebot.utilities.ComparatorUtil;
 import com.avairebot.utilities.MentionableUtil;
-import com.avairebot.utilities.NumberUtil;
 import com.avairebot.utilities.RandomString;
-import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
@@ -28,11 +24,8 @@ import javax.annotation.Nonnull;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VoteCommand extends Command {
@@ -73,6 +66,8 @@ public class VoteCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
+            "isOfficialPinewoodGuild",
+            "isAdminOrHigher",
             "throttle:user,1,25"
         );
     }
@@ -99,13 +94,6 @@ public class VoteCommand extends Command {
                 " - ``show``\n" +
                 " - ``set-vote-validation-channel``").queue();
             return false;
-        }
-        if (args[0].equalsIgnoreCase("responses")) {
-            if (args.length == 1) {
-                context.makeError("Please give the the ID of the vote you want to remove! (This removes both the awnsers, votes and the vote itself").queue();
-                return false;
-            }
-
         }
         if (args[0].equalsIgnoreCase("create")) {
             //context.makeInfo("TODO: Make the vote creation system.").queue();
@@ -208,9 +196,50 @@ public class VoteCommand extends Command {
             //context.makeInfo("ODO: Make the vote deletion system.").queue();
             return false; // TODO: Make the vote deletion system.
         }
+        if (args[0].equalsIgnoreCase("responses")) {
+            if (args.length == 1) {
+                context.makeError("Please give the the ID of the vote you want to check.").queue();
+                return false;
+            }
+            try {
+                Collection votes = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[1]).get();
+                Collection answers = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTABLE_TABLE_NAME).where("vote_id", args[1]).get();
+
+                StringBuilder sb = new StringBuilder();
+                sb.setLength(0);
+
+                if (votes.size() > 0) {
+                    if (votes.get(0).getLong("guild_id") != context.guild.getIdLong()) {
+                        context.makeError(":warning:  This vote is not linked to your guild, so you can't check it.").queue();
+                        return false;
+                    }
+
+
+                    ArrayList<String> items = new ArrayList<>();
+                    for (DataRow s : answers) {
+                        items.add(s.getString("item"));
+                    }
+
+                    items.forEach(s -> {
+                        sb.append("\n - ``").append(s).append("``").append(" - **").append(getCountFromVoteAndItem(args[1], s, context)).append("**");
+                    });
+
+                    //Collection responses = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).where("vote_id", args[1]).where("accepted", true).get();
+
+
+                    context.makeEmbeddedMessage(new Color(0, 158, 224))
+                        .addField("Question:", votes.get(0).getString("question"), true)
+                        .addField("Possible answers:", sb.toString(), false)
+                        .setFooter(generateCommandPrefix(context.message) + "vote " + args[1] + " <item> (reason) {In DM's}")
+                        .setTimestamp(Instant.now()).queue();
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
         if (args[0].equalsIgnoreCase("show")) {
             if (args.length == 1) {
-                context.makeError("Please give the the ID of the vote you want to remove! (This removes both the awnsers, votes and the vote itself").queue();
+                context.makeError("Please give the the ID of the vote you want to remove! (This removes both the answers, votes and the vote itself").queue();
                 return false;
             }
 
@@ -222,6 +251,11 @@ public class VoteCommand extends Command {
                 sb.setLength(0);
 
                 if (votes.size() > 0) {
+                    if (!votes.get(0).getBoolean("active")) {
+                        context.makeError(":warning: This vote seems to be de-activated/closed. Please check if you have the correct ID!").queue();
+                        return false;
+                    }
+
                     if (votes.get(0).getLong("guild_id") != context.guild.getIdLong()) {
                         context.makeError(":warning:  This vote is not linked to your guild, so you can't delete it.").queue();
                         return false;
@@ -237,7 +271,7 @@ public class VoteCommand extends Command {
                     context.makeEmbeddedMessage(new Color(0, 158, 224))
                         .addField("Question:", votes.get(0).getString("question"), true)
                         .addField("Possible answers:", sb.toString(), true)
-                        .setFooter("!vote " + args[1] + " <item> (reason) {In DM's}")
+                        .setFooter(generateCommandPrefix(context.message) + "vote " + args[1] + " <item> (reason) {In DM's}")
                         .setTimestamp(Instant.now()).queue();
                 }
 
@@ -262,8 +296,12 @@ public class VoteCommand extends Command {
                         context.makeError(":warning:  This vote is not linked to your guild, so you can't delete it.").queue();
                         return false;
                     }
+
+
+
                     votes.forEach(dataRow -> {
-                        sb.append("\n - **").append(dataRow.getString("question")).append("** (").append(dataRow.getString("vote_id")).append(")");
+                        sb.append("\n - **").append(dataRow.getString("question")).append("** (").append(dataRow.getString("vote_id")).append(") - ")
+                        .append(dataRow.getBoolean("active") ? ":white_check_mark:" : ":x:");
                     });
 
                     context.makeEmbeddedMessage(new Color(0, 158, 224))
@@ -277,7 +315,63 @@ public class VoteCommand extends Command {
         if (args[0].equalsIgnoreCase("set-vote-validation-channel")) {
             return runVoteUpdateChannelChannelCommand(context, args);
         }
+        if (args[0].equalsIgnoreCase("close")) {
+            if (args.length == 1) {
+                context.makeError("Please give the the ID of the vote you want to remove! (This removes both the awnsers, votes and the vote itself").queue();
+                return false;
+            }
+
+            try {
+                Collection votes = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[1]).get();
+                if (votes.size() == 1) {
+                    avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[1])
+                        .useAsync(true).update(statement -> {
+                        statement.set("active", false);
+                    });
+                }
+                context.makeSuccess("Successfully closed the vote! Re-open it with the " + generateCommandPrefix(context.message) + "``vote open`` command.").queue();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+        }
+        if (args[0].equalsIgnoreCase("open")) {
+            if (args.length == 1) {
+                context.makeError("Please give the the ID of the vote you want to remove! (This removes both the awnsers, votes and the vote itself").queue();
+                return false;
+            }
+
+            try {
+                Collection votes = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[1]).get();
+                if (votes.size() == 1) {
+                    avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[1])
+                        .useAsync(true).update(statement -> {
+                        statement.set("active", true);
+                    });
+                }
+                context.makeSuccess("Successfully re-opened the vote! Close it with the " + generateCommandPrefix(context.message) + "``vote close`` command.").queue();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+        }
         return false;
+    }
+
+    private int getCountFromVoteAndItem(String arg, String item, CommandMessage context) {
+        try {
+            Collection responses;
+            if (context.getGuildTransformer().getVoteValidationChannel() != null) {
+                responses = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).where("vote_id", arg).andWhere("voted_for", item).andWhere("accepted", 1).get();
+            } else {
+                responses = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).where("vote_id", arg).where("voted_for", item).get();
+            }
+
+            return responses.size();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return 0;
     }
 
     private boolean runDMArguments(CommandMessage context, String[] args) {
@@ -289,6 +383,12 @@ public class VoteCommand extends Command {
             Collection votes = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTES_TABLE_NAME).where("vote_id", args[0]).get();
             Collection answers = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTABLE_TABLE_NAME).where("vote_id", args[0]).get();
             QueryBuilder vote = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).where("voter_user_id", context.getAuthor().getId());
+
+
+            if (!votes.get(0).getBoolean("active")) {
+                context.makeError(":warning: This vote seems to be de-activated/closed. Please check if you have the correct ID!").queue();
+                return false;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.setLength(0);
@@ -351,7 +451,6 @@ public class VoteCommand extends Command {
                         }
 
 
-
                         String description = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
                         avaire.getShardManager().getTextChannelById(gt.getVoteValidationChannel())
                             .sendMessage(context.makeEmbeddedMessage(new Color(54, 57, 63)).setAuthor(context.getAuthor().getName() + "#" + context.getAuthor().getDiscriminator() + " - " + args[1], null, context.getAuthor().getEffectiveAvatarUrl())
@@ -362,7 +461,11 @@ public class VoteCommand extends Command {
                                 if (vote.andWhere("vote_id", args[0]).get().size() > 0) {
                                     context.makeInfo(":warning: You've already voted for ``" + vote.get().get(0).getString("voted_for") + "``. Your vote will be overridden!").queue();
                                     avaire.getShardManager().getTextChannelById(gt.getVoteValidationChannel()).retrieveMessageById(vote.get().get(0).getString("vote_message_id"))
-                                        .queue(m -> {m.delete().queue(t -> {context.makeInfo("Deleted old vote!").queue();});});
+                                        .queue(m -> {
+                                            m.delete().queue(t -> {
+                                                context.makeInfo("Deleted old vote!").queue();
+                                            });
+                                        });
 
                                     ivote.useAsync(true)
                                         .where("vote_id", args[0])
@@ -373,7 +476,7 @@ public class VoteCommand extends Command {
                                             statement.set("description", description, true);
                                             statement.set("vote_message_id", message.getId());
                                         });
-                                    context.makeSuccess("Changed your vote to ``" + args[1] + "`` with the description: ```"  + description + "```").queue();
+                                    context.makeSuccess("Changed your vote to ``" + args[1] + "`` with the description: ```" + description + "```").queue();
                                 } else {
                                     ivote.useAsync(true).insert(statement -> {
                                         statement.set("vote_id", args[0]);
