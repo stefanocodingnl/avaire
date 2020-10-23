@@ -126,7 +126,7 @@ public class HandbookReportWaiters {
             l.addReaction("❌").queue();
             avaire.getWaiter().waitForEvent(PrivateMessageReactionAddEvent.class, r -> isValidMember(r, context, l), send -> {
                 if (send.getReactionEmote().getName().equals("❌")) {
-                    e.getChannel().sendMessage("Report has been canceled, if you want to restart the report. Do ``c!ru`` in any bot-commands channel.").queue();
+                    e.getChannel().sendMessage("Report has been canceled, if you want to restart the report. Do ``!ru`` in any bot-commands channel.").queue();
                 }
                 if (send.getReactionEmote().getName().equals("✅")) {
                     ReportUserCommand.sendReport(context, username, description, evidence, g, l);

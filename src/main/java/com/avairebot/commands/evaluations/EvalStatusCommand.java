@@ -87,10 +87,11 @@ public class EvalStatusCommand extends Command {
             if (args.length < 2) {
 
                 if (collection.size() < 1) {
-                    context.makeEmbeddedMessage(new Color(21, 34, 255)).setDescription("You have not yet passed anything:\n\n" +
+                    context.makeEmbeddedMessage(new Color(255, 0, 0)).setDescription("You have not yet passed anything:\n\n" +
                         "**Passed Quiz**: <:no:694270050257076304>\n" +
-                        "**Passed Patrol**: <:no:694270050257076304>\n\n" +
-                        "**Last Evaluator**: ``No evaluator found``").queue();
+                        "**Passed Patrol**: <:no:694270050257076304>\n" +
+                        "**Passed Combat**: <:no:694270050257076304>\n\n" +
+                        "**Last Evaluator**: ``No evaluation has been given yet.``").queue();
                     return true;
                 }
 
@@ -100,15 +101,22 @@ public class EvalStatusCommand extends Command {
                 }
                 if (collection.size() == 1) {
                     DataRow row = collection.get(0);
-                    String passed_quiz = row.getBoolean("passed_quiz") ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
-                    String passed_patrol = row.getBoolean("passed_patrol") ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
+                    Boolean pq = row.getBoolean("passed_quiz");
+                    Boolean pp = row.getBoolean("passed_patrol");
+                    Boolean pc = row.getBoolean("passed_combat");
+
+                    String passed_quiz = pq ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
+                    String passed_patrol = pp ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
+                    String passed_combat = pc ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
                     String evaluator = row.getString("evaluator") != null ? row.getString("evaluator") : "Unkown Evaluator";
 
-                    context.makeEmbeddedMessage(new Color(21, 34, 255)).setDescription("This user has this information in the database:\n\n" +
+                    context.makeEmbeddedMessage().setDescription("This user has this information in the database:\n\n" +
                         "**Passed Quiz**: " + passed_quiz + "\n" +
-                        "**Passed Patrol**: " + passed_patrol + "\n"
-                        + (row.getBoolean("passed_quiz") && row.getBoolean("passed_patrol") ? "**You have passed both!**\n\n" : "\n") +
-                        "**Last Evaluator**: " + evaluator).queue();
+                        "**Passed Patrol**: " + passed_patrol + "\n" +
+                        "**Passed Combat**: " + passed_combat + "\n"
+                        + (row.getBoolean("passed_combat") && row.getBoolean("passed_patrol") ? "**You have passed all evaluations!**\n\n" : "\n") +
+                        "**Last Evaluator**: " + evaluator)
+                        .setColor((pq && pp && pc ? new Color(26, 255, 0) : new Color(255, 170, 0))).queue();
                     return true;
                 }
 

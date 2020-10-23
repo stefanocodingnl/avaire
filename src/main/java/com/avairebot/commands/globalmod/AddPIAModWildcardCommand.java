@@ -108,6 +108,22 @@ public class AddPIAModWildcardCommand extends Command {
                 e.printStackTrace();
                 return false;
             }
+        }
+        if (args[0].equalsIgnoreCase("add-comma")) {
+            if (args.length == 1) {
+                return sendErrorMessage(context, "You didn't give any words to add to the global filter.");
+            }
+            transformer.getPIAWordsWildcard().add(words);
+            try {
+                updateGuildAutoModExact(context, transformer);
+
+                context.makeSuccess("Successfully added: ``" + words + "``")
+                    .queue();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
         } else {
             return sendErrorMessage(context, "Invalid argument.");
         }

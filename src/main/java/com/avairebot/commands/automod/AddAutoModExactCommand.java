@@ -84,12 +84,12 @@ public class AddAutoModExactCommand  extends Command {
         }
 
         if(!transformer.isFilter()) {
-            return sendErrorMessage(context, "The filter is disabled, enable the filter with `c!toggleautomod`");
+            return sendErrorMessage(context, "The filter is disabled, enable the filter with `!toggleautomod`");
         }
 
         String words = String.join(" ", Arrays.copyOfRange(args, 1, args.length)).toLowerCase();
         if (words.contains(" ")) {
-            return sendErrorMessage(context, "The EXACT words in the filter are not allowed to contain any spaces, use `c!exactfilter`");
+            return sendErrorMessage(context, "The EXACT words in the filter are not allowed to contain any spaces, use `!exactfilter`");
         }
         if (args[0].equalsIgnoreCase("list")) {
             return getAutoModExactList(context, transformer);
@@ -111,7 +111,7 @@ public class AddAutoModExactCommand  extends Command {
                 return false;
             }
         } else {
-            return sendErrorMessage(context, "Invalid argument. See ``c!help exactfilter`` for the arguments.");
+            return sendErrorMessage(context, "Invalid argument. See ``!help exactfilter`` for the arguments.");
         }
     }
 

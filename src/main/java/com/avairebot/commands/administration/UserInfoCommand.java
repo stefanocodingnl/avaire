@@ -19,7 +19,7 @@
  *
  */
 
-package com.avairebot.commands.utility;
+package com.avairebot.commands.administration;
 
 import com.avairebot.AvaIre;
 import com.avairebot.chat.PlaceholderMessage;
@@ -79,7 +79,7 @@ public class UserInfoCommand extends Command {
 
     @Override
     public List<String> getTriggers() {
-        return Arrays.asList("userinfo", "uinfo");
+        return Arrays.asList("userinfo", "uinfo", "whois");
     }
 
     @Nonnull

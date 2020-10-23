@@ -45,6 +45,7 @@ public class Constants {
     public static final String PURCHASES_TABLE_NAME = "purchases";
     public static final String MUTE_TABLE_NAME = "mutes";
     public static final String MOTS_VOTE_TABLE_NAME = "xeus_vote";
+
     public static final String MOTS_VOTES_TABLE_NAME = "xeus_votes";
     public static final String MOTS_VOTABLE_TABLE_NAME = "xeus_votable";
 

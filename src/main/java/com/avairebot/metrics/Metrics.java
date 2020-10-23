@@ -29,7 +29,6 @@ import com.avairebot.commands.administration.MuteRoleCommand;
 import com.avairebot.commands.utility.GlobalLeaderboardCommand;
 import com.avairebot.commands.utility.LeaderboardCommand;
 import com.avairebot.commands.utility.RankCommand;
-import com.avairebot.contracts.commands.InteractionCommand;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.database.controllers.*;
 import com.avairebot.handlers.adapter.JDAStateEventAdapter;
@@ -266,7 +265,6 @@ public class Metrics {
         cacheMetrics.addCache("rankScores", RankCommand.cache);
         cacheMetrics.addCache("leaderboard", LeaderboardCommand.cache);
         cacheMetrics.addCache("global-leaderboard", GlobalLeaderboardCommand.cache);
-        cacheMetrics.addCache("interaction-lottery", InteractionCommand.cache);
         cacheMetrics.addCache("blacklist-ratelimit", Ratelimit.cache);
         cacheMetrics.addCache("lavalink-destroy-cleanup", LavalinkGarbageNodeCollectorJob.cache);
         cacheMetrics.addCache("music-search-results", SearchController.cache);

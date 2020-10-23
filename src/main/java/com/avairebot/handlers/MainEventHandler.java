@@ -212,11 +212,16 @@ public class MainEventHandler extends EventHandler {
                 if (!event.getAuthor().isBot()) {
                     messageEvent.onLocalFilterMessageReceived(event);
                     messageEvent.onGlobalFilterMessageReceived(event);
+                    messageEvent.onNoLinksFilterMessageReceived(event);
                 }
                 if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
                     event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
                     event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID)) {
                     messageEvent.onPBFeedbackPinEvent(event);
+                }
+
+                if (event.getChannel().getId().equals("769274801768235028")) {
+                    messageEvent.onPBSTEventGalleryMessageSent(event);
                 }
             }
         }
@@ -319,7 +324,8 @@ public class MainEventHandler extends EventHandler {
             if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
                     event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
                     event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals(Constants.PET_FEEDBACK_CHANNEL_ID)) {
+                    event.getChannel().getId().equals(Constants.PET_FEEDBACK_CHANNEL_ID) ||
+                    event.getChannel().getId().equals("767806684403204097")) {
                 reactionEmoteEventAdapter.onPBFeedbackMessageEvent(event);
             }
             if (event.getChannel().getId().equals(Constants.REWARD_REQUESTS_CHANNEL_ID)) {

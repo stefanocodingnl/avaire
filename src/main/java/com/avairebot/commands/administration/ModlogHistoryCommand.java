@@ -84,7 +84,7 @@ public class ModlogHistoryCommand extends Command {
 
     @Override
     public List<String> getTriggers() {
-        return Arrays.asList("modloghistory", "history");
+        return Arrays.asList("modloghistory", "history", "warnings", "warns");
     }
 
     @Override

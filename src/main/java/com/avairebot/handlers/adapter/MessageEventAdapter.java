@@ -71,8 +71,8 @@ import java.util.regex.Pattern;
 
 public class MessageEventAdapter extends EventAdapter {
 
-    public static final Set <Long> hasReceivedInfoMessageInTheLastMinute = new HashSet <>();
-    ArrayList <String> guilds = Constants.guilds;
+    public static final Set<Long> hasReceivedInfoMessageInTheLastMinute = new HashSet<>();
+    ArrayList<String> guilds = Constants.guilds;
 
     private static final ExecutorService commandService = Executors.newCachedThreadPool(
         new ThreadFactoryBuilder()
@@ -161,7 +161,7 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkWildcardFilter(String contentStripped, GuildTransformer guild, Message messageId) {
         String words = contentStripped.toLowerCase();
-        List <String> badWordsList = replace(guild.getBadWordsWildcard());
+        List<String> badWordsList = replace(guild.getBadWordsWildcard());
         // system.out.println("UFWords: " + words);
         // system.out.println("FWords: " + badWordsList);
 
@@ -176,8 +176,8 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkExactFilter(String contentRaw, GuildTransformer databaseEventHolder, Message messageId) {
         // system.out.println("FILTER ENABLED");
-        List <String> words = replace(Arrays.asList(contentRaw.split(" ")));
-        List <String> badWordsList = replace(databaseEventHolder.getBadWordsExact());
+        List<String> words = replace(Arrays.asList(contentRaw.split(" ")));
+        List<String> badWordsList = replace(databaseEventHolder.getBadWordsExact());
 
         // system.out.println("UWords: " + words);
         // system.out.println("FWords: " + badWordsList);
@@ -191,7 +191,7 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkGlobalWildcardFilter(String contentStripped, GuildTransformer guild, Message messageId) {
         String words = contentStripped.toLowerCase();
-        List <String> badWordsList = replace(guild.getPIAWordsWildcard());
+        List<String> badWordsList = replace(guild.getPIAWordsWildcard());
         //System.out.println("UFWords: " + words);
         //System.out.println("FWords: " + badWordsList);
 
@@ -206,8 +206,8 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkGlobalExactFilter(String contentRaw, GuildTransformer databaseEventHolder, Message messageId) {
         // system.out.println("FILTER ENABLED");
-        List <String> words = replace(Arrays.asList(contentRaw.split(" ")));
-        List <String> badWordsList = replace(databaseEventHolder.getPIAWordsExact());
+        List<String> words = replace(Arrays.asList(contentRaw.split(" ")));
+        List<String> badWordsList = replace(databaseEventHolder.getPIAWordsExact());
 
         // system.out.println("UWords: " + words);
         // system.out.println("FWords: " + badWordsList);
@@ -219,8 +219,8 @@ public class MessageEventAdapter extends EventAdapter {
         return b;
     }
 
-    public static List <String> replace(List <String> strings) {
-        ListIterator <String> iterator = strings.listIterator();
+    public static List<String> replace(List<String> strings) {
+        ListIterator<String> iterator = strings.listIterator();
         while (iterator.hasNext()) {
             iterator.set(iterator.next().toLowerCase());
         }
@@ -253,7 +253,6 @@ public class MessageEventAdapter extends EventAdapter {
             }
         });
     }
-
 
 
     public void onLocalFilterEditReceived(MessageUpdateEvent event) {
@@ -511,7 +510,7 @@ public class MessageEventAdapter extends EventAdapter {
         hasReceivedInfoMessageInTheLastMinute.add(event.getAuthor().getIdLong());
 
         try {
-            ArrayList <String> strings = new ArrayList <>();
+            ArrayList<String> strings = new ArrayList<>();
             strings.addAll(Arrays.asList(
                 "To invite me to your server, use this link:",
                 "*:oauth*",
@@ -547,7 +546,7 @@ public class MessageEventAdapter extends EventAdapter {
         }
     }
 
-    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageReceivedEvent event) {
+    private CompletableFuture<DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageReceivedEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannelType().isGuild()) {
                 return new DatabaseEventHolder(null, null);
@@ -562,7 +561,7 @@ public class MessageEventAdapter extends EventAdapter {
         });
     }
 
-    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageUpdateEvent event) {
+    private CompletableFuture<DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageUpdateEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannelType().isGuild()) {
                 return new DatabaseEventHolder(null, null);
@@ -577,13 +576,13 @@ public class MessageEventAdapter extends EventAdapter {
         });
     }
 
-    public void onMessageDelete(TextChannel channel, List <String> messageIds) {
+    public void onMessageDelete(TextChannel channel, List<String> messageIds) {
         Collection reactions = ReactionController.fetchReactions(avaire, channel.getGuild());
         if (reactions == null || reactions.isEmpty()) {
             return;
         }
 
-        List <String> removedReactionMessageIds = new ArrayList <>();
+        List<String> removedReactionMessageIds = new ArrayList<>();
         for (DataRow row : reactions) {
             for (String messageId : messageIds) {
                 if (Objects.equals(row.getString("message_id"), messageId)) {
@@ -656,6 +655,67 @@ public class MessageEventAdapter extends EventAdapter {
         if (event.getMessage().getType().equals(MessageType.CHANNEL_PINNED_ADD)) {
             event.getMessage().delete().queue();
         }
+    }
+
+    public void onNoLinksFilterMessageReceived(MessageReceivedEvent event) {
+        loadDatabasePropertiesIntoMemory(event).thenAccept(databaseEventHolder -> {
+            if (databaseEventHolder.getGuild().getNoLinksRoles().size() < 1) {
+                return;
+            }
+
+            ArrayList<Role> list = new ArrayList<>();
+
+            for (Long r : databaseEventHolder.getGuild().getNoLinksRoles()) {
+                if (event.getGuild().getRoleById(r) != null) {
+                    list.add(event.getGuild().getRoleById(r));
+                }
+            }
+
+            if (event.getMember().getRoles().stream().anyMatch(list::contains)) {
+                if (event.getGuild().getId().equals("438134543837560832")) {
+                    if (event.getMember().getRoles().contains(event.getGuild().getRoleById("768310651768537099"))) {
+                        return;
+                    } else {
+                        if (checkFilter(event.getMessage().getContentStripped())) {
+                            cadetRemoveLinksMessage(event.getMessage(), event.getMessage(),
+                                "Hey there! It seems like you just tried to send a link in the PBST discord. However this is not possible due to [this recent change](https://discordapp.com/channels/438134543837560832/459764670782504961/768310524927672380).\n" +
+                                    "If you'd like to send a link in the discord. Please earn 10 points, and then run ``k!mp`` in the PBST discord.");
+                        }
+                    }
+                } else {
+                    event.getMessage().delete().queue();
+                }
+            }
+        });
+    }
+
+    private void cadetRemoveLinksMessage(Message message, Message event, String sendMessage) {
+        message.delete().queue();
+        event.getAuthor().openPrivateChannel().queue(pc -> {
+            pc.sendMessage(MessageFactory.makeWarning(message, sendMessage).buildEmbed()).queue();
+        });
+        MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), event);
+
+    }
+
+    public void onPBSTEventGalleryMessageSent(MessageReceivedEvent event) {
+        if (event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+            return;
+        }
+
+        if (event.getMessage().getContentRaw().contains("/attachments/")
+        || event.getMessage().getContentRaw().contains("https://cdn.discordapp.com/")) {
+            return;
+        }
+        if (event.getMessage().getAttachments().size() > 0) {
+            return;
+        } else {
+            event.getAuthor().openPrivateChannel().queue(privateChannel -> {
+                privateChannel.sendMessage(MessageFactory.makeWarning(event.getMessage(), "Sorry, but you're only allowed to post screenshots in this channel. Make sure these are actual **PBST** screenshots, made during either a raid or patrol.").buildEmbed()).queue();
+            });
+        }
+
+
     }
 }
 

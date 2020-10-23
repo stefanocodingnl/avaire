@@ -84,7 +84,7 @@ public class AddAutoModWildcardCommand extends Command {
         }
 
         if(!transformer.isFilter()) {
-            return sendErrorMessage(context, "The filter is disabled, enable the filter with `c!toggleautomod`");
+            return sendErrorMessage(context, "The filter is disabled, enable the filter with `!toggleautomod`");
         }
 
         String words = String.join(" ", Arrays.copyOfRange(args, 1, args.length)).toLowerCase();

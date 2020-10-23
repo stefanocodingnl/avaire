@@ -85,7 +85,7 @@ public class EvaluationCommand extends Command {
 
         if (args[0].equalsIgnoreCase("evaluator")) {
             if (args.length < 2) {
-                context.makeError("You didn't specify a user:\n``c!evals evaluator <@user>``").queue();
+                context.makeError("You didn't specify a user:\n``!evals evaluator <@user>``").queue();
                 return false;
             }
 
@@ -152,10 +152,11 @@ public class EvaluationCommand extends Command {
             if (args.length < 2) {
 
                 if (collection.size() < 1) {
-                    context.makeEmbeddedMessage(new Color(21, 34, 255)).setDescription("This user has this information in the database:\n\n" +
+                    context.makeEmbeddedMessage(new Color(255, 21, 21)).setDescription("This user has this information in the database:\n\n" +
                         "**Passed Quiz**: <:no:694270050257076304>\n" +
-                        "**Passed Patrol**: <:no:694270050257076304>\n\n" +
-                        "**Last Evaluator**: Unknown").queue();
+                        "**Passed Patrol**: <:no:694270050257076304>\n" +
+                        "**Passed Combat**: <:no:694270050257076304>\n\n" +
+                        "**Last Evaluator**: No evaluation has been given yet.").queue();
                     return true;
                 }
 
@@ -165,15 +166,23 @@ public class EvaluationCommand extends Command {
                 }
                 if (collection.size() == 1) {
                     DataRow row = collection.get(0);
-                    String passed_quiz = row.getBoolean("passed_quiz") ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
-                    String passed_patrol = row.getBoolean("passed_patrol") ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
+                    Boolean pq = row.getBoolean("passed_quiz");
+                    Boolean pp = row.getBoolean("passed_patrol");
+                    Boolean pc = row.getBoolean("passed_combat");
+
+
+                    String passed_quiz = pq ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
+                    String passed_patrol = pp ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
+                    String passed_combat = pc ? "<:yes:694268114803621908>" : "<:no:694270050257076304>";
                     String evaluator = row.getString("evaluator") != null ? row.getString("evaluator") : "Unkown Evaluator";
 
-                    context.makeEmbeddedMessage(new Color(21, 34, 255)).setDescription("This user has this information in the database:\n\n" +
+                    context.makeEmbeddedMessage().setDescription("This user has this information in the database:\n\n" +
                         "**Passed Quiz**: " + passed_quiz + "\n" +
-                        "**Passed Patrol**: " + passed_patrol + "\n"
-                        + (row.getBoolean("passed_quiz") && row.getBoolean("passed_patrol") ? "**User has passed both!**\n\n" : "\n") +
-                        "**Last Evaluator**: " + evaluator).queue();
+                        "**Passed Patrol**: " + passed_patrol + "\n" +
+                        "**Passed Combat**: " + passed_combat + "\n"
+                        + (row.getBoolean("passed_quiz") && row.getBoolean("passed_patrol") && row.getBoolean("passed_combat") ? "**User has passed all evaluations!**\n\n" : "\n") +
+                        "**Last Evaluator**: " + evaluator)
+                        .setColor((pq && pp && pc ? new Color(26, 255, 0) : new Color(255, 170, 0))).queue();
                     return true;
                 }
 
@@ -181,12 +190,13 @@ public class EvaluationCommand extends Command {
             if (args[1].equalsIgnoreCase("passed")) {
                 if (args.length == 2) {
                     context.makeError("Do you want to pass the user in the quiz or in the patrol?\n" +
-                        "**Patrol**: ``c!evals " + args[0] + " passed patrol``\n" +
-                        "**Quiz**: ``c!evals " + args[0] + " passed quiz``").queue();
+                        "**Patrol**: ``!evals " + args[0] + " passed patrol``\n" +
+                        "**Quiz**: ``!evals " + args[0] + " passed quiz``\n" +
+                        "**Combat**: ``!evals " + args[0] + " passed combat``").queue();
                     return false;
                 }
                 if (args.length == 3) {
-                    if (args[2].equalsIgnoreCase("patrol") || args[2].equalsIgnoreCase("quiz")) {
+                    if (args[2].equalsIgnoreCase("patrol") || args[2].equalsIgnoreCase("quiz") || args[2].equalsIgnoreCase("combat")) {
                         if (collection.size() < 1) {
                             int roblox_id = getRobloxId(args[0]);
                             avaire.getDatabase()
@@ -200,6 +210,8 @@ public class EvaluationCommand extends Command {
                                         statement.set("passed_patrol", true);
                                     } else if (args[2].equalsIgnoreCase("quiz")) {
                                         statement.set("passed_quiz", true);
+                                    } else if (args[2].equalsIgnoreCase("combat")) {
+                                        statement.set("passed_combat", true);
                                     }
                                 });
                             context.makeSuccess("Successfully added the record to the database").queue();
@@ -219,6 +231,8 @@ public class EvaluationCommand extends Command {
                                         statement.set("passed_patrol", true);
                                     } else if (args[2].equalsIgnoreCase("quiz")) {
                                         statement.set("passed_quiz", true);
+                                    } else if (args[2].equalsIgnoreCase("combat")) {
+                                        statement.set("passed_combat", true);
                                     }
                                     statement.set("evaluator", context.getMember().getEffectiveName());
                                 });
@@ -228,8 +242,9 @@ public class EvaluationCommand extends Command {
                         return true;
                     } else {
                         context.makeError("Do you want to pass the user in the quiz or in the patrol?\n" +
-                            "**Patrol**: ``c!evals " + args[0] + " passed patrol``\n" +
-                            "**Quiz**: ``c!evals " + args[0] + " passed quiz``").queue();
+                            "**Patrol**: ``!evals " + args[0] + " passed patrol``\n" +
+                            "**Quiz**: ``!evals " + args[0] + " passed quiz``\n" +
+                            "**Combat**: ``!evals " + args[0] + " passed combat``").queue();
                         return false;
                     }
                 }
@@ -238,12 +253,13 @@ public class EvaluationCommand extends Command {
             if (args[1].equalsIgnoreCase("failed")) {
                 if (args.length == 2) {
                     context.makeError("Do you want to fail the user in the quiz or in the patrol?\n" +
-                        "**Patrol**: ``c!evals " + args[0] + " failed patrol``\n" +
-                        "**Quiz**: ``c!evals " + args[0] + " failed quiz``").queue();
+                        "**Patrol**: ``!evals " + args[0] + " failed patrol``\n" +
+                        "**Quiz**: ``!evals " + args[0] + " failed quiz``\n" +
+                        "**Combat**: ``!evals " + args[0] + " failed combat``").queue();
                     return false;
                 }
                 if (args.length == 3) {
-                    if (args[2].equalsIgnoreCase("patrol") || args[2].equalsIgnoreCase("quiz")) {
+                    if (args[2].equalsIgnoreCase("patrol") || args[2].equalsIgnoreCase("quiz") || args[2].equalsIgnoreCase("combat")) {
                         if (collection.size() < 1) {
                             int roblox_id = getRobloxId(args[0]);
                             avaire.getDatabase()
@@ -257,6 +273,8 @@ public class EvaluationCommand extends Command {
                                         statement.set("passed_patrol", false);
                                     } else if (args[2].equalsIgnoreCase("quiz")) {
                                         statement.set("passed_quiz", false);
+                                    } else if (args[2].equalsIgnoreCase("combat")) {
+                                        statement.set("passed_combat", false);
                                     }
                                     statement.set("evaluator", context.getMember().getEffectiveName());
                                 });
@@ -278,6 +296,9 @@ public class EvaluationCommand extends Command {
                                     } else if (args[2].equalsIgnoreCase("quiz")) {
                                         statement.set("passed_quiz", false);
                                     }
+                                    else if (args[2].equalsIgnoreCase("combat")) {
+                                        statement.set("passed_combat", false);
+                                    }
                                 });
                             context.makeSuccess("Successfully updated the record in the database").queue();
                             return true;
@@ -285,19 +306,22 @@ public class EvaluationCommand extends Command {
 
 
                     } else {
-                        context.makeError("Do you want to pass the user in the quiz or in the patrol?\n" +
-                            "**Patrol**: ``c!evals " + args[0] + " passed patrol``\n" +
-                            "**Quiz**: ``c!evals " + args[0] + " passed quiz``").queue();
+                        context.makeError("Do you want to pass the user in the quiz, combat or in the patrol?\n" +
+                            "**Patrol**: ``!evals " + args[0] + " passed patrol``\n" +
+                            "**Quiz**: ``!evals " + args[0] + " passed quiz``\n" +
+                            "**Combat**: ``!evals " + args[0] + " passed combat``").queue();
                         return false;
                     }
                 }
             } else {
-                context.makeError("Do you want to pass the user in the quiz or in the patrol?\n" +
-                    "**Patrol**: ``c!evals " + args[0] + " passed patrol``\n" +
-                    "**Quiz**: ``c!evals " + args[0] + " passed quiz``" +
+                context.makeError("Do you want to pass the user in the quiz, combat or in the patrol?\n" +
+                    "**Patrol**: ``!evals " + args[0] + " passed patrol``\n" +
+                    "**Quiz**: ``!evals " + args[0] + " passed quiz``\n" +
+                    "**Combat**: ``!evals " + args[0] + " passed combat``" +
                     "\nDo you want to fail the user in the quiz or in the patrol?\n" +
-                    "**Patrol**: ``c!evals " + args[0] + " failed patrol``\n" +
-                    "**Quiz**: ``c!evals " + args[0] + " failed quiz``").queue();
+                    "**Patrol**: ``!evals " + args[0] + " failed patrol``\n" +
+                    "**Quiz**: ``!evals " + args[0] + " failed quiz``\n" +
+                    "**Combat**: ``!evals " + args[0] + " failed combat``").queue();
                 return false;
             }
 

@@ -19,13 +19,14 @@
  *
  */
 
-package com.avairebot.commands.utility;
+package com.avairebot.commands.administration;
 
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.factories.MessageFactory;
 import com.avairebot.utilities.MentionableUtil;
 import net.dv8tion.jda.api.entities.User;
 
@@ -34,44 +35,38 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class UserIdCommand extends Command {
+public class UserAvatarCommand extends Command {
 
-    public UserIdCommand(AvaIre avaire) {
+    public UserAvatarCommand(AvaIre avaire) {
         super(avaire, false);
     }
 
     @Override
     public String getName() {
-        return "User ID Command";
+        return "User Avatar Command";
     }
 
     @Override
     public String getDescription() {
-        return "Shows your Discord account user ID, or the ID of the user tagged in the command.";
+        return "Get the profile picture of someone on the server by name, id, or mentions.";
     }
 
     @Override
     public List<String> getUsageInstructions() {
-        return Collections.singletonList("`:command [user]` - Gets the ID of the user who ran the command, or the mentioned user.");
+        return Collections.singletonList("`:command <user | user id>` - Gets the avatar of the given user.");
     }
 
     @Override
     public List<String> getExampleUsage() {
         return Arrays.asList(
             "`:command @Senither`",
-            "`:command alexis`",
-            "`:command 88739639380172800`"
+            "`:command`"
         );
     }
 
     @Override
-    public List<Class<? extends Command>> getRelations() {
-        return Collections.singletonList(UserInfoCommand.class);
-    }
-
-    @Override
     public List<String> getTriggers() {
-        return Arrays.asList("userid", "uid");
+        return Collections.singletonList("avatar");
     }
 
     @Nonnull
@@ -88,14 +83,25 @@ public class UserIdCommand extends Command {
         }
 
         if (user == null) {
-            return sendErrorMessage(context, "errors.noUsersWithNameOrId", args[0]);
+            return sendErrorMessage(context, context.i18n("noUserFound", args[0]));
         }
 
-        context.makeSuccess(context.i18n("message"))
-            .set("target", user.getAsMention())
-            .set("targetid", user.getId())
+        String avatarUrl = generateAvatarUrl(user);
+        MessageFactory.makeEmbeddedMessage(context.getChannel())
+            .setTitle(context.i18n("title", user.getName(), user.getDiscriminator()), avatarUrl)
+            .requestedBy(context.getMember())
+            .setImage(avatarUrl)
             .queue();
 
         return true;
+    }
+
+    private String generateAvatarUrl(User user) {
+        String avatarUrl = user.getEffectiveAvatarUrl();
+        String[] parts = avatarUrl.split("\\.");
+
+        String extension = parts[parts.length - 1];
+
+        return avatarUrl + "?size=256&." + extension;
     }
 }

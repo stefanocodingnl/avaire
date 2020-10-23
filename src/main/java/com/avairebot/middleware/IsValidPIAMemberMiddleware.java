@@ -7,6 +7,8 @@ import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ public class IsValidPIAMemberMiddleware extends Middleware {
         if (!avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong()).isAdmin()) {
             return sendMustBeOfficialPIAMemberMessage(message);
         }
+
 
         return stack.next();
     }

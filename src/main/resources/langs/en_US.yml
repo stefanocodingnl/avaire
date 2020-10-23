@@ -482,6 +482,24 @@ administration:
         userDoesntHaveMuteRole: "{0} doesn't appear to have the mute role, they may already have been unmuted!"
         userHasBeenUnmuted: ":target has been unmuted!"
         userAutoUnmutedReason: "*Automatic unmute after the set time has elapsed*"
+    UserAvatarCommand:
+        noUserFound: "I found no users with the name or ID of `{0}`"
+        title: "{0}#{1}'s Avatar"
+
+    UserIdCommand:
+        message: ':id: of the user **:target** is `:targetid`'
+
+    UserInfoCommand:
+        fields:
+          username: 'Username'
+          userId: 'User ID'
+          joinedServer: 'Joined Server'
+          joinedDiscord: 'Joined Discord'
+          roles: 'Roles ({0})'
+          servers: 'Servers'
+        inServers: '{0} the bot knows about'
+        noRoles: '*This user does not have any roles*'
+        timeFormat: 'EEE, dd MMM yyyy HH:mm'
 
     VoiceKickCommand:
         mustMentionUser: "You must mention the user that you want to kick."
@@ -1065,25 +1083,6 @@ utility:
         dateFormat: 'EEEEEEEE, dd MMM yyyy'
         timeFormat: 'HH:mm:ss z'
 
-    UserAvatarCommand:
-        noUserFound: "I found no users with the name or ID of `{0}`"
-        title: "{0}#{1}'s Avatar"
-
-    UserIdCommand:
-        message: ':id: of the user **:target** is `:targetid`'
-
-    UserInfoCommand:
-        fields:
-            username: 'Username'
-            userId: 'User ID'
-            joinedServer: 'Joined Server'
-            joinedDiscord: 'Joined Discord'
-            roles: 'Roles ({0})'
-            servers: 'Servers'
-        inServers: '{0} the bot knows about'
-        noRoles: '*This user does not have any roles*'
-        timeFormat: 'EEE, dd MMM yyyy HH:mm'
-
     VersionCommand:
         current: 'I am currently `:difference` :type versions behind!'
         getLatest: 'You can get the latest version of me on github at [avaire/avaire](https://gitlab.com/pinewood-builders/discord/xeus)'
@@ -1106,3 +1105,8 @@ utility:
             temperature: "Temperature"
             windDirection: "Wind Direction"
             windSpeed: "Wind Speed"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

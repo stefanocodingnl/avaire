@@ -63,6 +63,7 @@ public class GuildTransformer extends Transformer {
     private final Set <Long> moderatorRoles = new HashSet <>();
     private final Set <Long> managerRoles = new HashSet <>();
     private final Set <Long> administratorRoles = new HashSet <>();
+    private final Set <Long> noLinksRoles = new HashSet <>();
 
     private final GuildTypeTransformer guildType;
     private boolean partner;
@@ -355,6 +356,23 @@ public class GuildTransformer extends Transformer {
                 }
             }
 
+            if (data.getString("no_links_roles", null) != null) {
+                List <String> noLinksRole = AvaIre.gson.fromJson(
+                    data.getString("no_links_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String roleId : noLinksRole) {
+                    try {
+                        noLinksRoles.add(
+                            Long.parseLong(roleId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
             if (data.getString("modules", null) != null) {
                 HashMap <String, Map <String, String>> dbModules = AvaIre.gson.fromJson(
                     data.getString("modules"),
@@ -497,6 +515,10 @@ public class GuildTransformer extends Transformer {
 
     public Set <Long> getAdministratorRoles() {
         return administratorRoles;
+    }
+
+    public Set <Long> getNoLinksRoles() {
+        return noLinksRoles;
     }
 
     public String getAutorole() {

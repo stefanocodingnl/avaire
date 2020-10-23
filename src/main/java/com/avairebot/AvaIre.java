@@ -263,7 +263,6 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Help", defaultPrefix);
         CategoryHandler.addCategory(this, "Fun", defaultPrefix);
         CategoryHandler.addCategory(this, "Music", defaultPrefix);
-        CategoryHandler.addCategory(this, "Interaction", defaultPrefix);
         CategoryHandler.addCategory(this, "GlobalMod", defaultPrefix);
         CategoryHandler.addCategory(this, "Search", defaultPrefix);
         CategoryHandler.addCategory(this, "Utility", defaultPrefix);

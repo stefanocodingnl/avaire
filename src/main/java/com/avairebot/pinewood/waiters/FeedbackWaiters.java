@@ -173,7 +173,7 @@ public class FeedbackWaiters {
     }
 
     private static boolean isValidDiscordUserPM(CommandMessage context, GuildMessageReactionAddEvent p) {
-        return context.getMember().equals(p.getMember());
+        return context.getAuthor().equals(p.getUser());
     }
 
 

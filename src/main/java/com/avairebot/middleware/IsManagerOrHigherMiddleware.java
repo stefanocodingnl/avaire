@@ -39,7 +39,7 @@ public class IsManagerOrHigherMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (isManagerOrHigher(stack, message) && !message.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+        if (isManagerOrHigher(stack, message) || message.getMember().hasPermission(Permission.ADMINISTRATOR) || message.getMember().hasPermission(Permission.MANAGE_SERVER)) {
             return stack.next();
         }
 

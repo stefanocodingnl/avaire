@@ -107,8 +107,10 @@ public class RoleSettingsCommand extends SystemCommand {
             return sendErrorMessage(context, context.i18n("invalidRole", args[0]));
         }
 
+
+
         if (args.length > 1) {
-            if (args[1].equals("mod") || args[1].equals("admin") || args[1].equals("manager")) {
+            if (args[1].equals("mod") || args[1].equals("admin") || args[1].equals("manager") || args[1].equals("no-links")) {
                 if (args.length > 2) {
                     return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[2]));
                 }
@@ -216,23 +218,39 @@ public class RoleSettingsCommand extends SystemCommand {
         }
     }
 
+    private void runNoLinksRolesCheck(CommandMessage context, boolean b, StringBuilder sb, Set <Long> admins) {
+        if (b) {
+            sb.append("\n\n**No-Link roles** (Roles that can't send any links):");
+            for (Long s : admins) {
+                Role r = context.getGuild().getRoleById(s);
+                if (r != null) {
+                    sb.append("\n - ").append(r.getAsMention());
+                }
+            }
+        } else {
+            sb.append("\n\n**No-Link roles**:\n" + "" + "No roles have been found!");
+        }
+    }
+
     private boolean sendEnabledRoles(CommandMessage context, GuildTransformer transformer) {
-        if (transformer.getAdministratorRoles().isEmpty() && transformer.getModeratorRoles().isEmpty() && transformer.getManagerRoles().isEmpty()) {
-            return sendErrorMessage(context, "Sorry, but there are no manager, admin or mod roles on the discord configured.");
+        if (transformer.getAdministratorRoles().isEmpty() && transformer.getModeratorRoles().isEmpty() && transformer.getManagerRoles().isEmpty() && transformer.getNoLinksRoles().isEmpty()) {
+            return sendErrorMessage(context, "Sorry, but there are no manager, admin mod or no-links roles on the discord configured.");
         }
 
         Set <Long> mod = transformer.getModeratorRoles();
         Set <Long> manager = transformer.getManagerRoles();
         Set <Long> admins = transformer.getAdministratorRoles();
+        Set <Long> nolinks = transformer.getNoLinksRoles();
         StringBuilder sb = new StringBuilder();
         runAdminRolesCheck(context, admins.size() > 0, sb, admins);
         runManagerRolesCheck(context, manager.size() > 0, sb, manager);
         runModRolesCheck(context, mod.size() > 0, sb, mod);
+        runNoLinksRolesCheck(context, nolinks.size() > 0, sb, nolinks);
 
         context.makeInfo(context.i18n("listRoles"))
             .set("roles", sb.toString())
             .setTitle(context.i18n("listRolesTitle",
-                transformer.getModeratorRoles().size() + transformer.getManagerRoles().size() + transformer.getAdministratorRoles().size()
+                transformer.getModeratorRoles().size() + transformer.getManagerRoles().size() + transformer.getAdministratorRoles().size() + transformer.getNoLinksRoles().size()
             ))
             .queue();
 
@@ -256,6 +274,9 @@ public class RoleSettingsCommand extends SystemCommand {
                 if (rank.equals("mod")) {
                     guildTransformer.getModeratorRoles().remove(role.getIdLong());
                 }
+                if (rank.equals("no-links")) {
+                    guildTransformer.getNoLinksRoles().remove(role.getIdLong());
+                }
                 break;
 
             case TRUE:
@@ -267,6 +288,9 @@ public class RoleSettingsCommand extends SystemCommand {
                 }
                 if (rank.equals("mod")) {
                     guildTransformer.getModeratorRoles().add(role.getIdLong());
+                }
+                if (rank.equals("no-links")) {
+                    guildTransformer.getNoLinksRoles().add(role.getIdLong());
                 }
 
                 break;
@@ -297,11 +321,20 @@ public class RoleSettingsCommand extends SystemCommand {
                     }
                     break;
                 }
+                if (rank.equals("no-links")) {
+                    if (guildTransformer.getNoLinksRoles().contains(role.getIdLong())) {
+                        guildTransformer.getNoLinksRoles().remove(role.getIdLong());
+                    } else {
+                        guildTransformer.getNoLinksRoles().add(role.getIdLong());
+                    }
+                    break;
+                }
         }
 
         boolean isEnabled = guildTransformer.getModeratorRoles().contains(role.getIdLong()) ||
             guildTransformer.getAdministratorRoles().contains(role.getIdLong()) ||
-            guildTransformer.getManagerRoles().contains(role.getIdLong());
+            guildTransformer.getManagerRoles().contains(role.getIdLong()) ||
+            guildTransformer.getNoLinksRoles().contains(role.getIdLong());
 
         try {
             if (rank.equals("admin")) {
@@ -328,6 +361,15 @@ public class RoleSettingsCommand extends SystemCommand {
                     .update(statement -> {
                         statement.set("moderator_roles", AvaIre.gson.toJson(
                             guildTransformer.getModeratorRoles()
+                        ), true);
+                    });
+            }
+            if (rank.equals("no-links")) {
+                avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
+                    .where("id", context.getGuild().getId())
+                    .update(statement -> {
+                        statement.set("no_links_roles", AvaIre.gson.toJson(
+                            guildTransformer.getNoLinksRoles()
                         ), true);
                     });
             }

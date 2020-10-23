@@ -246,7 +246,7 @@ public interface CommandContext {
      * utility:
      *   PingCommand:
      *     rating:
-     *       10: 'faster than Sonic! :smiley_cat:'
+     *       10: 'faster than Soni! :smiley_cat:'
      * </code></pre>
      *
      * @param key The key of the {@link com.avairebot.language.I18n I18n} message.
@@ -302,7 +302,7 @@ public interface CommandContext {
      * utility:
      *   PingCommand:
      *     rating:
-     *       10: 'faster than Sonic! :smiley_cat:'
+     *       10: 'faster than Soni! :smiley_cat:'
      * </code></pre>
      *
      * @param key The key of the {@link com.avairebot.language.I18n I18n} message.

@@ -884,3 +884,8 @@ utility:
       temperature: "温度"
       windDirection: "風向き"
       windSpeed: "風速"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

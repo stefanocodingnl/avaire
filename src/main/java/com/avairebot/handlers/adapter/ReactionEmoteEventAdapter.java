@@ -266,18 +266,15 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                         .setDescription(buildSuggestionEmbed(e, likes, dislikes, msg))
                         .setTimestamp(msg.getEmbeds().get(0).getTimestamp())
                         .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).build()).queue();
-                    msg.pin().queue();
                     msg.clearReactions("\uD83D\uDC4D").queueAfter(1, TimeUnit.SECONDS);
                     msg.clearReactions("\uD83D\uDC4E").queueAfter(1, TimeUnit.SECONDS);
+                    runPerGuildAction(e, msg);
                 }
 
                 if (dislikes > 39) {
                     msg.editMessage(new EmbedBuilder()
                         .setColor(new Color(255, 0, 0))
-                        .setDescription("**Reactions**: \n" +
-                            ":+1: - " + likes + "\n" +
-                            ":-1: - " + dislikes + "\n" +
-                            "This suggestion has now failed the community vote, this meant the suggestion wont be used.\n\n**Suggestion**:\n" + msg.getEmbeds().get(0).getDescription())
+                        .setDescription(buildDeniedSuggestionEmbed(msg, likes, dislikes))
                         .setTimestamp(msg.getEmbeds().get(0).getTimestamp())
                         .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).build()).queue();
                     msg.clearReactions().queue();
@@ -401,6 +398,28 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
     }
 
+    private void runPerGuildAction(GuildMessageReactionAddEvent e, Message msg) {
+        if (e.getGuild().getId().equals("371062894315569173")) {
+            e.getGuild().getTextChannelById("767806684403204097").sendMessage(msg).queue(
+                p -> {
+                    p.addReaction(":white_check_mark:").queue();
+                    p.addReaction(":x:").queue();
+                }
+            );
+        } else {
+            msg.pin().queue();
+        }
+    }
+
+    private String buildDeniedSuggestionEmbed(Message msg, int likes, int dislikes) {
+        if (msg.getEmbeds().get(0).getDescription().length() > 1500) {return " ";}
+
+        return "**Reactions**: \n" +
+            ":+1: - " + likes + "\n" +
+            ":-1: - " + dislikes + "\n" +
+            "This suggestion has now failed the community vote, this meant the suggestion wont be used.\n\n**Suggestion**:\n" + msg.getEmbeds().get(0).getDescription();
+    }
+
     private void sendApprovedMessage(GuildMessageReactionAddEvent e, Message r) {
         if (e.getGuild().getId().equals("371062894315569173")) {
             e.getGuild().getTextChannelById(Constants.FEEDBACK_APPROVED_CHANNEL_ID).sendMessage(r).queue();
@@ -409,6 +428,8 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
 
     private CharSequence buildSuggestionEmbed(GuildMessageReactionAddEvent e, int likes, int dislikes, Message msg) {
+        if (msg.getEmbeds().get(0).getDescription().length() > 1500) {return " " + msg.getEmbeds().get(0).getDescription();}
+
         if (e.getGuild().getId().equals("438134543837560832") || e.getGuild().getId().equals("758057400635883580") || e.getGuild().getId().equals("436670173777362944")) {
             return "**Reactions**: \n" +
                 ":+1: - " + likes + "\n" +

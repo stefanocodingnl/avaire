@@ -5,6 +5,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -83,10 +84,18 @@ public class GlobalBanCommand extends Command {
             context.makeError("Sorry, but you didn't give any member id to globbaly ban!").queue();
             return true;
         }
+
         if (args.length == 1) {
             context.makeError("Please supply a reason for the global ban!").queue();
             return true;
         }
+        boolean soft = ComparatorUtil.isFuzzyFalse(args[1]);
+
+        if (!soft && args.length < 3) {
+            context.makeError("Please supply a reason for the global ban!").queue();
+            return true;
+        }
+
         if (guild.size() > 0) {
             guild.clear();
         }
@@ -97,10 +106,13 @@ public class GlobalBanCommand extends Command {
             }
         }
 
-        final String reason = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+        int time = soft ? 0 : 7;
+
+
+        final String reason = String.join(" ", Arrays.copyOfRange(args, soft ? 1 : 2, args.length));
 
         for (Guild g : guild) {
-            g.ban(args[0], 0).reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: " + reason).queue();
+            g.ban(args[0], time).reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: " + reason).queue();
             context.makeSuccess(args[0] + " has been banned from: **" + g.getName() + "**").queue();
         }
         return true;

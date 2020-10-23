@@ -8,6 +8,7 @@ import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.google.gson.JsonObject;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -32,7 +33,7 @@ import static com.avairebot.utils.JsonReader.readJsonFromUrl;
 public class RequestRewardCommand extends Command {
 
     public RequestRewardCommand(AvaIre avaire) {
-        super(avaire);
+        super(avaire, false);
     }
 
     @Override
@@ -85,9 +86,11 @@ public class RequestRewardCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
         if (!context.guild.getId().equalsIgnoreCase("438134543837560832")) {
             context.makeError("Sorry, but this command can only be used in the PBST Discord.").queue();
+            return false;
         }
         if (!checkUserRanks(context)) {
             context.makeError("Sorry, but only Tier 3's and SD's are able to request a reward.").queue();
+            return false;
         }
         context.makeInfo("I will be sending you a DM to request more info!").setColor(new Color(0, 255, 0)).queue(
             p -> {
@@ -189,7 +192,7 @@ public class RequestRewardCommand extends Command {
     }
 
     private boolean checkUserRanks(CommandMessage context) {
-        return context.getMember().getRoles().contains(context.guild.getRoleById("438136063077384202")) || context.getMember().getRoles().contains(context.guild.getRoleById("438136063001886741"));
+        return context.getMember().getRoles().contains(context.guild.getRoleById("438136063077384202")) || context.getMember().getRoles().contains(context.guild.getRoleById("438136063001886741")) ||context.getMember().hasPermission(Permission.ADMINISTRATOR);
     }
 
 
