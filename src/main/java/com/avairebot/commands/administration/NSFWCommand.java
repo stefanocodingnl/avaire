@@ -77,7 +77,7 @@ public class NSFWCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "require:all,general.manage_channels",
+            "isManagerOrHigher",
             "throttle:channel,1,5"
         );
     }

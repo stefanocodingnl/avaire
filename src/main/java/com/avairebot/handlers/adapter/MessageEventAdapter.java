@@ -704,16 +704,21 @@ public class MessageEventAdapter extends EventAdapter {
         }
 
         if (event.getMessage().getContentRaw().contains("/attachments/")
-        || event.getMessage().getContentRaw().contains("https://cdn.discordapp.com/")) {
+            || event.getMessage().getContentRaw().contains("https://cdn.discordapp.com/")) {
             return;
         }
         if (event.getMessage().getAttachments().size() > 0) {
             return;
-        } else {
-            event.getAuthor().openPrivateChannel().queue(privateChannel -> {
-                privateChannel.sendMessage(MessageFactory.makeWarning(event.getMessage(), "Sorry, but you're only allowed to post screenshots in this channel. Make sure these are actual **PBST** screenshots, made during either a raid or patrol.").buildEmbed()).queue();
-            });
         }
+
+        event.getMessage().delete().queue();
+        event.getAuthor().openPrivateChannel().queue(privateChannel -> {
+            privateChannel.sendMessage(MessageFactory.makeWarning(event.getMessage(), "Sorry, but you're only allowed to post screenshots in this channel. Make sure these are actual **PBST** screenshots, made during either a raid or patrol.").buildEmbed()).queue();
+        });
+
+        event.getChannel().sendMessage(event.getMember().getAsMention()).embed(MessageFactory.makeError(event.getMessage(), "<a:ALERTA:720439101249290250> **Only post actual event images here, don't talk in this channel!** <a:ALERTA:720439101249290250>").setTimestamp(Instant.now()).setThumbnail(event.getAuthor().getEffectiveAvatarUrl()).setFooter("This message self-destructs after 30 seconds.").buildEmbed()).queue(
+            r -> r.delete().queueAfter(30, TimeUnit.SECONDS)
+        );
 
 
     }

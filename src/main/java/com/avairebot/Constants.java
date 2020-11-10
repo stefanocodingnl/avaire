@@ -53,6 +53,8 @@ public class Constants {
     public static final String ON_WATCH_LOG_TABLE_NAME = "on_watch_logs";
     public static final String ON_WATCH_TYPES_TABLE_NAME = "on_watch_types";
 
+    public static final String ROLE_PERSISTENCE_TABLE_NAME = "role_persistence";
+
     public static final String MUSIC_SEARCH_PROVIDERS_TABLE_NAME = "music_search_providers";
     public static final String MUSIC_SEARCH_CACHE_TABLE_NAME = "music_search_cache";
     public static final String INSTALLED_PLUGINS_TABLE_NAME = "installed_plugins";
@@ -126,7 +128,7 @@ public class Constants {
         add("251818929226383361"); // CombatSwift
         add("194517256389132288"); // Coasterteam
         add("131917628800237570"); // Soppo
-        add("412768975907323905"); // Vah aka mr inactivity
+        add("610591577961791500"); // C3N0
         add("202926188522504192"); // Sparked
         add("142083279309373440"); // Wickey
         add("723151849640820759"); // Csdi
@@ -137,6 +139,7 @@ public class Constants {
         add("252228224904331268"); // Supremo
         add("329668217515540482"); // TenX
         add("148420768324124672"); // Diddleshot
+        add("314505421870333952"); // AnuCat
     }};
 
     // BYPASS USERS

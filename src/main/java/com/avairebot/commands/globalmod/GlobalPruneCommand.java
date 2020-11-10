@@ -99,7 +99,7 @@ public class GlobalPruneCommand extends Command {
         for (String s : guilds) {
             Guild g = avaire.getShardManager().getGuildById(s);
             if (g != null) {
-                g.loadMembers(gu -> {guild.add(gu.getGuild());});
+                guild.add(g);
             }
         }
         if (role.size()>0) {

@@ -94,7 +94,8 @@ public class ModlogPardonCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "throttle:user,1,4",
-            "requireOne:user,text.manage_messages,general.kick_members,general.ban_members"
+            "isModOrHigher"
+            //"requireOne:user,text.manage_messages,general.kick_members,general.ban_members"
         );
     }
 

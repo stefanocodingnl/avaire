@@ -213,6 +213,10 @@ public class MainEventHandler extends EventHandler {
                     messageEvent.onLocalFilterMessageReceived(event);
                     messageEvent.onGlobalFilterMessageReceived(event);
                     messageEvent.onNoLinksFilterMessageReceived(event);
+
+                    if (event.getChannel().getId().equals("769274801768235028")) {
+                        messageEvent.onPBSTEventGalleryMessageSent(event);
+                    }
                 }
                 if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
                     event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
@@ -220,9 +224,6 @@ public class MainEventHandler extends EventHandler {
                     messageEvent.onPBFeedbackPinEvent(event);
                 }
 
-                if (event.getChannel().getId().equals("769274801768235028")) {
-                    messageEvent.onPBSTEventGalleryMessageSent(event);
-                }
             }
         }
 
