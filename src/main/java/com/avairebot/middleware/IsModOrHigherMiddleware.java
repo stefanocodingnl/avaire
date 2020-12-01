@@ -89,6 +89,7 @@ public class IsModOrHigherMiddleware extends Middleware {
         return guilds.contains(id);
     }
 
+
     private boolean sendMustBeModOrHigherMessage(@Nonnull Message message) {
         return runMessageCheck(message, () -> {
             MessageFactory.makeError(message, "<a:alerta:729735220319748117> This command is only allowed to be executed by a mod or higher!")
