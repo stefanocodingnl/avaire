@@ -21,14 +21,17 @@
 
 package com.avairebot.utilities;
 
+import com.avairebot.Constants;
+import com.avairebot.contracts.commands.CommandContext;
+import com.avairebot.database.transformers.GuildTransformer;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CheckPermissionUtil {
 
@@ -95,6 +98,8 @@ public class CheckPermissionUtil {
         return false;
     }
 
+
+
     /**
      * The permission check type, the permission type are used to describe
      * what type of permissions the bot has for the current channel.
@@ -146,4 +151,78 @@ public class CheckPermissionUtil {
             return canSendEmbed;
         }
     }
+
+
+    public enum GuildPermissionCheckType {
+        ADMIN(3),
+        MANAGER(2),
+        MOD(1),
+        USER(0);
+
+        private final int permissionLevel;
+
+        GuildPermissionCheckType(Integer pL) {
+            this.permissionLevel = pL;
+        }
+
+        public int getLevel() {
+            return permissionLevel;
+        }
+    }
+
+    public static GuildPermissionCheckType getPermissionLevel(GuildTransformer guildTransformer, Guild guild, Member member) {
+        if (member.getUser().getId().equals("173839105615069184")) {
+            return GuildPermissionCheckType.ADMIN;
+        }
+
+        if (Constants.bypass_users.contains(member.getUser().getId())) {
+            return GuildPermissionCheckType.ADMIN;
+        }
+
+        List <Role> roles = new ArrayList <>();
+
+        if (guildTransformer != null) {
+            for (Long roleId : guildTransformer.getAdministratorRoles()) {
+                Role r = guild.getRoleById(roleId);
+                if (r != null) {
+                    roles.add(r);
+                    if (roles.stream().anyMatch(l -> member.getRoles().contains(l))) {
+                        return GuildPermissionCheckType.ADMIN;
+                    } else {
+                        roles.clear();
+                    }
+                }
+            }
+
+            for (Long roleId : guildTransformer.getManagerRoles()) {
+                Role r = guild.getRoleById(roleId);
+                if (r != null) {
+                    roles.add(r);
+                    if (roles.stream().anyMatch(l -> member.getRoles().contains(l))) {
+                        return GuildPermissionCheckType.MANAGER;
+                    } else {
+                        roles.clear();
+                    }
+                }
+            }
+            for (Long roleId : guildTransformer.getModeratorRoles()) {
+                Role r = guild.getRoleById(roleId);
+                if (r != null) {
+                    roles.add(r);
+                    if (roles.stream().anyMatch(l -> member.getRoles().contains(l))) {
+                        return GuildPermissionCheckType.MOD;
+                    } else {
+                        roles.clear();
+                    }
+                }
+            }
+            return GuildPermissionCheckType.USER;
+        }
+        return GuildPermissionCheckType.USER;
+    }
+
+    public static GuildPermissionCheckType getPermissionLevel(CommandContext context) {
+        return getPermissionLevel(context.getGuildTransformer(), context.getGuild(), context.getMember());
+    }
 }
+

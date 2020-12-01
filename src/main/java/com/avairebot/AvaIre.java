@@ -130,9 +130,8 @@ public class AvaIre {
 
     protected static AvaIre avaire;
 
-
-    private final EventWaiter waiter;
     private static Environment applicationEnvironment;
+    private final EventWaiter waiter;
     private final Settings settings;
     private final Configuration config;
     private final ConstantsConfiguration constants;

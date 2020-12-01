@@ -96,7 +96,6 @@ public class VoteCommand extends Command {
             return false;
         }
         if (args[0].equalsIgnoreCase("create")) {
-            //context.makeInfo("TODO: Make the vote creation system.").queue();
             if (args.length == 1) { //!vote create
                 context.makeError("Please enter the items you'd like to enter into the vote").setTitle("Need items!").queue();
                 return false;
@@ -144,7 +143,7 @@ public class VoteCommand extends Command {
             }
 
             context.makeSuccess("Succesfully created \"" + vote_id + "\" vote with the options: \n - " + String.join("\n - ", strings) + "\nWith the question: **" + question + "**").queue();
-            return false; // TODO: Make the vote creation system.
+            return false;
         }
         if (args[0].equalsIgnoreCase("delete")) {
             if (args.length == 1) {
@@ -193,8 +192,8 @@ public class VoteCommand extends Command {
                 context.makeError("Please only have 1 argument in the command.").queue();
             }
 
-            //context.makeInfo("ODO: Make the vote deletion system.").queue();
-            return false; // TODO: Make the vote deletion system.
+
+            return false;
         }
         if (args[0].equalsIgnoreCase("responses")) {
             if (args.length == 1) {
@@ -506,7 +505,6 @@ public class VoteCommand extends Command {
             throwables.printStackTrace();
         }
 
-        // TODO: Check if there is a vote on the first argument, if not. Continue down.
 
 
         return false;

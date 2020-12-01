@@ -1,13 +1,28 @@
 package com.avairebot.commands.pinewood;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import com.avairebot.pinewood.waiters.FeedbackWaiters;
+import com.avairebot.database.collection.Collection;
+import com.avairebot.database.collection.DataRow;
+import com.avairebot.database.query.QueryBuilder;
+import com.avairebot.database.transformers.GuildTransformer;
+import com.avairebot.utilities.CheckPermissionUtil;
+import com.avairebot.utilities.MentionableUtil;
+import com.avairebot.utilities.NumberUtil;
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 
 import javax.annotation.Nonnull;
+import javax.xml.soap.Text;
+import java.awt.*;
+import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,14 +46,14 @@ public class PBSTFeedbackCommand extends Command {
     @Override
     public List <String> getUsageInstructions() {
         return Collections.singletonList(
-            "`:command` - Give feedback about PBST."
+            "`:command` - Submit a suggestion to any guild having this feature enabled."
         );
     }
 
     @Override
     public List <String> getExampleUsage() {
         return Collections.singletonList(
-            "`:command raids seem to be short staffed bla bla bla` - "
+            "`:command` - Submit a suggestion to any guild having this feature enabled."
         );
     }
 
@@ -66,26 +81,241 @@ public class PBSTFeedbackCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-            context.makeInfo("Hello! And welcome to the feedback/suggestion selection menu :smile:\nYou can select from 5 places to suggest on: \n" +
-                "- <:xeus:737770956671418438> -> Suggestions for Xeus.\n" +
-                "- <:PBSTHandbook:690133745805819917> -> Suggestions for PBST.\n" +
-                "- <:PETHandbook:690134297465585704> -> Suggestions for PET.\n" +
-                "- <:PB:757736074641408022> -> Anything involving PB.\n" +
-                "- \uD83D\uDEE2 -> PBOP (Pinewood Builders Oil Platform)").queue( p -> {
-                    p.addReaction("xeus:737770956671418438").queue();
-                    p.addReaction("PBSTHandbook:690133745805819917").queue();
-                    p.addReaction("PETHandbook:690134297465585704").queue();
-                    p.addReaction("PB:757736074641408022").queue();
-                    p.addReaction("\uD83D\uDEE2").queue();
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(context).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
+            if (args.length > 0) {
+                switch (args[0]) {
+                    case "ss":
+                    case "set-suggestions":
+                        return runSetSuggestionChannel(context, args);
+                    case "sc":
+                    case "set-community":
+                        return runSetCommunityVotesChannel(context, args);
+                    case "ca":
+                    case "clear-all":
+                        return runClearAllChannelsFromDatabase(context);
+                    default:
+                        return sendErrorMessage(context, "Please enter in a correct argument.");
+                }
+            }
+        }
 
-                    FeedbackWaiters.getInstance().startFeedbackVersionListener(context, p);
-            });
+        context.makeInfo("<a:loading:742658561414266890> Loading suggestions...").queue(l -> {
+
+            QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).orderBy("suggestion_channel");
+            try {
+                StringBuilder sb = new StringBuilder();
+                qb.get().forEach(dataRow -> {
+                    if (dataRow.getString("suggestion_channel") != null) {
+                        Guild g = avaire.getShardManager().getGuildById(dataRow.getString("id"));
+                        Emote e = avaire.getShardManager().getEmoteById(dataRow.getString("suggestion_emote_id"));
+
+                        if (g != null && e != null) {
+                            sb.append("``").append(g.getName()).append("`` - ").append(e.getAsMention()).append("\n");
+                            l.addReaction(e).queue();
+                        } else {
+                            context.makeError("Either the guild or the emote can't be found in the database, please check with the developer.").queue();
+                            return;
+                        }
+                    }
+                });
+                l.editMessage(context.makeInfo("Welcome to the pinewood suggestion system, please submit a suggestion for any of the selected guilds.\nIf you want to suggest a feature for Xeus, [then please go to the Xeus issue's page, and create a suggestion](https://gitlab.com/pinewood-builders/discord/xeus/-/issues).\n\n" + sb.toString()).buildEmbed()).queue();
+
+                startEmojiWaiter(context, l, avaire.getWaiter(), qb);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
+        });
+
 
         return true;
     }
 
+    private void startEmojiWaiter(CommandMessage context, Message message, EventWaiter waiter, QueryBuilder qb) {
+        waiter.waitForEvent(GuildMessageReactionAddEvent.class, l -> l.getMember().equals(context.member) && message.getId().equals(l.getMessageId()), emote -> {
+            try {
+                DataRow d = qb.where("suggestion_emote_id", emote.getReactionEmote().getId()).get().get(0);
+
+                TextChannel c = avaire.getShardManager().getTextChannelById(d.getString("suggestion_channel"));
+                if (c != null) {
+                    message.editMessage(context.makeInfo("You've selected a suggestion for: ``:guild``\nPlease tell me, what is your suggestion?").set("guild", d.getString("name")).buildEmbed()).queue();
+                    message.clearReactions().queue();
+                    waiter.waitForEvent(GuildMessageReceivedEvent.class, l -> l.getMember().equals(context.member) && message.getChannel().equals(l.getChannel()) && antiSpamInfo(context, l), p -> {
+                        if (p.getMessage().getContentRaw().equals("cancel")) {
+                            context.makeInfo("Cancelled suggestion.").queue();
+                            return;
+                        }
+
+                        c.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
+                            .setAuthor("Suggestion for: " + c.getGuild().getName(), null, c.getGuild().getIconUrl())
+                            .setFooter(context.member.getEffectiveName(), context.member.getUser().getEffectiveAvatarUrl())
+                            .setDescription(p.getMessage().getContentRaw())
+                            .setTimestamp(Instant.now())
+                            .buildEmbed()).queue(v -> {
+                            context.makeSuccess("[Your suggestion has been posted in the correct suggestion channel.](:link)").set("link", v.getJumpUrl()).queue();
+                            createReactions(v, d.getString("suggestion_community_channel"));
+
+                            try {
+                                avaire.getDatabase().newQueryBuilder(Constants.PB_SUGGESTIONS_TABLE_NAME).insert(data -> {
+                                    data.set("pb_server_id", d.getString("id"));
+                                    data.set("suggestion_message_id", v.getId());
+                                    data.set("suggester_discord_id", context.getMember().getId());
+                                    data.set("suggester_discord_name", context.getMember().getEffectiveName());
+                                    data.set("suggestion_description", p.getMessage().getContentRaw());
+                                });
+                            } catch (SQLException throwables) {
+                                context.makeError("Something went wrong in the database, please check with the developer.").queue();
+                            }
+                        });
+                    });
+                } else {
+                    context.makeError("This guild doesn't have a (valid) channel for suggestions").queue();
+                }
+
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
+    }
+
+    private boolean antiSpamInfo(CommandMessage context, GuildMessageReceivedEvent l) {
+        if (l.getMessage().getContentRaw().equalsIgnoreCase("cancel")) return true;
+
+        if (l.getMessage().getContentRaw().length() < 51) {
+            context.makeError("Please make sure your suggestion has more then 50 characters before submitting it. If you want to cancel. Say \"cancel\"").queue();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean runClearAllChannelsFromDatabase(CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("suggestion_channel", null);
+                q.set("suggestion_emote_id", null);
+                q.set("suggestion_community_channel", null);
+            });
+
+            context.makeSuccess("Any information about the suggestion channel has been removed from the database.").queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+
+    }
+
+    private boolean runSetCommunityVotesChannel(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+        GuildTransformer transformer = context.getGuildTransformer();
+        if (transformer == null) {
+            context.makeError("I can't pull the guilds information, please try again later.").queue();
+            return false;
+        }
+
+        if (transformer.getSuggestionChannel() == null) {
+            context.makeError("You want to set a community approved suggestion channel, without the suggestions channel being set. Please set a \"Suggestion Channel\" with ``:command set-suggestions <channel> <emote>``").set("command", generateCommandTrigger(context.message)).queue();
+            return false;
+        }
+
+        GuildChannel channel = MentionableUtil.getChannel(context.message, args, 1);
+        if (channel == null) {
+            return sendErrorMessage(context, "Something went wrong please try again or report this to a higher up! (Channel)");
+        }
 
 
+        return updateCommunityChannelInDatabase(transformer, context, (TextChannel) channel);
+    }
 
+    private boolean updateCommunityChannelInDatabase(GuildTransformer transformer, CommandMessage context, TextChannel channel) {
+        transformer.setSuggestionCommunityChannel(channel.getId());
+
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("suggestion_community_channel", transformer.getSuggestionCommunityChannel());
+            });
+            context.makeSuccess("Set the community channel to " + channel.getAsMention()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+
+    }
+
+    private boolean runSetSuggestionChannel(CommandMessage context, String[] args) {
+        if (args.length < 3) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+        Emote e;
+        GuildChannel c = MentionableUtil.getChannel(context.message, args, 1);
+        if (c == null) {
+            return sendErrorMessage(context, "Something went wrong please try again or report this to a higher up! (Channel)");
+        }
+
+        if (NumberUtil.isNumeric(args[1])) {
+            e = avaire.getShardManager().getEmoteById(args[1]);
+            if (e == null) {
+                return sendErrorMessage(context, "Something went wrong please try again or report this to a higher up! (Emote - ID)");
+            }
+        } else if (context.message.getEmotes().size() == 1) {
+            e = context.message.getEmotes().get(0);
+            if (e == null) {
+                return sendErrorMessage(context, "Something went wrong please try again or report this to a higher up! (Emote - Mention)");
+            }
+        } else {
+            return sendErrorMessage(context, "Something went wrong (To many emotes).");
+        }
+
+        GuildTransformer transformer = context.getGuildTransformer();
+        if (transformer == null) {
+            context.makeError("I can't pull the guilds information, please try again later.").queue();
+            return false;
+        }
+
+        transformer.setSuggestionChannel(c.getId());
+        transformer.setSuggestionEmoteId(e.getId());
+
+        return updateChannelAndEmote(context, transformer.getSuggestionEmoteId(), transformer.getSuggestionChannel());
+    }
+
+
+    private boolean updateChannelAndEmote(CommandMessage context, String emoteId, String suggestionChannel) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("suggestion_channel", suggestionChannel);
+                q.set("suggestion_emote_id", emoteId);
+            });
+
+            context.makeSuccess("Suggestions have been enabled for <#:channelId> with the emote <:F::emoteId>").set("channelId", suggestionChannel).set("emoteId", emoteId).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+
+    }
+
+    public static void createReactions(Message r, String communityApprovedSuggestion) {
+        r.addReaction("\uD83D\uDC4D").queue();   // 👍
+        r.addReaction("\uD83D\uDC4E").queue();  // 👎
+        r.addReaction("✅").queue();
+        r.addReaction("❌").queue();
+        r.addReaction("🚫").queue();
+        r.addReaction("\uD83D\uDCAC").queue(); // 💬
+        r.addReaction("\uD83D\uDD04").queue(); // 🔄
+
+        if (communityApprovedSuggestion != null) {
+            r.addReaction("\uD83D\uDC51").queue(); // 👑
+        }
+
+    }
 
 }

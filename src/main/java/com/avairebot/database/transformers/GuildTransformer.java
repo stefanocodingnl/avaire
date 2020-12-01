@@ -79,6 +79,15 @@ public class GuildTransformer extends Transformer {
     private boolean filter = false;
     private String levelChannel = null;
     private String voteValidationChannel = null;
+    private String suggestionChannel = null;
+    private String suggestionCommunityChannel = null;
+    private String suggestionEmoteId = null;
+
+    private String reportEmoteId = null;
+    private String handbookReportChannel = null;
+    private String reportInfoMessage = null;
+    private int robloxGroupId = 0;
+
     private String autorole = null;
     private String modlog = null;
     private String musicChannelText = null;
@@ -135,6 +144,15 @@ public class GuildTransformer extends Transformer {
 
             reportCategory = data.getLong("report_discord_category");
             voteValidationChannel = data.getString("vote_validation_channel");
+
+            suggestionChannel = data.getString("suggestion_channel");
+            suggestionCommunityChannel = data.getString("suggestion_community_channel");
+            suggestionEmoteId = data.getString("suggestion_emote_id");
+
+            reportEmoteId = data.getString("report_emote_id");
+            handbookReportChannel = data.getString("handbook_report_channel");
+            reportInfoMessage = data.getString("report_info_message");
+            robloxGroupId = data.getInt("robloxGroupId");
 
             onWatchCase = data.getInt("on_watch_case");
             onWatchRole = data.getString("on_watch_role");
@@ -467,6 +485,62 @@ public class GuildTransformer extends Transformer {
 
     public void setLevelChannel(String levelChannel) {
         this.levelChannel = levelChannel;
+    }
+
+    public String getSuggestionChannel() {
+        return suggestionChannel;
+    }
+
+    public void setSuggestionChannel(String suggestionChannel) {
+        this.suggestionChannel = suggestionChannel;
+    }
+
+    public String getSuggestionCommunityChannel() {
+        return suggestionCommunityChannel;
+    }
+
+    public void setSuggestionCommunityChannel(String suggestionCommunityChannel) {
+        this.suggestionCommunityChannel = suggestionCommunityChannel;
+    }
+
+    public String getSuggestionEmoteId() {
+        return suggestionEmoteId;
+    }
+
+    public void setSuggestionEmoteId(String suggestionEmoteId) {
+        this.suggestionEmoteId = suggestionEmoteId;
+    }
+
+    public String getHandbookReportEmoteId() {
+        return reportEmoteId;
+    }
+
+    public void setHandbookReportEmoteId(String reportEmoteId) {
+        this.reportEmoteId = reportEmoteId;
+    }
+
+    public String getHandbookReportChannel() {
+        return handbookReportChannel;
+    }
+
+    public void setHandbookReportChannel(String handbookReportChannel) {
+        this.handbookReportChannel = handbookReportChannel;
+    }
+
+    public String getHandbookReportInfoMessage() {
+        return reportInfoMessage;
+    }
+
+    public int getRobloxGroupId() {
+        return robloxGroupId;
+    }
+
+    public void setRobloxGroupId(int robloxGroupId) {
+        this.robloxGroupId = robloxGroupId;
+    }
+
+    public void setHandbookReportInfoMessage(String reportInfoMessage) {
+        this.reportInfoMessage = reportInfoMessage;
     }
 
     public String getVoteValidationChannel() {

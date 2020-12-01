@@ -71,7 +71,7 @@ public class GetGroupMemberCountsCommand extends Command {
         if (tc != null) {
             tc.sendMessage("<a:loading:742658561414266890> Retrieving all group member counts <a:loading:742658561414266890>").queue(pbst -> {
                 try {
-                    Thread.sleep(4000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -79,7 +79,7 @@ public class GetGroupMemberCountsCommand extends Command {
                     "<:PBSTHandbook:690133745805819917> (PBST): " + PBST + "\n" +
                     "<:TMS:572920815595683841> (TMS): " + TMS + "\n" +
                     "<:PET:694389856071319593> (PET): " + PET + "\n" +
-                    "<:PBM:757736209333223434> (PBM): " + PBM).queue();
+                    "<:PBM:751218795078746254> (PBM): " + PBM).queue();
             });
 
             return false;
@@ -97,7 +97,7 @@ public class GetGroupMemberCountsCommand extends Command {
     @Override
     public List <String> getMiddleware() {
         return Collections.singletonList(
-            "throttle:user,1,200"
+            "throttle:user,1,60"
         );
     }
 

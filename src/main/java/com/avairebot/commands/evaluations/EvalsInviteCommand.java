@@ -64,16 +64,13 @@ public class EvalsInviteCommand extends Command {
     public List <String> getMiddleware() {
         return Arrays.asList(
             "throttle:user,1,10",
-            "isOfficialPinewoodGuild"
+            "isOfficialPinewoodGuild",
+            "isModOrHigher"
         );
     }
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-        if (!context.member.getUser().getId().equals("173839105615069184")) {
-            context.makeError("This is a command limited to Stefano#7366.").queue();
-            return true;
-        }
         if (context.message.getMentionedMembers().size() < 1) {
             context.makeError("You didn't mention any members.").queue();
             return false;

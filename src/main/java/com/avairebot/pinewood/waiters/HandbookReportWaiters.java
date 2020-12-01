@@ -3,6 +3,12 @@ package com.avairebot.pinewood.waiters;
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.commands.pinewood.ReportUserCommand;
+import com.avairebot.factories.RequestFactory;
+import com.avairebot.requests.Request;
+import com.avairebot.requests.Response;
+import com.avairebot.requests.service.kronos.blacklist.KronosCheckIfUserIsBlacklistedService;
+import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
+import com.google.gson.reflect.TypeToken;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.react.PrivateMessageReactionAddEvent;
@@ -10,8 +16,13 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import static com.avairebot.utils.JsonReader.readArrayJsonFromUrl;
 import static com.avairebot.utils.JsonReader.readJsonFromUrl;
@@ -88,15 +99,9 @@ public class HandbookReportWaiters {
     }
 
     private static void beginUsernameWaiter(CommandMessage context, String group) {
-        avaire.getWaiter().waitForEvent(PrivateMessageReceivedEvent.class, a -> isValidDiscordUserPM(context, a) && isValidUser(context, a, group),
-            p -> startDescriptionWaiter(context, p, group), 90, TimeUnit.SECONDS, () -> context.makeError("You took to long to respond, please restart the report system!").queue());
-    }
+        }
 
-    private static void startDescriptionWaiter(CommandMessage context, PrivateMessageReceivedEvent p, String group) {
-        p.getChannel().sendMessage(context.makeSuccess("Yes! I've found the user you'd like to report, could you tell me what he did?").buildEmbed()).queue(
-            v -> avaire.getWaiter().waitForEvent(PrivateMessageReceivedEvent.class, a -> isValidDiscordUserPM(context, a) && checkDescriptionLength(context, a), r -> startEvidenceWaiter(context, p, r, group), 90, TimeUnit.SECONDS, () -> p.getChannel().sendMessage("You took to long to respond, please restart the report system!").queue())
-        );
-    }
+
 
     private static void startEvidenceWaiter(CommandMessage context, PrivateMessageReceivedEvent username, PrivateMessageReceivedEvent description, String group) {
         username.getChannel().sendMessage(context.makeSuccess("I've collected the violation you entered, but I need to be sure he actually did something bad.\n" +
@@ -108,7 +113,7 @@ public class HandbookReportWaiters {
             "- [Gyazo Links](https://gyazo.com)\n" +
             "- [LightShot Links](https://app.prntscr.com/)\n" +
             "- [Streamable](https://streamable.com)\n" +
-            "If you want a link/video/image service added, please ask ``Stefano#7366``").buildEmbed()).queue(evi -> avaire.getWaiter().waitForEvent(PrivateMessageReceivedEvent.class, pm -> isValidDiscordUserPM(context, pm) && checkEvidenceAcceptance(context, pm), evidence -> startConfirmationWaiter(context, username, description, evidence, group), 90, TimeUnit.SECONDS, () -> description.getChannel().sendMessage("You took to long to respond, please restart the report system!").queue()));
+            "If you want a link/video/image service added, please ask ``Stefano#7366``").buildEmbed()).queue(evi -> avaire.getWaiter().waitForEvent(PrivateMessageReceivedEvent.class, pm -> checkEvidenceAcceptance(context, pm), evidence -> startConfirmationWaiter(context, username, description, evidence, group), 90, TimeUnit.SECONDS, () -> description.getChannel().sendMessage("You took to long to respond, please restart the report system!").queue()));
     }
 
     private static void startConfirmationWaiter(CommandMessage context, PrivateMessageReceivedEvent u, PrivateMessageReceivedEvent d, PrivateMessageReceivedEvent e, String g) {
@@ -129,7 +134,7 @@ public class HandbookReportWaiters {
                     e.getChannel().sendMessage("Report has been canceled, if you want to restart the report. Do ``!ru`` in any bot-commands channel.").queue();
                 }
                 if (send.getReactionEmote().getName().equals("✅")) {
-                    ReportUserCommand.sendReport(context, username, description, evidence, g, l);
+                    //ReportUserCommand.sendReport(context, username, description, evidence, g, l);
                 } else {
                     e.getChannel().sendMessage("Invalid emoji given, report deleted!").queue();
                 }
@@ -159,16 +164,16 @@ public class HandbookReportWaiters {
     private static boolean checkEvidenceAcceptance(CommandMessage context, PrivateMessageReceivedEvent pm) {
         String message = pm.getMessage().getContentRaw();
         if (!(message.startsWith("https://youtu.be") ||
-                message.startsWith("http://youtu.be") ||
-                message.startsWith("https://www.youtube.com/") ||
-                message.startsWith("http://www.youtube.com/") ||
-                message.startsWith("https://youtube.com/") ||
-                message.startsWith("http://youtube.com/") ||
-                message.startsWith("https://streamable.com/")||
-                message.contains("cdn.discordapp.com") ||
-                message.contains("media.discordapp.com") ||
-                message.contains("gyazo.com") ||
-                message.contains("prntscr.com") || message.contains("imgur.com"))) {
+            message.startsWith("http://youtu.be") ||
+            message.startsWith("https://www.youtube.com/") ||
+            message.startsWith("http://www.youtube.com/") ||
+            message.startsWith("https://youtube.com/") ||
+            message.startsWith("http://youtube.com/") ||
+            message.startsWith("https://streamable.com/")||
+            message.contains("cdn.discordapp.com") ||
+            message.contains("media.discordapp.com") ||
+            message.contains("gyazo.com") ||
+            message.contains("prntscr.com") || message.contains("imgur.com"))) {
             pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again").buildEmbed()).queue();
             return false;
         }
@@ -176,15 +181,7 @@ public class HandbookReportWaiters {
     }
 
 
-    private static boolean checkDescriptionLength(CommandMessage context, PrivateMessageReceivedEvent a) {
-        int length = a.getMessage().getContentRaw().length();
-        if (length < 50 || length > 700) {
-            a.getChannel().sendMessage(context.makeError("Sorry, but reports have to have a minimal of 50 characters and a maximum of 700 characters.\n" +
-                "Your report currently has **``" + length + "``** characters").buildEmbed()).queue();
-            return false;
-        }
-        return true;
-    }
+
 
     private static boolean isValidUser(CommandMessage context, PrivateMessageReceivedEvent p, String group) {
         if (p.getAuthor().isBot()) {
@@ -196,9 +193,7 @@ public class HandbookReportWaiters {
         }
         return checkRobloxGroup(context, p, group);
     }
-    private static boolean isValidDiscordUserPM(CommandMessage context, PrivateMessageReceivedEvent p) {
-        return context.getMember().getUser().equals(p.getAuthor());
-    }
+
     private static boolean checkRobloxGroup(CommandMessage context, PrivateMessageReceivedEvent p, String group) {
         if (group.equalsIgnoreCase("pbst")) {
             if (isValidUserInRobloxGroup(getRobloxId(p.getMessage().getContentRaw()), 645836)) {
@@ -248,6 +243,35 @@ public class HandbookReportWaiters {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static boolean isNotBlacklisted(int id) {
+        if (avaire.getConfig().getConfig().getString("apiKeys.kronosApiKey").length() < 1) {
+            return false;
+        }
+
+
+        Request user = RequestFactory.makeGET("https://pb-kronos.dev/pbst/blacklist/checkusers");
+        user.addParameter("userids", id);
+        user.addHeader("Access-Key", avaire.getConfig().getConfig().getString("apiKeys.kronosApiKey"));
+
+        HashMap<Integer, Boolean> list = new HashMap<>();
+
+        user.send((Consumer<Response>) response -> {
+            if (response.getResponse().code() == 200) {
+
+                KronosCheckIfUserIsBlacklistedService grs = (KronosCheckIfUserIsBlacklistedService) response.toService(KronosCheckIfUserIsBlacklistedService.class);
+                list.put(id, grs.getData().get(id));
+                System.out.println("List got added to");
+            } else {
+                System.out.println("Request got: " + response.getResponse().code());
+            }
+        });
+        if (list.isEmpty()) {
+            System.out.println("List is empty");
+            return false;
+        }
+        return list.get(id);
     }
 
     private static int getRobloxId(String un) {

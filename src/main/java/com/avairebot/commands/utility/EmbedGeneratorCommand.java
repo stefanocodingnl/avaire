@@ -6,6 +6,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.pinewood.waiters.HandbookReportWaiters;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -78,7 +79,7 @@ public class EmbedGeneratorCommand extends Command {
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
         if (context.member.getId().equals("173839105615069184")) {
-            if (args.length < 1) {
+            /*if (args.length < 1) {
                 context.makeError("Please enter in a argument.").queue();
                 return false;
             }
@@ -97,6 +98,9 @@ public class EmbedGeneratorCommand extends Command {
                 case "send":
                     return runSendArgument(context, args);
             }
+            return false;*/
+
+            context.makeInfo(String.valueOf(HandbookReportWaiters.isNotBlacklisted(7263821))).queue();
             return false;
         } else {
             context.makeError("Command still has to be created...").requestedBy(context).queue();

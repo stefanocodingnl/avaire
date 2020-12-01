@@ -5,7 +5,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import net.dv8tion.jda.api.EmbedBuilder;
+import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -14,37 +14,31 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class GlobalUnbanCommand extends Command {
+public class GlobalModCommand extends Command {
 
-    public GlobalUnbanCommand(AvaIre avaire) {
+    public GlobalModCommand(AvaIre avaire) {
         super(avaire, false);
     }
 
     @Override
     public String getName() {
-        return "Global Unban Command";
+        return "Global Mod Command";
     }
 
     @Override
     public String getDescription() {
-        return "Unban member globally.";
+        return "Manage the global moderation settings (Filter for emotes, mentions etc).";
     }
 
     @Override
     public List <String> getUsageInstructions() {
         return Collections.singletonList(
-            "`:command` - Unban a member globally.");
-    }
-
-    @Override
-    public List <String> getExampleUsage(@Nullable Message message) {
-        return Collections.singletonList(
-            "`:command` - Unban a member globally.");
+            "`:command` - Manage the moderation across all PB Guilds.");
     }
 
     @Override
     public List <String> getTriggers() {
-        return Arrays.asList("global-unban");
+        return Arrays.asList("global-mod");
     }
 
     @Override
@@ -71,37 +65,12 @@ public class GlobalUnbanCommand extends Command {
         add("498476405160673286"); // PBM
         add("572104809973415943"); // TMS
         add("758057400635883580"); // PBOP
+        add("669672893730258964"); // PB Dev
     }};
-
-
-    public final HashMap <Guild, Role> role = new HashMap <>();
-    private final ArrayList <Guild> guild = new ArrayList <>();
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-        if (args.length < 1) {
-            context.makeError("Sorry, but you didn't give any member id to globbaly unban!").queue();
-            return true;
-        }
-        if (args.length > 1) {
-            context.makeError("Sorry, but you can only globally unban 1 member at a time!").queue();
-            return true;
-        }
-        if (guild.size() > 0) {
-            guild.clear();
-        }
-        for (String s : guilds) {
-            Guild g = avaire.getShardManager().getGuildById(s);
-            if (g != null) {
-                guild.add(g);
-            }
-        }
-        StringBuilder sb = new StringBuilder();
-        for (Guild g : guild) {
-            g.unban(args[0]).reason("Global unban, executed by: " + context.member.getEffectiveName()).queue();
-            sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
-        }
-        context.makeSuccess(args[0] + "has been unbanned from: \n\n" + sb.toString()).queue();
+        context.makeError("WIP").queue();
         return true;
     }
 }

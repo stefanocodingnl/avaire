@@ -27,10 +27,12 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.utilities.CheckPermissionUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.internal.utils.PermissionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,8 +118,8 @@ public class LockChannelsCommand extends Command {
 
         if (args.length > 0 && context.getMentionedChannels().size() < 1) {
             if (args[0].equals("all")) {
-                if (!(context.member.getId().equals("173839105615069184") || Constants.bypass_users.contains(context.member.getId()) || context.member.getRoles().contains(context.guild.getRoleById(438136063219859458L)))) {
-                    context.makeError("Sorry, but you have to be a PIA member, or a Trainer to use this command!").queue();
+                if (!(context.member.getId().equals("173839105615069184") || Constants.bypass_users.contains(context.member.getId()) || CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.ADMIN.getLevel())) {
+                    context.makeError("Sorry, but you have to be a PIA member, or a Admin+ to use this command!").queue();
                     return false;
                 }
                 List <TextChannel> c = new ArrayList <>();

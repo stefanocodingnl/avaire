@@ -72,7 +72,6 @@ import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.avairebot.pinewood.waiters.HandbookReportWaiters;
-import com.avairebot.pinewood.waiters.FeedbackWaiters;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -114,7 +113,6 @@ public class MainEventHandler extends EventHandler {
         this.changelogEventAdapter = new ChangelogEventAdapter(avaire);
         this.reactionEmoteEventAdapter = new ReactionEmoteEventAdapter(avaire);
         new HandbookReportWaiters(avaire);
-        new FeedbackWaiters(avaire);
     }
 
     @Override
@@ -218,12 +216,6 @@ public class MainEventHandler extends EventHandler {
                         messageEvent.onPBSTEventGalleryMessageSent(event);
                     }
                 }
-                if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID)) {
-                    messageEvent.onPBFeedbackPinEvent(event);
-                }
-
             }
         }
 
@@ -322,20 +314,13 @@ public class MainEventHandler extends EventHandler {
     @Override
     public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
         if (isValidMessageReactionEvent(event)) {
-            if (event.getChannel().getId().equals(Constants.FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals(Constants.PB_FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals(Constants.PBOP_FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals(Constants.PET_FEEDBACK_CHANNEL_ID) ||
-                    event.getChannel().getId().equals("767806684403204097")) {
-                reactionEmoteEventAdapter.onPBFeedbackMessageEvent(event);
-            }
             if (event.getChannel().getId().equals(Constants.REWARD_REQUESTS_CHANNEL_ID)) {
                 reactionEmoteEventAdapter.onPBSTRequestRewardMessageAddEvent(event);
             }
-            if (isValidReportChannel(event)) {
-                reactionEmoteEventAdapter.onReportsReactionAdd(event);
-            }
+
             reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
+            reactionEmoteEventAdapter.onReportsReactionAdd(event);
+            reactionEmoteEventAdapter.onSuggestionReactionEvent(event);
         }
     }
 
@@ -351,10 +336,10 @@ public class MainEventHandler extends EventHandler {
         return event.isFromGuild() && event.getReactionEmote().isEmote();
     }
 
-    private boolean isValidReportChannel(GuildMessageReactionAddEvent event) {
+/*    private boolean isValidReportChannel(GuildMessageReactionAddEvent event) {
         return event.getChannel().getId().equals(Constants.PBST_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PET_REPORT_CHANNEL)
                 || event.getChannel().getId().equals(Constants.TMS_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PB_REPORT_CHANNEL) || event.getChannel().getName().equals("handbook-violator-reports");
-    }
+    }*/
 
     private void prepareGuildMembers(GenericEvent event) {
         if (event instanceof GenericMessageEvent) {

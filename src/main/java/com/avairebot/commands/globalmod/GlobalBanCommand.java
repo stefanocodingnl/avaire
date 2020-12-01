@@ -110,11 +110,13 @@ public class GlobalBanCommand extends Command {
 
 
         final String reason = String.join(" ", Arrays.copyOfRange(args, soft ? 1 : 2, args.length));
-
+        StringBuilder sb = new StringBuilder();
         for (Guild g : guild) {
-            g.ban(args[0], time).reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: " + reason).queue();
-            context.makeSuccess(args[0] + " has been banned from: **" + g.getName() + "**").queue();
+            g.ban(args[0], time).reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: \n" + reason).queue();
+            sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
+        context.makeSuccess(args[0] + "has been banned from: \n\n" + sb.toString()).queue();
+
         return true;
     }
 }
