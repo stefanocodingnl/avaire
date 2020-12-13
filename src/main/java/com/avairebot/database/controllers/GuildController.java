@@ -59,7 +59,9 @@ public class GuildController {
         "guilds.filter_log", "guilds.lockable_channels_roles", "guilds.lockable_channels", "guilds.moderator_roles",
         "guilds.admin_roles", "guilds.manager_roles", "guilds.vote_validation_channel", "guilds.no_links_roles",
         "guilds.suggestion_channel", "guilds.suggestion_emote_id", "guilds.suggestion_community_channel",
-        "guilds.report_info_message", "guilds.report_emote_id", "guilds.handbook_report_channel"
+        "guilds.report_info_message", "guilds.report_emote_id", "guilds.handbook_report_channel",
+        "guilds.automod_character_spam", "guilds.automod_emoji_spam", "guilds.automod_image_spam", "guilds.automod_link_spam",
+        "guilds.automod_mass_mention", "guilds.automod_message_spam"
     };
 
     /**

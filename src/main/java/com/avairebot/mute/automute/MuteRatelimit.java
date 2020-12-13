@@ -74,7 +74,7 @@ public class MuteRatelimit {
     public static final LoadingCache<Long, Rate> cache = CacheBuilder.newBuilder()
         .recordStats()
         .expireAfterWrite(hitTime, TimeUnit.MILLISECONDS)
-        .build(CacheLoader.from(Rate::new));
+        .build(CacheLoader.from(userId -> userId != null ? new Rate(userId) : null));
 
     /**
      * The slf4j logger instance.
@@ -82,7 +82,8 @@ public class MuteRatelimit {
     private static final Logger log = LoggerFactory.getLogger(MuteRatelimit.class);
 
     /**
-     * The punishment level holder, this map holds all the users and their current
+     * The punishment level holder, this m
+     * 9ap holds all the users and their current
      * punishment level, with each offence, the punishment level(value) will go
      * up, increasing the time the user get auto-blacklisted for.
      */
@@ -104,7 +105,9 @@ public class MuteRatelimit {
         () -> Carbon.now().addDays(14),
         () -> Carbon.now().addDays(21),
         () -> Carbon.now().addDays(28),
-        () -> Carbon.now().addMonth()
+        () -> Carbon.now().addMonth(),
+        () -> Carbon.now().addMonths(6),
+        () -> Carbon.now().addYear()
     );
 
 
@@ -125,7 +128,7 @@ public class MuteRatelimit {
                 .setTimestamp(expires.getTime().toInstant())
                 .setDescription("Looks like you're triggering my filter a bit too fast, I've muted you "
                     + "on the discord that you have done this.\n"
-                    + "Your mute expires in " + expires.addSecond().diffForHumans(true) + ", "
+                    + "Your mute expires in ``" + expires.addSecond().diffForHumans(true) + "``, "
                     + "keep in mind repeating the behavior will get you muted for longer "
                     + "periods of time, eventually if you keep it up you will be permanently"
                 ).build()
@@ -141,7 +144,7 @@ public class MuteRatelimit {
      * @param channel The channel that the message should be sent to.
      * @param expires The carbon time instance for when the blacklist expires.
      */
-    public void sendBlacklistMessage(MessageChannel channel, Carbon expires) {
+    public void sendBlacklissendtMessage(MessageChannel channel, Carbon expires) {
         channel.sendMessage(MessageFactory.createEmbeddedBuilder()
             .setColor(Color.decode("#A5306B"))
             .setTitle("Whoa there!", "https://avairebot.com/")

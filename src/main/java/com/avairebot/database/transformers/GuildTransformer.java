@@ -39,14 +39,14 @@ public class GuildTransformer extends Transformer {
 
     private static final GuildTypeTransformer partnerTypeTransformer = new PartnerGuildTypeTransformer();
 
-    private final Map<String, String> aliases = new HashMap<>();
-    private final Map<String, String> prefixes = new HashMap<>();
-    private final Map<String, String> selfAssignableRoles = new HashMap<>();
-    private final Map<Integer, String> levelRoles = new HashMap<>();
-    private final Map<String, Map<String, String>> modules = new HashMap<>();
+    private final Map <String, String> aliases = new HashMap <>();
+    private final Map <String, String> prefixes = new HashMap <>();
+    private final Map <String, String> selfAssignableRoles = new HashMap <>();
+    private final Map <Integer, String> levelRoles = new HashMap <>();
+    private final Map <String, Map <String, String>> modules = new HashMap <>();
 
-    private final List<ChannelTransformer> channels = new ArrayList<>();
-    private final List<String> badWordsExact = new ArrayList<>();
+    private final List <ChannelTransformer> channels = new ArrayList <>();
+    private final List <String> badWordsExact = new ArrayList <>();
     private final List <String> badWordsWildcard = new ArrayList <>();
 
     private final List <String> piaWordsExact = new ArrayList <>();
@@ -64,6 +64,7 @@ public class GuildTransformer extends Transformer {
     private final Set <Long> managerRoles = new HashSet <>();
     private final Set <Long> administratorRoles = new HashSet <>();
     private final Set <Long> noLinksRoles = new HashSet <>();
+
 
     private final GuildTypeTransformer guildType;
     private boolean partner;
@@ -87,6 +88,13 @@ public class GuildTransformer extends Transformer {
     private String handbookReportChannel = null;
     private String reportInfoMessage = null;
     private int robloxGroupId = 0;
+
+    private int characterSpam = 0;
+    private int emojiSpam = 0;
+    private int imageSpam = 0;
+    private int linkSpam = 0;
+    private int massMentionSpam = 0;
+    private int messageSpam = 0;
 
     private String autorole = null;
     private String modlog = null;
@@ -141,6 +149,12 @@ public class GuildTransformer extends Transformer {
             musicChannelVoice = data.getString("music_channel_voice");
             musicMessages = data.getBoolean("music_messages", true);
             modlogCase = data.getInt("modlog_case");
+            characterSpam = data.getInt("automod_character_spam");
+            emojiSpam = data.getInt("automod_emoji_spam");
+            imageSpam = data.getInt("automod_image_spam");
+            linkSpam = data.getInt("automod_link_spam");
+            massMentionSpam = data.getInt("automod_mass_mention");
+            messageSpam = data.getInt("automod_message_spam");
 
             reportCategory = data.getLong("report_discord_category");
             voteValidationChannel = data.getString("vote_validation_channel");
@@ -174,91 +188,96 @@ public class GuildTransformer extends Transformer {
             }
 
             if (data.getString("aliases", null) != null) {
-                HashMap<String, String> dbAliases = AvaIre.gson.fromJson(
+                HashMap <String, String> dbAliases = AvaIre.gson.fromJson(
                     data.getString("aliases"),
-                    new TypeToken<HashMap<String, String>>() {
+                    new TypeToken <HashMap <String, String>>() {
                     }.getType());
 
-                for (Map.Entry<String, String> item : dbAliases.entrySet()) {
+                for (Map.Entry <String, String> item : dbAliases.entrySet()) {
                     aliases.put(item.getKey().toLowerCase(), item.getValue());
                 }
             }
 
             if (data.getString("filter_exact", null) != null) {
-                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                ArrayList <String> dbFilter = AvaIre.gson.fromJson(
                     data.getString("filter_exact"),
-                    new TypeToken<ArrayList<String>>(){}.getType());
+                    new TypeToken <ArrayList <String>>() {
+                    }.getType());
 
                 badWordsExact.addAll(dbFilter);
             }
             if (data.getString("filter_wildcard", null) != null) {
-                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                ArrayList <String> dbFilter = AvaIre.gson.fromJson(
                     data.getString("filter_wildcard"),
-                    new TypeToken<ArrayList<String>>(){}.getType());
+                    new TypeToken <ArrayList <String>>() {
+                    }.getType());
 
                 badWordsWildcard.addAll(dbFilter);
             }
 
             if (data.getString("piaf_exact", null) != null) {
-                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                ArrayList <String> dbFilter = AvaIre.gson.fromJson(
                     data.getString("piaf_exact"),
-                    new TypeToken<ArrayList<String>>(){}.getType());
+                    new TypeToken <ArrayList <String>>() {
+                    }.getType());
 
                 piaWordsExact.addAll(dbFilter);
             }
             if (data.getString("piaf_wildcard", null) != null) {
-                ArrayList<String> dbFilter = AvaIre.gson.fromJson(
+                ArrayList <String> dbFilter = AvaIre.gson.fromJson(
                     data.getString("piaf_wildcard"),
-                    new TypeToken<ArrayList<String>>(){}.getType());
+                    new TypeToken <ArrayList <String>>() {
+                    }.getType());
 
                 piaWordsWildcard.addAll(dbFilter);
             }
 
             if (data.getString("report_discord", null) != null) {
-                ArrayList<String> dbRoles = AvaIre.gson.fromJson(
+                ArrayList <String> dbRoles = AvaIre.gson.fromJson(
                     data.getString("report_discord"),
-                    new TypeToken<ArrayList<String>>(){}.getType());
+                    new TypeToken <ArrayList <String>>() {
+                    }.getType());
 
                 reportPermissionRoles.addAll(dbRoles);
             }
 
             if (data.getString("prefixes", null) != null) {
-                HashMap<String, String> dbPrefixes = AvaIre.gson.fromJson(
+                HashMap <String, String> dbPrefixes = AvaIre.gson.fromJson(
                     data.getString("prefixes"),
-                    new TypeToken<HashMap<String, String>>() {
+                    new TypeToken <HashMap <String, String>>() {
                     }.getType());
 
-                for (Map.Entry<String, String> item : dbPrefixes.entrySet()) {
+                for (Map.Entry <String, String> item : dbPrefixes.entrySet()) {
                     prefixes.put(item.getKey().toLowerCase(), item.getValue());
                 }
             }
 
             if (data.getString("claimable_roles", null) != null) {
-                HashMap<String, String> dbSelfAssignableRoles = AvaIre.gson.fromJson(
+                HashMap <String, String> dbSelfAssignableRoles = AvaIre.gson.fromJson(
                     data.getString("claimable_roles"),
-                    new TypeToken<HashMap<String, String>>() {
+                    new TypeToken <HashMap <String, String>>() {
                     }.getType());
 
-                for (Map.Entry<String, String> item : dbSelfAssignableRoles.entrySet()) {
+                for (Map.Entry <String, String> item : dbSelfAssignableRoles.entrySet()) {
                     selfAssignableRoles.put(item.getKey(), item.getValue().toLowerCase());
                 }
             }
 
             if (data.getString("level_roles", null) != null) {
-                HashMap<String, String> dbLevelRoles = AvaIre.gson.fromJson(
+                HashMap <String, String> dbLevelRoles = AvaIre.gson.fromJson(
                     data.getString("level_roles"),
-                    new TypeToken<HashMap<String, String>>() {
+                    new TypeToken <HashMap <String, String>>() {
                     }.getType());
 
-                for (Map.Entry<String, String> item : dbLevelRoles.entrySet()) {
+                for (Map.Entry <String, String> item : dbLevelRoles.entrySet()) {
                     levelRoles.put(NumberUtil.parseInt(item.getKey(), -1), item.getValue().toLowerCase());
                 }
             }
 
             if (data.getString("level_exempt_channels", null) != null) {
-                List<String> dbExemptExperienceChannels = AvaIre.gson.fromJson(
+                List <String> dbExemptExperienceChannels = AvaIre.gson.fromJson(
                     data.getString("level_exempt_channels"),
-                    new TypeToken<List<String>>() {
+                    new TypeToken <List <String>>() {
                     }.getType());
 
                 for (String channelId : dbExemptExperienceChannels) {
@@ -273,9 +292,9 @@ public class GuildTransformer extends Transformer {
             }
 
             if (data.getString("level_exempt_roles", null) != null) {
-                List<String> dbExemptExperienceChannels = AvaIre.gson.fromJson(
+                List <String> dbExemptExperienceChannels = AvaIre.gson.fromJson(
                     data.getString("level_exempt_roles"),
-                    new TypeToken<List<String>>() {
+                    new TypeToken <List <String>>() {
                     }.getType());
 
                 for (String channelId : dbExemptExperienceChannels) {
@@ -403,14 +422,14 @@ public class GuildTransformer extends Transformer {
             }
 
             if (data.getString("channels", null) != null) {
-                HashMap<String, Object> dbChannels = AvaIre.gson.fromJson(
+                HashMap <String, Object> dbChannels = AvaIre.gson.fromJson(
                     data.getString("channels"),
-                    new TypeToken<HashMap<String, Object>>() {
+                    new TypeToken <HashMap <String, Object>>() {
                     }.getType());
 
-                for (Map.Entry<String, Object> item : dbChannels.entrySet()) {
+                for (Map.Entry <String, Object> item : dbChannels.entrySet()) {
                     // noinspection unchecked
-                    LinkedTreeMap<String, Object> value = (LinkedTreeMap<String, Object>) item.getValue();
+                    LinkedTreeMap <String, Object> value = (LinkedTreeMap <String, Object>) item.getValue();
                     value.put("id", item.getKey());
 
                     channels.add(new ChannelTransformer(new DataRow(value), this));
@@ -551,7 +570,7 @@ public class GuildTransformer extends Transformer {
         this.voteValidationChannel = levelChannel;
     }
 
-    public Map<Integer, String> getLevelRoles() {
+    public Map <Integer, String> getLevelRoles() {
         return levelRoles;
     }
 
@@ -699,6 +718,54 @@ public class GuildTransformer extends Transformer {
         this.filterLog = s;
     }
 
+    public int getCharacterSpam() {
+        return characterSpam;
+    }
+
+    public void setCharacterSpam(int characterSpam) {
+        this.characterSpam = characterSpam;
+    }
+
+    public int getEmojiSpam() {
+        return emojiSpam;
+    }
+
+    public void setEmojiSpam(int emojiSpam) {
+        this.emojiSpam = emojiSpam;
+    }
+
+    public int getImageSpam() {
+        return imageSpam;
+    }
+
+    public void setImageSpam(int imageSpam) {
+        this.imageSpam = imageSpam;
+    }
+
+    public int getLinkSpam() {
+        return linkSpam;
+    }
+
+    public void setLinkSpam(int linkSpam) {
+        this.linkSpam = linkSpam;
+    }
+
+    public int getMassMentionSpam() {
+        return massMentionSpam;
+    }
+
+    public void setMassMentionSpam(int massMentionSpam) {
+        this.massMentionSpam = massMentionSpam;
+    }
+
+    public int getMessageSpam() {
+        return messageSpam;
+    }
+
+    public void setMessageSpam(int messageSpam) {
+        this.messageSpam = messageSpam;
+    }
+
     public Map <String, String> getSelfAssignableRoles() {
         return selfAssignableRoles;
     }
@@ -711,29 +778,31 @@ public class GuildTransformer extends Transformer {
         return aliases;
     }
 
-    public List<String> getBadWordsExact() {
+    public List <String> getBadWordsExact() {
         return badWordsExact;
     }
 
-    public List<String> getBadWordsWildcard() {
+    public List <String> getBadWordsWildcard() {
         return badWordsWildcard;
     }
 
-    public List<String> getPIAWordsWildcard() {
+    public List <String> getPIAWordsWildcard() {
         return piaWordsWildcard;
     }
 
-    public List<String> getPIAWordsExact() {
+    public List <String> getPIAWordsExact() {
         return piaWordsExact;
     }
 
-    public List<String> getReportPermissionRoles() {return reportPermissionRoles;}
+    public List <String> getReportPermissionRoles() {
+        return reportPermissionRoles;
+    }
 
-    public List<ChannelTransformer> getChannels() {
+    public List <ChannelTransformer> getChannels() {
         return channels;
     }
 
-    public Map<String, Map<String, String>> getCategories() {
+    public Map <String, Map <String, String>> getCategories() {
         return modules;
     }
 
@@ -799,7 +868,7 @@ public class GuildTransformer extends Transformer {
             return false;
         }
 
-        HashMap<String, Object> data = new HashMap<>();
+        HashMap <String, Object> data = new HashMap <>();
         data.put("id", channelId);
         channels.add(new ChannelTransformer(new DataRow(data), this));
 
@@ -811,7 +880,7 @@ public class GuildTransformer extends Transformer {
     }
 
     public String channelsToJson() {
-        Map<String, Object> objects = new HashMap<>();
+        Map <String, Object> objects = new HashMap <>();
         if (channels.isEmpty()) {
             return null;
         }

@@ -109,13 +109,15 @@ public class GlobalBanCommand extends Command {
         int time = soft ? 0 : 7;
 
 
-        final String reason = String.join(" ", Arrays.copyOfRange(args, soft ? 1 : 2, args.length));
+        final String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
         StringBuilder sb = new StringBuilder();
         for (Guild g : guild) {
-            g.ban(args[0], time).reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: \n" + reason).queue();
+            g.ban(args[0], time, "Banned by: " + context.member.getEffectiveName() + "\n" +
+                "For: " + reason + "\n*THIS IS A PIA GLOBAL BAN, DO NOT REVOKE THIS BAN WITHOUT CONSULTING THE PIA MEMBER WHO INITIATED THE GLOBAL BAN, REVOKING THIS BAN WITHOUT PIA APPROVAL WILL RESULT IN DISCIPlINARY ACTION!*").reason("Global Ban, executed by " + context.member.getEffectiveName() + ". For: \n" + reason).queue();
+
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
-        context.makeSuccess(args[0] + "has been banned from: \n\n" + sb.toString()).queue();
+        context.makeSuccess("<@" + args[0] + "> has been banned from: \n\n" + sb.toString()).queue();
 
         return true;
     }

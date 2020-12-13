@@ -46,8 +46,11 @@ import com.avairebot.modlog.ModlogType;
 import com.avairebot.mute.automute.MuteRatelimit;
 import com.avairebot.shared.DiscordConstants;
 import com.avairebot.utilities.ArrayUtil;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.vdurmont.emoji.EmojiManager;
+import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
@@ -55,6 +58,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,12 +71,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MessageEventAdapter extends EventAdapter {
 
-    public static final Set<Long> hasReceivedInfoMessageInTheLastMinute = new HashSet<>();
-    ArrayList<String> guilds = Constants.guilds;
+    public static final Set <Long> hasReceivedInfoMessageInTheLastMinute = new HashSet <>();
+    ArrayList <String> guilds = Constants.guilds;
 
     private static final ExecutorService commandService = Executors.newCachedThreadPool(
         new ThreadFactoryBuilder()
@@ -89,7 +95,7 @@ public class MessageEventAdapter extends EventAdapter {
         "My original source was from the bot: **Avaire** and has been modified",
         "by %s for Pinewood Builders.",
         "",
-        "I am currently running **Kronos v%s**"
+        "I am currently running **Xeus v%s**"
     ));
 
     /**
@@ -99,11 +105,6 @@ public class MessageEventAdapter extends EventAdapter {
      */
     public MessageEventAdapter(AvaIre avaire) {
         super(avaire);
-    }
-
-    public void onFeedbackMessageEvent(MessageReceivedEvent e) {
-        e.getMessage().addReaction("\uD83D\uDC4D").queue();
-        e.getMessage().addReaction("\uD83D\uDC4E").queue();
     }
 
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -161,7 +162,7 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkWildcardFilter(String contentStripped, GuildTransformer guild, Message messageId) {
         String words = contentStripped.toLowerCase();
-        List<String> badWordsList = replace(guild.getBadWordsWildcard());
+        List <String> badWordsList = replace(guild.getBadWordsWildcard());
         // system.out.println("UFWords: " + words);
         // system.out.println("FWords: " + badWordsList);
 
@@ -176,8 +177,8 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkExactFilter(String contentRaw, GuildTransformer databaseEventHolder, Message messageId) {
         // system.out.println("FILTER ENABLED");
-        List<String> words = replace(Arrays.asList(contentRaw.split(" ")));
-        List<String> badWordsList = replace(databaseEventHolder.getBadWordsExact());
+        List <String> words = replace(Arrays.asList(contentRaw.split(" ")));
+        List <String> badWordsList = replace(databaseEventHolder.getBadWordsExact());
 
         // system.out.println("UWords: " + words);
         // system.out.println("FWords: " + badWordsList);
@@ -191,7 +192,7 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkGlobalWildcardFilter(String contentStripped, GuildTransformer guild, Message messageId) {
         String words = contentStripped.toLowerCase();
-        List<String> badWordsList = replace(guild.getPIAWordsWildcard());
+        List <String> badWordsList = replace(guild.getPIAWordsWildcard());
         //System.out.println("UFWords: " + words);
         //System.out.println("FWords: " + badWordsList);
 
@@ -206,8 +207,8 @@ public class MessageEventAdapter extends EventAdapter {
 
     private boolean checkGlobalExactFilter(String contentRaw, GuildTransformer databaseEventHolder, Message messageId) {
         // system.out.println("FILTER ENABLED");
-        List<String> words = replace(Arrays.asList(contentRaw.split(" ")));
-        List<String> badWordsList = replace(databaseEventHolder.getPIAWordsExact());
+        List <String> words = replace(Arrays.asList(contentRaw.split(" ")));
+        List <String> badWordsList = replace(databaseEventHolder.getPIAWordsExact());
 
         // system.out.println("UWords: " + words);
         // system.out.println("FWords: " + badWordsList);
@@ -219,8 +220,8 @@ public class MessageEventAdapter extends EventAdapter {
         return b;
     }
 
-    public static List<String> replace(List<String> strings) {
-        ListIterator<String> iterator = strings.listIterator();
+    public static List <String> replace(List <String> strings) {
+        ListIterator <String> iterator = strings.listIterator();
         while (iterator.hasNext()) {
             iterator.set(iterator.next().toLowerCase());
         }
@@ -296,7 +297,7 @@ public class MessageEventAdapter extends EventAdapter {
         GuildTransformer guild = databaseEventHolder.getGuild();
         if (guild != null) {
 
-            if (event.getMember().hasPermission(Permission.BAN_MEMBERS)) {
+            if (!event.getContentRaw().startsWith("debug:") && CheckPermissionUtil.getPermissionLevel(guild, genericMessageEvent.getGuild(), event.getMember()).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
                 return;
             }
 
@@ -320,11 +321,98 @@ public class MessageEventAdapter extends EventAdapter {
                 event.delete().queue();
                 MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
                 return;
+            } else if (checkAutomodFilters(message, guild, event)) {
+                event.getTextChannel().retrieveMessageById(event.getId()).queue(l -> {
+                    System.out.println("AutoMod removed in " + event.getGuild().getName() + " (<#" + event.getTextChannel().getId() + ">): " + event.getContentRaw());
+                    l.delete().reason("Auto-Mod Violation").queue();
+                }, failure -> {
+
+                });
+                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
+                return;
             }
             checkPIAInviteFilter(event, databaseEventHolder, event);
         } else {
             System.out.println("Guild is null");
         }
+    }
+
+    private boolean checkAutomodFilters(String string, GuildTransformer transformer, Message message) {
+
+        if (transformer.getMassMentionSpam() > 0) {
+            if (message.getMentionedMembers().size() >= transformer.getMassMentionSpam()) {
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Mass Mention``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                return true;
+            }
+        }
+        if (transformer.getCharacterSpam() > 0) {
+            Pattern pattern = Pattern.compile("(.)\\1{" + (transformer.getCharacterSpam() - 1) + ",}", Pattern.CASE_INSENSITIVE);
+            Matcher m = pattern.matcher(message.getContentRaw());
+            if (m.find()) {
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Character Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                return true;
+            }
+        }
+        if (transformer.getEmojiSpam() > 0) {
+            Pattern pattern = Pattern.compile("(:[^:\\s]*(?:::[^:\\s]*)*:)", Pattern.CASE_INSENSITIVE);
+            Matcher m = pattern.matcher(message.getContentRaw());
+
+            int count = EmojiParser.extractEmojis(message.getContentRaw()).size();
+            while (m.find()) {
+                count++;
+            }
+
+            if (count >= transformer.getEmojiSpam()) {
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Emoji Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                return true;
+            }
+        }
+        if (transformer.getMessageSpam() > 0) {
+            List <Message> history = message.getTextChannel().getIterableHistory().stream().limit(10).filter(msg -> !msg.equals(message)).collect(Collectors.toList());
+            int spam = (int) history.stream().filter(m -> m.getAuthor().equals(message.getAuthor()) && !message.getAuthor().isBot()).filter(msg -> (message.getTimeCreated().toEpochSecond() - msg.getTimeCreated().toEpochSecond()) < 10).count();
+
+            if (spam >= transformer.getMessageSpam() && !message.getGuild().getOwner().equals(message.getMember())) {
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Message Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                for (Message m : history) {
+                    message.getTextChannel().retrieveMessageById(m.getId()).queue(l -> {
+                        l.delete().reason("Auto-Mod Violation").queue();
+                    }, failure -> {
+
+                    });
+                }
+                return true;
+            }
+        }
+        if (transformer.getImageSpam() > 0) {
+            List <Message> history = message.getTextChannel().getIterableHistory().stream().limit(10).filter(msg -> !msg.equals(message)).collect(Collectors.toList());
+            int spam = (int) history.stream().filter(m -> m.getAuthor().equals(message.getAuthor()) && !message.getAuthor().isBot()).filter(msg -> (message.getTimeCreated().toEpochSecond() - msg.getTimeCreated().toEpochSecond()) < 10 && (msg.getAttachments().size() > 0 && message.getAttachments().size() > 0)).count();
+            if (spam >= transformer.getImageSpam() && !message.getGuild().getOwner().equals(message.getMember())) {
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Image Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                for (Message m : history) {
+                    message.getTextChannel().retrieveMessageById(m.getId()).queue(l -> {
+                        l.delete().reason("Auto-Mod Violation").queue();
+                    }, failure -> {
+
+                    });
+                }
+                return true;
+            }
+        }
+        if (transformer.getLinkSpam() > 0) {
+            List <Message> history = message.getTextChannel().getIterableHistory().stream().limit(10).filter(msg -> !msg.equals(message)).collect(Collectors.toList());
+            int spam = (int) history.stream().filter(m -> m.getAuthor().equals(message.getAuthor()) && !message.getAuthor().isBot()).filter(msg -> (message.getTimeCreated().toEpochSecond() - msg.getTimeCreated().toEpochSecond()) < 10 && (message.getContentRaw().contains("http://") || message.getContentRaw().contains("https://"))).count();
+            if (spam >= transformer.getLinkSpam() && !message.getGuild().getOwner().equals(message.getMember())) {
+                for (Message m : history) {
+                    message.getTextChannel().retrieveMessageById(m.getId()).queue(l -> {
+                        l.delete().reason("Auto-Mod Violation").queue();
+                    }, failure -> {
+
+                    });
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     private Message getActualMessage(GenericMessageEvent genericMessageEvent) {
@@ -510,7 +598,7 @@ public class MessageEventAdapter extends EventAdapter {
         hasReceivedInfoMessageInTheLastMinute.add(event.getAuthor().getIdLong());
 
         try {
-            ArrayList<String> strings = new ArrayList<>();
+            ArrayList <String> strings = new ArrayList <>();
             strings.addAll(Arrays.asList(
                 "To invite me to your server, use this link:",
                 "*:oauth*",
@@ -546,7 +634,7 @@ public class MessageEventAdapter extends EventAdapter {
         }
     }
 
-    private CompletableFuture<DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageReceivedEvent event) {
+    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageReceivedEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannelType().isGuild()) {
                 return new DatabaseEventHolder(null, null);
@@ -561,7 +649,7 @@ public class MessageEventAdapter extends EventAdapter {
         });
     }
 
-    private CompletableFuture<DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageUpdateEvent event) {
+    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageUpdateEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannelType().isGuild()) {
                 return new DatabaseEventHolder(null, null);
@@ -576,13 +664,13 @@ public class MessageEventAdapter extends EventAdapter {
         });
     }
 
-    public void onMessageDelete(TextChannel channel, List<String> messageIds) {
+    public void onMessageDelete(TextChannel channel, List <String> messageIds) {
         Collection reactions = ReactionController.fetchReactions(avaire, channel.getGuild());
         if (reactions == null || reactions.isEmpty()) {
             return;
         }
 
-        List<String> removedReactionMessageIds = new ArrayList<>();
+        List <String> removedReactionMessageIds = new ArrayList <>();
         for (DataRow row : reactions) {
             for (String messageId : messageIds) {
                 if (Objects.equals(row.getString("message_id"), messageId)) {
@@ -663,7 +751,7 @@ public class MessageEventAdapter extends EventAdapter {
                 return;
             }
 
-            ArrayList<Role> list = new ArrayList<>();
+            ArrayList <Role> list = new ArrayList <>();
 
             for (Long r : databaseEventHolder.getGuild().getNoLinksRoles()) {
                 if (event.getGuild().getRoleById(r) != null) {

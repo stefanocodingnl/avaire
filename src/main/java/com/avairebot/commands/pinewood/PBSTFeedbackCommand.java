@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 
 import javax.annotation.Nonnull;
-import javax.xml.soap.Text;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -81,6 +80,8 @@ public class PBSTFeedbackCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+
+
         int permissionLevel = CheckPermissionUtil.getPermissionLevel(context).getLevel();
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
             if (args.length > 0) {
@@ -149,8 +150,7 @@ public class PBSTFeedbackCommand extends Command {
 
                         c.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
                             .setAuthor("Suggestion for: " + c.getGuild().getName(), null, c.getGuild().getIconUrl())
-                            .setFooter(context.member.getEffectiveName(), context.member.getUser().getEffectiveAvatarUrl())
-                            .setDescription(p.getMessage().getContentRaw())
+                            .requestedBy(context.member).setDescription(p.getMessage().getContentRaw())
                             .setTimestamp(Instant.now())
                             .buildEmbed()).queue(v -> {
                             context.makeSuccess("[Your suggestion has been posted in the correct suggestion channel.](:link)").set("link", v.getJumpUrl()).queue();
@@ -161,11 +161,10 @@ public class PBSTFeedbackCommand extends Command {
                                     data.set("pb_server_id", d.getString("id"));
                                     data.set("suggestion_message_id", v.getId());
                                     data.set("suggester_discord_id", context.getMember().getId());
-                                    data.set("suggester_discord_name", context.getMember().getEffectiveName());
-                                    data.set("suggestion_description", p.getMessage().getContentRaw());
                                 });
                             } catch (SQLException throwables) {
                                 context.makeError("Something went wrong in the database, please check with the developer.").queue();
+                                throwables.printStackTrace();
                             }
                         });
                     });

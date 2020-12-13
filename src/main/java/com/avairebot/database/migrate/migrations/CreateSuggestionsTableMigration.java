@@ -20,10 +20,6 @@ public class CreateSuggestionsTableMigration implements Migration {
             table.Long("pb_server_id");
             table.Long("suggestion_message_id");
             table.Long("suggester_discord_id");
-            table.String("suggester_discord_name");
-            table.String("suggestion_response").nullable();
-            table.String("suggestion_description");
-            table.String("suggestion_comments").nullable();
             table.Timestamps();
         });
     }

@@ -23,6 +23,7 @@ package com.avairebot.handlers.adapter;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
+import com.avairebot.chat.PlaceholderMessage;
 import com.avairebot.contracts.handlers.EventAdapter;
 import com.avairebot.database.collection.Collection;
 import com.avairebot.database.collection.DataRow;
@@ -36,8 +37,10 @@ import com.avairebot.handlers.DatabaseEventHolder;
 import com.avairebot.scheduler.tasks.DrainReactionRoleQueueTask;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RoleUtil;
+import com.google.gson.reflect.TypeToken;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.entities.*;
@@ -45,10 +48,10 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import org.jetbrains.annotations.NotNull;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.management.Query;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -260,6 +263,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
             if (databaseEventHolder.getGuild().getHandbookReportChannel() != null) {
                 TextChannel tc = avaire.getShardManager().getTextChannelById(databaseEventHolder.getGuild().getHandbookReportChannel());
                 if (tc != null) {
+                    int permissionLevel = CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), e.getGuild(), e.getMember()).getLevel();
                     if (e.getChannel().equals(tc)) {
                         QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.REPORTS_DATABASE_TABLE_NAME).where("pb_server_id", e.getGuild().getId()).andWhere("report_message_id", e.getMessageId());
                         try {
@@ -277,6 +281,8 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
 
                             switch (e.getReactionEmote().getName()) {
+                                case "\uD83D\uDC4E": // 👎
+                                    return;
                                 case "\uD83D\uDC4D": // 👍
                                     if (e.getReaction().retrieveUsers().complete().size() == 31) {
                                         tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
@@ -292,12 +298,13 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                 .setTimestamp(Instant.now()).set("rRank", rank)
                                                 .buildEmbed())
                                                 .queue();
-                                            v.clearReactions().queue();
+                                            v.clearReactions("\uD83D\uDC4D").queue();
+                                            v.clearReactions("\uD83D\uDC4E").queue();
                                         });
                                     }
                                     break;
                                 case "✅":
-                                    if (CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), e.getGuild(), e.getMember()).getLevel() >=
+                                    if (permissionLevel >=
                                         CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
 
 
@@ -336,24 +343,25 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             });
                                         });
                                     } else {
-                                        e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                             v.delete().queueAfter(30, TimeUnit.SECONDS);
-                                        });
+                                        });*/
+                                        e.getReaction().removeReaction(e.getUser()).queue();
                                     }
                                     break;
                                 case "❌":
-                                    if (CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), e.getGuild(), e.getMember()).getLevel() >=
+                                    if (permissionLevel >=
                                         CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
-
+                                        e.getReaction().removeReaction(e.getUser()).queue();
 
                                         tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
-                                            if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0))) return;
+                                            if (v.getEmbeds().get(0).getColor().equals(new Color(255, 0, 0))) return;
 
                                             e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to reject a report, may I know the reason you're giving for this?").buildEmbed()).queue(z -> {
                                                 avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
                                                     return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
                                                 }, run -> {
-                                                    v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
+                                                    v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(255, 0, 0))
                                                         .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
                                                         .setDescription(
                                                             "**Violator**: " + username + "\n" +
@@ -380,13 +388,14 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             });
                                         });
                                     } else {
-                                        e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to reject this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to reject this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                             v.delete().queueAfter(30, TimeUnit.SECONDS);
-                                        });
+                                        });*/
+                                        e.getReaction().removeReaction(e.getUser()).queue();
                                     }
                                     break;
                                 case "🚫":
-                                    if (CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), e.getGuild(), e.getMember()).getLevel() >=
+                                    if (permissionLevel >=
                                         CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
 
 
@@ -401,12 +410,12 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
 
                                     } else {
-                                        e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                             v.delete().queueAfter(30, TimeUnit.SECONDS);
-                                        });
+                                        });*/
                                     }
                                 case "\uD83D\uDD04": // 🔄
-                                    if (CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), e.getGuild(), e.getMember()).getLevel() >=
+                                    if (permissionLevel >=
                                         CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
 
                                         tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
@@ -414,9 +423,10 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             createReactions(v);
                                         });
                                     } else {
-                                        e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                             v.delete().queueAfter(30, TimeUnit.SECONDS);
-                                        });
+                                        });*/
+                                        e.getReaction().removeReaction(e.getUser()).queue();
                                     }
                                     break;
                             }
@@ -430,60 +440,284 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         });
     }
 
-    public void onSuggestionReactionEvent(GuildMessageReactionAddEvent e) {
-        /*loadDatabasePropertiesIntoMemory(e).thenAccept(databaseEventHolder -> {
-            if (databaseEventHolder.getGuild().getHandbookReportChannel() != null) {
-                TextChannel tc = avaire.getShardManager().getTextChannelById(databaseEventHolder.getGuild().getHandbookReportChannel());
-                if (tc != null) {
-                    if (e.getChannel().equals(tc)) {
-                        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.REPORTS_DATABASE_TABLE_NAME).where("pb_server_id", e.getGuild().getId()).andWhere("report_message_id", e.getMessageId());
-                        try {
-                            DataRow c = qb.get().get(0);
+    public void onFeedbackMessageEvent(GuildMessageReactionAddEvent e) {
+        if (e.getMember().getUser().isBot()) {
+            return;
+        }
+        loadDatabasePropertiesIntoMemory(e).thenAccept(databaseEventHolder -> {
+            if (databaseEventHolder.getGuild().getSuggestionChannel() != null || databaseEventHolder.getGuild().getSuggestionCommunityChannel() != null) {
+                try {
+                    QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.PB_SUGGESTIONS_TABLE_NAME).where("pb_server_id", e.getGuild().getId()).andWhere("suggestion_message_id", e.getMessageId());
 
-                            String username = c.getString("reported_roblox_name");
-                            String description = c.getString("report_reason");
-                            String evidence = c.getString("report_evidence");
-                            Long reporter = c.getLong("reporter_discord_id");
-                            Member m = e.getGuild().getMemberById(reporter);
-
-                            switch (e.getReactionEmote().getName()) {
-                                case "\uD83D\uDC4D": // 👍
-                                    switch (e.getReaction().getCount()) {
-                                        case 2:
-
-
-                                            tc.retrieveMessageById(c.getLong("suggestion_message_id")).queue(v -> {
-                                                v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(255, 120, 0))
-                                                    .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
-                                                    .setDescription(
-                                                        "**Violator**: " + username + "\n" +
-                                                            (c.getString("reported_roblox_rank") != null ? "**Rank**: ``:rRank``\n" : "") +
-                                                            "**Information**: \n" + description + "\n\n" +
-                                                            "**Evidence**: \n" + evidence)
-                                                    .requestedBy(m != null ? m : e.getMember())
-                                                    .setTimestamp(Instant.now())
-                                                    .buildEmbed())
-                                                    .queue();
-                                            });
-                                            e.getReaction().clearReactions().queue();
-                                    }
-                                case "\uD83D\uDC4E": // 👎
-
-                                case "✅":
-                                case "❌":
-                                case "🚫":
-                                case "\uD83D\uDCAC": // 💬
-                                case "\uD83D\uDD04": // 🔄
-
-                            }
-                        } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                    TextChannel tc = avaire.getShardManager().getTextChannelById(databaseEventHolder.getGuild().getSuggestionChannel());
+                    TextChannel ctc = null;
+                    if (databaseEventHolder.getGuild().getSuggestionCommunityChannel() != null) {
+                        if (avaire.getShardManager().getTextChannelById(databaseEventHolder.getGuild().getSuggestionCommunityChannel()) != null) {
+                            ctc = avaire.getShardManager().getTextChannelById(databaseEventHolder.getGuild().getSuggestionCommunityChannel());
                         }
-
                     }
+
+                    String id = null;
+                    if (qb.get().size() > 1) {
+                        id = qb.get().get(0).getString("suggester_discord_id");
+                    }
+
+                    Member memberCheck = null;
+                    if (id != null) {
+                        memberCheck = e.getGuild().getMemberById(id);
+                    }
+
+                    Member m = memberCheck != null ? memberCheck : e.getMember();
+
+                    if (tc != null) {
+                        if (!(tc.equals(e.getChannel()) || ctc.equals(e.getChannel()))) {
+                            return;
+                        }
+                        TextChannel finalCtc = ctc;
+                        e.getChannel().retrieveMessageById(e.getMessageId()).queue(msg -> {
+                            try {
+                                if (e.getReactionEmote().getName().equals("\uD83D\uDC4D") | e.getReactionEmote().getName().equals("\uD83D\uDC4E")) {
+                                    int likes = 0, dislikes = 0;
+                                    for (MessageReaction reaction : msg.getReactions()) {
+                                        if (reaction.getReactionEmote().getName().equals("\uD83D\uDC4D")) {
+                                            likes = reaction.getCount();
+                                        }
+
+                                        if (reaction.getReactionEmote().getName().equals("\uD83D\uDC4E")) {
+                                            dislikes = reaction.getCount();
+                                        }
+                                    }
+
+                                    if (likes == 31) {
+                                        if (finalCtc != null) {
+                                            PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
+                                                .setAuthor("Suggestion for: " + e.getGuild().getName()  + " | " + likes + " - " + dislikes, null, e.getGuild().getIconUrl())
+                                                .setDescription(msg.getEmbeds().get(0).getDescription())
+                                                .setTimestamp(Instant.now());
+
+
+                                            if (qb.get().size() < 1) {
+                                                mb.setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl());
+                                            } else {
+                                                mb.requestedBy(m);
+                                            }
+
+
+                                            finalCtc.sendMessage(mb.buildEmbed()).queue(p -> {
+                                                p.addReaction("✅").queue();
+                                                p.addReaction("❌").queue();
+                                                p.addReaction("\uD83D\uDEAB").queue();
+                                                p.addReaction("\uD83D\uDD04").queue();
+                                                try {
+                                                    qb.update(l -> {
+                                                        l.set("suggestion_message_id", p.getId());
+                                                    });
+                                                } catch (SQLException throwables) {
+                                                    throwables.printStackTrace();
+                                                }
+                                            });
+                                            msg.delete().queue();
+                                            return;
+                                        }
+
+                                        PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
+                                            .setAuthor("Suggestion for: " + e.getGuild().getName() + " | " + likes + " - " + dislikes, null, e.getGuild().getIconUrl())
+                                            .setDescription(msg.getEmbeds().get(0).getDescription())
+                                            .setTimestamp(Instant.now());
+
+                                        if (qb.get().size() < 1) {
+                                            mb.setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl());
+                                        } else {
+                                            mb.requestedBy(m);
+                                        }
+
+                                        msg.editMessage(mb.buildEmbed()).queue();
+                                        msg.clearReactions("\uD83D\uDC4D").queueAfter(1, TimeUnit.SECONDS);
+                                        msg.clearReactions("\uD83D\uDC4E").queueAfter(1, TimeUnit.SECONDS);
+                                    }
+
+                                    if (dislikes == 31) {
+                                        PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
+                                            .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Denied by community", null, e.getGuild().getIconUrl())
+                                            .setDescription(msg.getEmbeds().get(0).getDescription())
+                                            .setTimestamp(Instant.now());
+
+                                        if (qb.get().size() < 1) {
+                                            mb.setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl());
+                                        } else {
+                                            mb.requestedBy(m);
+                                        }
+
+                                        msg.editMessage(mb.buildEmbed()).queue();
+                                        msg.clearReactions().queue();qb.delete();
+
+                                    }
+                                }
+                                if (e.getReactionEmote().getName().equals("❌") || e.getReactionEmote().getName().equals("✅") || e.getReactionEmote().getName().equals("\uD83D\uDD04")) {
+                                    switch (e.getReactionEmote().getName()) {
+                                        case "❌":
+                                            if (!(isValidReportManager(e, 1))) {
+                                                /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to deny this suggestion. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                                    v.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                });*/
+                                                e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                                return;
+                                            }
+                                            msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0))
+                                                .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Denied by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
+                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).setDescription(msg.getEmbeds().get(0).getDescription())
+                                                .setTimestamp(Instant.now())
+                                                .buildEmbed()).queue();
+                                            msg.clearReactions().queue();
+                                            qb.delete();
+                                            break;
+                                        case "✅":
+                                            if (!(isValidReportManager(e, 2))) {
+                                                /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this suggestion. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                                    v.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                });*/
+                                                e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                                return;
+                                            }
+                                            msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(0, 255, 0))
+                                                .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Approved by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
+                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).setDescription(msg.getEmbeds().get(0).getDescription())
+                                                .setTimestamp(Instant.now())
+                                                .buildEmbed()).queue();
+
+                                            msg.clearReactions().queue();
+                                            qb.delete();
+                                            break;
+                                        case "\uD83D\uDD04":
+                                            if (!(isValidReportManager(e, 2))) {
+                                                /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to refresh this suggestion's icons. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                                    v.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                });*/
+                                                e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                                return;
+                                            }
+                                            msg.clearReactions().queue();
+                                            msg.addReaction("\uD83D\uDC4D").queue(); //
+                                            msg.addReaction("\uD83D\uDC4E").queue(); // 👎
+                                            msg.addReaction("✅").queue();
+                                            msg.addReaction("❌").queue();
+                                            msg.addReaction("\uD83D\uDCAC").queue();
+                                            msg.addReaction("\uD83D\uDEAB").queue(); // 🚫
+                                            msg.addReaction("\uD83D\uDD04").queue(); // 🔄
+                                    }
+                                }
+                                if (e.getReactionEmote().getName().equals("\uD83D\uDEAB")) { //
+                                    if (!(isValidReportManager(e, 1))) {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to delete this suggestion. You have to be at least a **Mod** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                            v.delete().queueAfter(30, TimeUnit.SECONDS);
+                                        });*/
+                                        e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                        return;
+                                    }
+                                    msg.delete().queue();
+                                }
+                                if (e.getReactionEmote().getName().equals("\uD83D\uDCAC")) {
+                                    if (!(e.getMember().hasPermission(Permission.MESSAGE_MANAGE) || isValidReportManager(e, 1))) {
+                                        /*e.getMember().getUser().openPrivateChannel().queue(v -> v.sendMessage(new EmbedBuilder().setDescription("Sorry, but you need to be an mod or higher to comment on a suggestion!").build()).queue());
+                                        */e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                        return;
+                                    }
+                                    e.getReaction().removeReaction(e.getUser()).queue();
+
+                                    if (isValidReportManager(e, 1)) {
+                                        msg.getTextChannel().sendMessage(e.getMember().getAsMention() + "\nWhat is your comment?").queue(
+                                            v -> avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, c -> c.getChannel().equals(e.getChannel()) && c.getMember().equals(e.getMember()), c -> {
+                                                v.delete().queue();
+                                                msg.editMessage(new EmbedBuilder()
+                                                    .setColor(msg.getEmbeds().get(0).getColor())
+                                                    .setAuthor("Suggestion for: " + e.getGuild().getName(), null, e.getGuild().getIconUrl())
+                                                    .setDescription(msg.getEmbeds().get(0).getDescription() + "\n\n" + getRole(c) + " - :speech_balloon: **``" + e.getMember().getEffectiveName() + "``:**\n" + c.getMessage().getContentRaw())
+                                                    .setTimestamp(msg.getEmbeds().get(0).getTimestamp())
+                                                    .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).build()).queue();
+                                                c.getMessage().delete().queue();
+                                                if (e.getGuild().getMembersByEffectiveName(msg.getEmbeds().get(0).getFooter().getText(), true).size() > 0) {
+                                                    for (Member u : e.getGuild().getMembersByEffectiveName(msg.getEmbeds().get(0).getFooter().getText(), true)) {
+                                                        u.getUser().openPrivateChannel().complete()
+                                                            .sendMessage(new EmbedBuilder()
+                                                                .setDescription("Hello there ``" + u.getEffectiveName() + "``.\n" +
+                                                                    "It seems like you have gotten a comment on one of your suggestions!\n" +
+                                                                    "If you want to check the feedback, [click here](" + msg.getJumpUrl() + ")\n" +
+                                                                    "You received a comment from **" + e.getMember().getEffectiveName() + "** in ``" + e.getGuild().getName() + "``!\n\n" +
+                                                                    "**Comment**:\n" + c.getMessage().getContentRaw()).build()).queue();
+                                                    }
+                                                }
+                                            }, 90, TimeUnit.SECONDS, () -> {
+                                                v.delete().queue();
+                                                msg.getMember().getUser().openPrivateChannel().queue(l -> l.sendMessage("You took to long to send a comment, please re-react to the message!").queue());
+                                            })
+                                        );
+                                    }
+                                }
+                                if (e.getReactionEmote().getName().equals("\uD83D\uDC51")) {
+                                    if (!(isValidReportManager(e, 1))) {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to delete this suggestion. You have to be at least a **Mod** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                            v.delete().queueAfter(30, TimeUnit.SECONDS);
+                                        });*/
+                                        e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                        return;
+                                    }
+
+                                    if (finalCtc != null) {
+                                        PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
+                                            .setAuthor("Suggestion for: " + e.getGuild().getName(), null, e.getGuild().getIconUrl())
+                                            .setDescription(msg.getEmbeds().get(0).getDescription())
+                                            .setTimestamp(Instant.now());
+
+
+                                        if (qb.get().size() < 1) {
+                                            mb.setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl());
+                                        } else {
+                                            mb.requestedBy(m);
+                                        }
+
+                                        finalCtc.sendMessage(mb.buildEmbed()).queue(p -> {
+                                            p.addReaction("✅").queue();
+                                            p.addReaction("❌").queue();
+                                            p.addReaction("\uD83D\uDEAB").queue();
+                                            p.addReaction("\uD83D\uDD04").queue();
+                                            p.addReaction("\uD83D\uDCAC").queue(); // 💬
+                                            try {
+                                                qb.update(l -> {
+                                                    l.set("suggestion_message_id", p.getId());
+                                                });
+                                            } catch (SQLException throwables) {
+                                                throwables.printStackTrace();
+                                            }
+                                        });
+                                        msg.delete().queue();
+                                    } else {
+                                        /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("This guild does not have a community suggestion channel set.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
+                                            v.delete().queueAfter(30, TimeUnit.SECONDS);
+                                        });*/
+                                        e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                    }
+
+                                }
+                            } catch (SQLException throwables) {
+                                throwables.printStackTrace();
+                            }
+                        });
+                    }
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
                 }
             }
-        });*/
+        });
+    }
+
+    private CharSequence buildSuggestionEmbed(GuildMessageReactionAddEvent e, Message msg) {
+        if (e.getGuild().getId().equals("438134543837560832") || e.getGuild().getId().equals("758057400635883580") || e.getGuild().getId().equals("436670173777362944")) {
+            return msg.getEmbeds().get(0).getDescription();
+        } else if (e.getGuild().getId().equals("371062894315569173")) {
+
+            return msg.getEmbeds().get(0).getDescription();
+        }
+        return "ROLE OR PERSON NOT FOUND";
     }
 
     private String getImageByName(Guild guild, String username) {
@@ -626,90 +860,33 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         }
     }
 
-    private boolean isValidReportManagerRole(GuildMessageReactionAddEvent e) {
-        /*if (e.getGuild().getRolesByName("Trainer", true).size() > 0
-            || e.getGuild().getRolesByName("Division Trainer", true).size() > 0
-            || e.getGuild().getRolesByName("Team Chief", true).size() > 0
-            || e.getGuild().getRolesByName("Instructor", true).size() > 0
-            || e.getGuild().getRolesByName("The Architect", true).size() > 0 || e.getGuild().getRolesByName("Admins", true).size() > 0 || e.getGuild().getRolesByName("PIA", true).size() > 0 || e.getGuild().getRolesByName("Owner", true).size() > 0) {
-            Role r = getGuildRole(e);
-            if (r != null) {
-                return e.getMember().getRoles().contains(r) || e.getMember().hasPermission(Permission.ADMINISTRATOR);
-            }
-        }*/
-        return false;
-    }
-
     public static void createReactions(Message r) {
-            r.addReaction("\uD83D\uDC4D").queue();   // 👍
-            r.addReaction("\uD83D\uDC4E").queue();  // 👎
-            r.addReaction("✅").queue();
-            r.addReaction("❌").queue();
-            r.addReaction("🚫").queue();
-            r.addReaction("\uD83D\uDD04").queue(); // 🔄
+        r.addReaction("\uD83D\uDC4D").queue();   // 👍
+        r.addReaction("\uD83D\uDC4E").queue();  // 👎
+        r.addReaction("✅").queue();
+        r.addReaction("❌").queue();
+        r.addReaction("🚫").queue();
+        r.addReaction("\uD83D\uDD04").queue(); // 🔄
+
     }
 
     private boolean isValidReportManager(GuildMessageReactionAddEvent e, Integer i) {
         GuildTransformer transformer = GuildController.fetchGuild(avaire, e.getGuild());
-        List <Role> roles = new ArrayList <>();
         if (i == 1) {
-            if (transformer != null) {
-                for (Long roleId : transformer.getModeratorRoles()) {
-                    Role r = e.getGuild().getRoleById(roleId);
-                    if (r != null) {
-                        roles.add(r);
-                    }
-                }
-                for (Long roleId : transformer.getManagerRoles()) {
-                    Role r = e.getGuild().getRoleById(roleId);
-                    if (r != null) {
-                        roles.add(r);
-                    }
-                }
-                for (Long roleId : transformer.getAdministratorRoles()) {
-                    Role r = e.getGuild().getRoleById(roleId);
-                    if (r != null) {
-                        roles.add(r);
-                    }
-                }
-            }
+            return CheckPermissionUtil.getPermissionLevel(transformer, e.getGuild(), e.getMember()).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel();
         }
         if (i == 2) {
-            if (transformer != null) {
-                for (Long roleId : transformer.getAdministratorRoles()) {
-                    Role r = e.getGuild().getRoleById(roleId);
-                    if (r != null) {
-                        roles.add(r);
-                    }
-                }
-
-            }
+            return CheckPermissionUtil.getPermissionLevel(transformer, e.getGuild(), e.getMember()).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel();
         }
         if (i == 3) {
-            if (transformer != null) {
-                for (Long roleId : transformer.getAdministratorRoles()) {
-                    Role r = e.getGuild().getRoleById(roleId);
-                    if (r != null) {
-                        roles.add(r);
-                    }
-                }
-                for (Long roleId : transformer.getManagerRoles()) {
-                    Role r = e.getGuild().getRoleById(roleId);
-                    if (r != null) {
-                        roles.add(r);
-                    }
-                }
-
-            }
+            return CheckPermissionUtil.getPermissionLevel(transformer, e.getGuild(), e.getMember()).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.ADMIN.getLevel();
         }
-        if (roles.size() == 0) {
-            return false;
-        }
-        return e.getMember().getRoles().stream().anyMatch(roles::contains);
+        return false;
     }
 
 
-    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final GuildMessageReactionAddEvent event) {
+    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(
+        final GuildMessageReactionAddEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannel().getType().isGuild()) {
                 return new DatabaseEventHolder(null, null);

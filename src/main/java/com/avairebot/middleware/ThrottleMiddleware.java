@@ -226,7 +226,7 @@ public class ThrottleMiddleware extends Middleware {
         private int hit;
 
         ThrottleEntity(int maxAttempts, int decaySeconds) {
-            this.time = System.currentTimeMillis() + (decaySeconds * 1000);
+            this.time = System.currentTimeMillis() + (decaySeconds * 1000L);
             this.maxAttempts = maxAttempts;
             this.hit = 0;
         }

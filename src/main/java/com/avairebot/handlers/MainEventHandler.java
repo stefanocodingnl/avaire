@@ -89,10 +89,10 @@ public class MainEventHandler extends EventHandler {
     private final ChangelogEventAdapter changelogEventAdapter;
     private final ReactionEmoteEventAdapter reactionEmoteEventAdapter;
 
-    public static final Cache<Long, Boolean> cache = CacheBuilder.newBuilder()
-            .recordStats()
-            .expireAfterWrite(15, TimeUnit.MINUTES)
-            .build();
+    public static final Cache <Long, Boolean> cache = CacheBuilder.newBuilder()
+        .recordStats()
+        .expireAfterWrite(15, TimeUnit.MINUTES)
+        .build();
 
     private static final Logger log = LoggerFactory.getLogger(MainEventHandler.class);
 
@@ -320,7 +320,14 @@ public class MainEventHandler extends EventHandler {
 
             reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
             reactionEmoteEventAdapter.onReportsReactionAdd(event);
-            reactionEmoteEventAdapter.onSuggestionReactionEvent(event);
+            reactionEmoteEventAdapter.onFeedbackMessageEvent(event);
+
+            if (event.getChannel().getId().equals("771523398693158953")) {
+                event.getChannel().retrieveMessageById(event.getMessageId()).queue(p -> {
+                    p.addReaction("\uD83D\uDC4D").queue();
+                    p.addReaction("\uD83D\uDC4E").queue();
+                });
+            }
         }
     }
 
@@ -371,20 +378,20 @@ public class MainEventHandler extends EventHandler {
 
         CacheUtil.getUncheckedUnwrapped(cache, guild.getIdLong(), () -> {
             log.debug("Lazy-loading members for guild: {} (ID: {})", guild.getName(), guild.getIdLong());
-            Task<List<Member>> task = guild.loadMembers();
+            Task <List <Member>> task = guild.loadMembers();
 
             guild.getMemberCount();
 
             task.onSuccess(members -> {
                 log.debug("Lazy-loading for guild {} is done, loaded {} members",
-                        guild.getId(), members.size()
+                    guild.getId(), members.size()
                 );
 
                 cache.invalidate(guild.getIdLong());
             });
 
             task.onError(throwable -> log.error("Failed to lazy-load guild members for {}, error: {}",
-                    guild.getIdLong(), throwable.getMessage(), throwable
+                guild.getIdLong(), throwable.getMessage(), throwable
             ));
 
             return true;
@@ -393,13 +400,13 @@ public class MainEventHandler extends EventHandler {
 
     private boolean isValidMessageReactionEvent(MessageReactionAddEvent event) {
         return event.isFromGuild()
-                && event.getReactionEmote().isEmote()
-                && !event.getMember().getUser().isBot();
+            && event.getReactionEmote().isEmote()
+            && !event.getMember().getUser().isBot();
     }
 
     private boolean isValidMessageReactionEvent(MessageReactionRemoveEvent event) {
         return event.isFromGuild()
-                && event.getReactionEmote().isEmote();
+            && event.getReactionEmote().isEmote();
     }
 
     private boolean isValidMessageReactionEvent(GuildMessageReactionAddEvent event) {
