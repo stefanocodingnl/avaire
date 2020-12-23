@@ -1,10 +1,12 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.database.collection.Collection;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -12,6 +14,7 @@ import net.dv8tion.jda.api.entities.Role;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 import java.util.*;
 
 public class GlobalUnbanCommand extends Command {
@@ -87,6 +90,7 @@ public class GlobalUnbanCommand extends Command {
             context.makeError("Sorry, but you can only globally unban 1 member at a time!").queue();
             return true;
         }
+
         if (guild.size() > 0) {
             guild.clear();
         }
@@ -101,8 +105,25 @@ public class GlobalUnbanCommand extends Command {
             g.unban(args[0]).reason("Global unban, executed by: " + context.member.getEffectiveName()).queue();
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
-        context.makeSuccess(args[0] + "has been unbanned from: \n\n" + sb.toString()).queue();
+        context.makeSuccess("<@" + args[0] + "> has been unbanned from: \n\n" + sb.toString()).queue();
+        try {
+            handleGlobalPermUnban(context, args);
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+            context.makeError("Something went adding this user to the global perm ban database.").queue();
+        }
+
         return true;
+    }
+
+    private void handleGlobalPermUnban(CommandMessage context, String[] args) throws SQLException {
+        Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", args[0]).get();
+        if (c.size() > 0) {
+            avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", args[0]).delete();
+            context.makeError("**:userId** has been removed from the anti-unban system!").set("userId", args[0]).queue();
+        } else {
+            context.makeError("This user is not banned!").queue();
+        }
     }
 }
 

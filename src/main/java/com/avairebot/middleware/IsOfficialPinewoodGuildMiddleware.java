@@ -5,6 +5,7 @@ import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -21,7 +22,7 @@ public class IsOfficialPinewoodGuildMiddleware extends Middleware {
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
-        return "**This command can only be executed in official Pinewood servers!**";
+        return "**This command can only be executed in official Pinewood servers! (Bypass for Facili+)**";
     }
 
     @Override
@@ -30,7 +31,8 @@ public class IsOfficialPinewoodGuildMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong(), true).isAdmin()) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.FACILITATOR.getLevel()) {
             return stack.next();
         }
 

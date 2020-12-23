@@ -31,6 +31,7 @@ import com.avairebot.factories.MessageFactory;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.time.Carbon;
 import com.avairebot.utilities.CacheUtil;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.NumberUtil;
 import com.avairebot.utilities.RestActionUtil;
 import com.google.common.cache.Cache;
@@ -67,11 +68,8 @@ public class ThrottleMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (message.getAuthor().getId().equals("173839105615069184")) {
-            return stack.next();
-        }
-
-        if (Constants.bypass_users.contains(message.getAuthor().getId())) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 

@@ -61,6 +61,7 @@ public class Constants {
     public static final String MUSIC_SEARCH_CACHE_TABLE_NAME = "music_search_cache";
     public static final String INSTALLED_PLUGINS_TABLE_NAME = "installed_plugins";
 
+    public static final String ANTI_UNBAN_TABLE_NAME = "pia_antiban";
 
     public static final String EVALS_DATABASE_TABLE_NAME = "pinewood_evaluations";
     public static final String EVALS_LOG_DATABASE_TABLE_NAME = "pinewood_evaluations_log";
@@ -85,13 +86,6 @@ public class Constants {
 
     // Command source link
     public static final String SOURCE_URI = "https://gitlab.com/pinewood-builders/discord/xeus/-/blob/master/src/main/java/com/avairebot/commands/%s/%s.java";
-
-    // Report channels
-    public static final String PBST_REPORT_CHANNEL = "692087638806757487";
-    public static final String TMS_REPORT_CHANNEL = "722600336212099073";
-    public static final String PET_REPORT_CHANNEL = "706945921191247882";
-    public static final String PB_REPORT_CHANNEL = "463097738645471234";
-
 
     public static final String REWARD_REQUESTS_CHANNEL_ID = "722606219319181392";
 
@@ -130,12 +124,4 @@ public class Constants {
         add("148420768324124672"); // Diddleshot
         add("314505421870333952"); // AnuCat
     }};
-
-    // BYPASS USERS
-    public static final ArrayList<Integer> SUGGESTION_MANAGERS = new ArrayList<Integer>() {{
-        add(1612687);
-    }};
-
-
-
 }

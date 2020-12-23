@@ -23,6 +23,7 @@ package com.avairebot.handlers;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
+import com.avairebot.Environment;
 import com.avairebot.contracts.handlers.EventHandler;
 import com.avairebot.database.controllers.PlayerController;
 import com.avairebot.handlers.adapter.*;
@@ -30,6 +31,9 @@ import com.avairebot.metrics.Metrics;
 import com.avairebot.utilities.CacheUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import net.dv8tion.jda.api.audit.ActionType;
+import net.dv8tion.jda.api.audit.AuditLogKey;
+import net.dv8tion.jda.api.audit.AuditLogOption;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.GenericEvent;
@@ -45,6 +49,7 @@ import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
 import net.dv8tion.jda.api.events.guild.GenericGuildEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
@@ -74,9 +79,11 @@ import org.slf4j.LoggerFactory;
 import com.avairebot.pinewood.waiters.HandbookReportWaiters;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class MainEventHandler extends EventHandler {
 
@@ -88,6 +95,7 @@ public class MainEventHandler extends EventHandler {
     private final JDAStateEventAdapter jdaStateEventAdapter;
     private final ChangelogEventAdapter changelogEventAdapter;
     private final ReactionEmoteEventAdapter reactionEmoteEventAdapter;
+    private final GuildEventAdapter guildEventAdapter;
 
     public static final Cache <Long, Boolean> cache = CacheBuilder.newBuilder()
         .recordStats()
@@ -112,6 +120,7 @@ public class MainEventHandler extends EventHandler {
         this.jdaStateEventAdapter = new JDAStateEventAdapter(avaire);
         this.changelogEventAdapter = new ChangelogEventAdapter(avaire);
         this.reactionEmoteEventAdapter = new ReactionEmoteEventAdapter(avaire);
+        this.guildEventAdapter = new GuildEventAdapter(avaire);
         new HandbookReportWaiters(avaire);
     }
 
@@ -204,6 +213,9 @@ public class MainEventHandler extends EventHandler {
         }
         messageEvent.onMessageReceived(event);
 
+        if (AvaIre.getEnvironment().getName().equals(Environment.DEVELOPMENT.getName())) {
+            return;
+        }
 
         if (event.isFromGuild()) {
             if (Constants.guilds.contains(event.getGuild().getId())) {
@@ -216,6 +228,14 @@ public class MainEventHandler extends EventHandler {
                         messageEvent.onPBSTEventGalleryMessageSent(event);
                     }
                 }
+            }
+            if (event.getChannel().getId().equals("771523398693158953")) {
+                event.getChannel().retrieveMessageById(event.getMessageId()).queue(p -> {
+                    if (p.getContentRaw().equals("__**COMPLETED**__") || p.getContentRaw().equals("**__COMPLETED__**"))
+                        return;
+                    p.addReaction("\uD83D\uDC4D").queue();
+                    p.addReaction("\uD83D\uDC4E").queue();
+                });
             }
         }
 
@@ -321,14 +341,8 @@ public class MainEventHandler extends EventHandler {
             reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
             reactionEmoteEventAdapter.onReportsReactionAdd(event);
             reactionEmoteEventAdapter.onFeedbackMessageEvent(event);
-
-            if (event.getChannel().getId().equals("771523398693158953")) {
-                event.getChannel().retrieveMessageById(event.getMessageId()).queue(p -> {
-                    p.addReaction("\uD83D\uDC4D").queue();
-                    p.addReaction("\uD83D\uDC4E").queue();
-                });
-            }
         }
+
     }
 
 
@@ -369,6 +383,26 @@ public class MainEventHandler extends EventHandler {
 
             loadGuildMembers(genericGuildEvent.getGuild());
         }
+    }
+
+    public final ArrayList <String> guilds = new ArrayList <String>() {{
+        add("495673170565791754"); // Aerospace
+        add("438134543837560832"); // PBST
+        add("371062894315569173"); // Official PB Server
+        add("514595433176236078"); // PBQA
+        add("436670173777362944"); // PET
+        add("505828893576527892"); // MMFA
+        add("498476405160673286"); // PBM
+        add("572104809973415943"); // TMS
+        add("758057400635883580"); // PBOP
+        add("669672893730258964"); // PB Dev
+    }};
+
+
+    public void onGuildUnban(@Nonnull GuildUnbanEvent e) {
+      if (guilds.contains(e.getGuild().getId())) {
+          guildEventAdapter.onGuildPIAMemberBanEvent(e);
+      }
     }
 
     private void loadGuildMembers(Guild guild) {

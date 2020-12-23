@@ -173,7 +173,8 @@ public class HandbookReportWaiters {
             message.contains("cdn.discordapp.com") ||
             message.contains("media.discordapp.com") ||
             message.contains("gyazo.com") ||
-            message.contains("prntscr.com") || message.contains("imgur.com"))) {
+            message.contains("prntscr.com") || message.contains("imgur.com") ||
+            message.contains("prnt.sc"))) {
             pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again").buildEmbed()).queue();
             return false;
         }
@@ -245,34 +246,6 @@ public class HandbookReportWaiters {
         }
     }
 
-    public static boolean isNotBlacklisted(int id) {
-        if (avaire.getConfig().getConfig().getString("apiKeys.kronosApiKey").length() < 1) {
-            return false;
-        }
-
-
-        Request user = RequestFactory.makeGET("https://pb-kronos.dev/pbst/blacklist/checkusers");
-        user.addParameter("userids", id);
-        user.addHeader("Access-Key", avaire.getConfig().getConfig().getString("apiKeys.kronosApiKey"));
-
-        HashMap<Integer, Boolean> list = new HashMap<>();
-
-        user.send((Consumer<Response>) response -> {
-            if (response.getResponse().code() == 200) {
-
-                KronosCheckIfUserIsBlacklistedService grs = (KronosCheckIfUserIsBlacklistedService) response.toService(KronosCheckIfUserIsBlacklistedService.class);
-                list.put(id, grs.getData().get(id));
-                System.out.println("List got added to");
-            } else {
-                System.out.println("Request got: " + response.getResponse().code());
-            }
-        });
-        if (list.isEmpty()) {
-            System.out.println("List is empty");
-            return false;
-        }
-        return list.get(id);
-    }
 
     private static int getRobloxId(String un) {
         try {

@@ -5,6 +5,7 @@ import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
@@ -22,11 +23,11 @@ public class IsManagerOrHigherMiddleware extends Middleware {
         super(avaire);
     }
 
-    ArrayList <String> guilds = Constants.guilds;
+    String rankName = CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getRankName();
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
-        return "**This command can only be executed by a manager or higher (Pinewood)!**";
+        return "**This command can only be executed by a " + rankName + " or higher (Pinewood)!**";
     }
 
     @Override
@@ -39,7 +40,8 @@ public class IsManagerOrHigherMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (isManagerOrHigher(stack, message) || message.getMember().hasPermission(Permission.ADMINISTRATOR) || message.getMember().hasPermission(Permission.MANAGE_SERVER)) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
             return stack.next();
         }
 
@@ -54,31 +56,9 @@ public class IsManagerOrHigherMiddleware extends Middleware {
         return stack.next();
     }
 
-    private boolean isManagerOrHigher(MiddlewareStack stack, Message message) {
-        Set <Long> adminRoles = stack.getDatabaseEventHolder().getGuild().getAdministratorRoles();
-        Set <Long> managerRoles = stack.getDatabaseEventHolder().getGuild().getManagerRoles();
-
-        List <Role> roles = new ArrayList <>();
-
-        for (Long i : managerRoles) {
-            Role r = message.getGuild().getRoleById(i);
-            if (r != null) {
-                roles.add(r);
-            }
-        }
-
-        for (Long i : adminRoles) {
-            Role r = message.getGuild().getRoleById(i);
-            if (r != null) {
-                roles.add(r);
-            }
-        }
-        return roles.stream().anyMatch(message.getMember().getRoles()::contains);
-    }
-
     private boolean sendMustBeManagerOrHigherMessage(@Nonnull Message message) {
         return runMessageCheck(message, () -> {
-            MessageFactory.makeError(message, "<a:alerta:729735220319748117> This command is only allowed to be executed by a manager or higher!")
+            MessageFactory.makeError(message, "<a:alerta:729735220319748117> This command is only allowed to be executed by a " + rankName + " or higher!")
                 .queue(newMessage -> newMessage.delete().queueAfter(45, TimeUnit.SECONDS), RestActionUtil.ignore);
 
             return false;

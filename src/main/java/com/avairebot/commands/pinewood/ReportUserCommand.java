@@ -37,7 +37,7 @@ public class ReportUserCommand extends Command {
 
 
     public ReportUserCommand(AvaIre avaire) {
-        super(avaire);
+        super(avaire, false);
     }
 
     @Override
@@ -88,6 +88,7 @@ public class ReportUserCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+
         int permissionLevel = CheckPermissionUtil.getPermissionLevel(context).getLevel();
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
             if (args.length > 0) {
@@ -413,7 +414,8 @@ public class ReportUserCommand extends Command {
             message.contains("cdn.discordapp.com") ||
             message.contains("media.discordapp.com") ||
             message.contains("gyazo.com") ||
-            message.contains("prntscr.com") || message.contains("imgur.com"))) {
+            message.contains("prntscr.com") ||
+            message.contains("prnt.sc") || message.contains("imgur.com"))) {
             pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again").buildEmbed()).queue();
             return false;
         }

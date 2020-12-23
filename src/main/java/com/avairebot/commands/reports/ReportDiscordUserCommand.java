@@ -95,6 +95,12 @@ public class ReportDiscordUserCommand extends Command {
             context.makeError("The guild's setting could not be loaded, if this error pops up often, please contact Stefano#7366").queue();
             return true;
         }
+
+        if (context.member.getRoles().size() < 2) {
+            context.makeError("You must be verified in this discord to run this commmand!").queue();
+            return true;
+        }
+
         if (context.getGuild().getTextChannelsByName("report-" + context.member.getEffectiveName(), true).size() > 0) {
             context.makeError("You've already got a channel to report someone, please close this one first before opening another one!").queue();
             return true;

@@ -5,6 +5,7 @@ import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -19,7 +20,7 @@ public class IsValidPIAMemberMiddleware extends Middleware {
     public IsValidPIAMemberMiddleware(AvaIre avaire) {
         super(avaire);
     }
-    ArrayList<String> guilds = Constants.guilds;
+    String rankName = CheckPermissionUtil.GuildPermissionCheckType.PIA.getRankName();
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
@@ -32,7 +33,8 @@ public class IsValidPIAMemberMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (Constants.bypass_users.contains(message.getAuthor().getId())) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 

@@ -700,3 +700,12 @@ apiKeys:
   # Get a key at: https://home.openweathermap.org/api_keys
   #
   openWeatherMap: ''
+
+  # Gitlabs API Key for the gitlab API
+  gitlabKey: ''
+
+  # Kronos API Key for connecting to the Kronos API
+  kronosApiKey: ''
+apiUrl:
+  kronosUrl: "https://pb-kronos.dev/"
+  kronosBlacklist: "pbst/blacklist/checkusers"

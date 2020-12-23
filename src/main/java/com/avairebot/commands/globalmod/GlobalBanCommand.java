@@ -1,10 +1,13 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.database.collection.Collection;
+import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -12,6 +15,7 @@ import net.dv8tion.jda.api.entities.Role;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 import java.util.*;
 
 public class GlobalBanCommand extends Command {
@@ -117,9 +121,32 @@ public class GlobalBanCommand extends Command {
 
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
+
+
         context.makeSuccess("<@" + args[0] + "> has been banned from: \n\n" + sb.toString()).queue();
 
+        try {
+            handleGlobalPermBan(context, args, reason);
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+            context.makeError("Something went adding this user to the global perm ban database.").queue();
+        }
+
         return true;
+    }
+
+    private void handleGlobalPermBan(CommandMessage context, String[] args, String reason) throws SQLException {
+        Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", args[0]).get();
+        if (c.size() < 1) {
+            avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).insert(o -> {
+                o.set("userId", args[0]);
+                o.set("punisherId", context.getAuthor().getId());
+                o.set("reason", reason, true);
+            });
+            context.makeSuccess("Permbanned ``" + args[0] + "`` in the database, global-ban the user if he's still in a discord.").queue();
+        } else {
+            context.makeError("This user already has a permban in the database!").queue();
+        }
     }
 }
 

@@ -34,6 +34,7 @@ import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.language.I18n;
+import com.avairebot.utilities.CheckPermissionUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 
@@ -46,17 +47,17 @@ public class RequireDJLevelMiddleware extends Middleware {
     public RequireDJLevelMiddleware(AvaIre avaire) {
         super(avaire);
     }
-
+    String rankName = CheckPermissionUtil.GuildPermissionCheckType.DJ.getRankName();
     @Nullable
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] args) {
         if (!context.isGuildMessage() || args.length == 0) {
-            return "**You need the `DJ` role to use this command**";
+            return "**You need the "+rankName+" role (Or higher) to use this command**";
         }
 
         GuildTransformer guildTransformer = context.getGuildTransformer();
         if (guildTransformer == null) {
-            return "**You need the `DJ` role to use this command**";
+            return "**You need the "+rankName+" role (Or higher) to use this command**";
         }
 
         // Incase the server has the DJ level set to "ALL", we'll just not send any DJ level
@@ -67,10 +68,10 @@ public class RequireDJLevelMiddleware extends Middleware {
 
         Role role = getDjRoleFrom(guildTransformer, context.getMessage());
         if (role == null) {
-            return "**You need the `DJ` role to use this command**";
+            return "**You need the "+rankName+" role (Or higher) to use this command**";
         }
 
-        return I18n.format("**You need the {0} role to use this command**",
+        return I18n.format("**You need the {0} role (Or higher) to use this command**",
             role.getAsMention()
         );
     }
@@ -81,11 +82,9 @@ public class RequireDJLevelMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (message.getAuthor().getId().equals("173839105615069184")) {
-            return stack.next();
-        }
 
-        if (Constants.bypass_users.contains(message.getAuthor().getId())) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
             return stack.next();
         }
 
@@ -131,8 +130,8 @@ public class RequireDJLevelMiddleware extends Middleware {
             MessageFactory.makeError(message, djcheckMessage)
                 .set("iam", command.getCommand().generateCommandTrigger(message))
                 .set("prefix", stack.getCommand().generateCommandPrefix(message))
-                .set("role", djRole == null ? "`DJ`" : djRole.getAsMention())
-                .set("roleName", djRole == null ? "DJ" : djRole.getName())
+                .set("role", djRole == null ? rankName : djRole.getAsMention())
+                .set("roleName", djRole == null ? rankName : djRole.getName())
                 .queue(newMessage -> newMessage.delete().queueAfter(45, TimeUnit.SECONDS));
 
             return false;
@@ -145,10 +144,7 @@ public class RequireDJLevelMiddleware extends Middleware {
         }
 
         if (guildTransformer.getDjRole() != null) {
-            Role role = message.getGuild().getRoleById(guildTransformer.getDjRole());
-            if (role != null) {
-                return role;
-            }
+            return message.getGuild().getRoleById(guildTransformer.getDjRole());
         }
 
         return null;

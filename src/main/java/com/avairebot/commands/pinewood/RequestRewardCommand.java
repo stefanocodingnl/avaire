@@ -88,14 +88,14 @@ public class RequestRewardCommand extends Command {
         }*/
 
 
-        int requesterId = getRobloxId(context.getMember().getEffectiveName());
-        if (requesterId == 0) {
+        long requesterId = getRobloxId(context.getMember().getEffectiveName());
+        if (requesterId == 0L) {
             context.makeError("Sorry, but your username seems to not exist inside roblox. Please make sure your nick is correct.").queue();
             return false;
         }
 
         String requesterName = context.getMember().getEffectiveName();
-        HashMap<Integer, RobloxUserGroupRankService> list = new HashMap<>();
+
         Request requesterRequest = RequestFactory.makeGET("https://groups.roblox.com/v1/users/" + requesterId + "/groups/roles");
         requesterRequest.send((Consumer<Response>) response -> {
             if (response.getResponse().code() == 200) {
@@ -104,50 +104,40 @@ public class RequestRewardCommand extends Command {
 
                 if (b.isPresent()) {
                     //context.makeInfo(AvaIre.gson.toJson(b.get().getRole())).queue();
-                    list.put(requesterId, grs);
+                    if (args.length < 1) {
+                        context.makeError("Please add who you'd like to request a reward for in the command.\n\n**Example**: \n - ``" + generateCommandPrefix(context.getMessage()) + "rr <Roblox Username>``").queue();
+                        return;
+                    }
+
+                    String requestedName = args[0];
+                    long requestedId = getRobloxId(requestedName);
+                    if (requestedId == 0L) {
+                        context.makeError("Sorry, but your username you gave us, does not exist on roblox.").queue();
+                        return;
+                    }
+
+
+                    Request requestedRequest = RequestFactory.makeGET("https://groups.roblox.com/v1/users/" + requestedId + "/groups/roles");
+                    requestedRequest.send((Consumer<Response>) response2 -> {
+                        if (response2.getResponse().code() == 200) {
+                            RobloxUserGroupRankService grs2 = (RobloxUserGroupRankService) response2.toService(RobloxUserGroupRankService.class);
+                            Optional<RobloxUserGroupRankService.Data> b2 = grs2.getData().stream().filter(l -> l.getGroup().getId() == 645836 && l.getGroup().getOwner().getUsername().equals("Diddleshot")).findFirst();
+
+                            if (b2.isPresent()) {
+                                sendSpecialRanksAndRolesMessage(context, requestedId, requestedName, requesterName, b, b2);
+
+                            } else {
+                                context.makeInfo(String.valueOf(response2.getResponse().code())).queue();
+                                makeErrorMessage(context, "The user who you've requested a reward for isn't in PBST, please check if this is correct or not.");
+                            }
+                        }
+                    });
 
                 } else {
                     context.makeInfo(String.valueOf(response.getResponse().code())).queue();
                     makeErrorMessage(context, "You're not in PBST, make sure you are. If you are, try the command again or contact ``Stefano#7366``");
                 }
 
-            }
-        });
-
-        if (args.length < 1) {
-            context.makeError("Please add who you'd like to request a reward for in the command.\n\n**Example**: \n - ``" + generateCommandPrefix(context.getMessage()) + "rr <Roblox Username>``").queue();
-            return false;
-        }
-
-        String requestedName = args[0];
-        int requestedId = getRobloxId(requestedName);
-        if (requestedId == 0) {
-            context.makeError("Sorry, but your username you gave us, does not exist on roblox.").queue();
-            return false;
-        }
-
-
-        Request requestedRequest = RequestFactory.makeGET("https://groups.roblox.com/v1/users/" + requestedId + "/groups/roles");
-        requestedRequest.send((Consumer<Response>) response -> {
-            if (response.getResponse().code() == 200) {
-                RobloxUserGroupRankService grs = (RobloxUserGroupRankService) response.toService(RobloxUserGroupRankService.class);
-                Optional<RobloxUserGroupRankService.Data> b = grs.getData().stream().filter(l -> l.getGroup().getId() == 645836).findFirst();
-
-                if (b.isPresent()) {
-
-                    list.put(requestedId, grs);
-                    //context.makeInfo(AvaIre.gson.toJson(b.get().getRole())).queue();
-
-                    if (list.size() <= 1) {
-                        makeErrorMessage(context, "Due to an error, I could only find either you, or the user you specified. Make sure you are in PBST, and the user you're requesting a reward for is also in PBST.");
-                        return;
-                    }
-                    sendSpecialRanksAndRolesMessage(context, requestedId, requesterId, list, requestedName, requesterName);
-
-                } else {
-                    context.makeInfo(String.valueOf(response.getResponse().code())).queue();
-                    makeErrorMessage(context, "The user who you've requested a reward for isn't in PBST, please check if this is correct or not.");
-                }
             }
         });
         return true;
@@ -160,13 +150,15 @@ public class RequestRewardCommand extends Command {
         });
     }
 
-    private void sendSpecialRanksAndRolesMessage(CommandMessage context, int requestedId, int requesterId, HashMap<Integer, RobloxUserGroupRankService> d, String requestedName, String requesterName) {
-        RobloxUserGroupRankService.Data requestedUser = d.get(requestedId).getData().stream().filter(l -> l.getGroup().getId() == 645836).findFirst().get();
-        RobloxUserGroupRankService.Data requesterUser = d.get(requesterId).getData().stream().filter(l -> l.getGroup().getId() == 645836).findFirst().get();
+    private void sendSpecialRanksAndRolesMessage(CommandMessage context, long requestedId, String requestedName, String requesterName, Optional<RobloxUserGroupRankService.Data> rUs, Optional<RobloxUserGroupRankService.Data> rU) {
 
-        /*context.makeWarning("The user you requested has the rank: " + requestedUser.getRole().getName() + "\n" +
+        RobloxUserGroupRankService.Data requestedUser = rU.get();
+        RobloxUserGroupRankService.Data requesterUser = rUs.get();
+
+
+        context.makeWarning("The user you requested has the rank: " + requestedUser.getRole().getName() + "\n" +
             "You have the rank: " + requesterUser.getRole().getName() + "\n\n" +
-            "You can " + (requestedUser.getRole().getRank()() < requesterUser.getRole().getRank()() ? "NOT" : "ACTUALLY")).queue();*/
+            "You can " + (requestedUser.getRole().getRank() < requesterUser.getRole().getRank() ? "NOT" : "ACTUALLY")).queue();
 
         if (requesterUser.getRole().getRank() < requestedUser.getRole().getRank() || requestedUser.getRole().getRank() == requesterUser.getRole().getRank()) {
             context.makeError("Sorry, but you're not allowed to request a reward for this rank.").queue();
@@ -296,7 +288,8 @@ public class RequestRewardCommand extends Command {
             message.contains("cdn.discordapp.com") ||
             message.contains("media.discordapp.com") ||
             message.contains("gyazo.com") ||
-            message.contains("prntscr.com") || message.contains("imgur.com"))) {
+            message.contains("prntscr.com") ||
+            message.contains("prnt.sc") || message.contains("imgur.com"))) {
             pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again (Do not restart the reward system, I'm still listening).").buildEmbed()).queue();
             return false;
         }
@@ -312,12 +305,12 @@ public class RequestRewardCommand extends Command {
         }
     }
 
-    public int getRobloxId(String un) {
+    public Long getRobloxId(String un) {
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
-            return json.getInt("Id");
+            return json.getLong("Id");
         } catch (Exception e) {
-            return 0;
+            return 0L;
         }
     }
 }

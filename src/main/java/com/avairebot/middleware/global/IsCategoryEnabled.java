@@ -30,6 +30,7 @@ import com.avairebot.database.transformers.ChannelTransformer;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.middleware.MiddlewareStack;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -122,34 +123,8 @@ public class IsCategoryEnabled extends Middleware {
     }
 
     private boolean isModOrHigher(MiddlewareStack stack, Message message) {
-        Set <Long> moderatorRoles = stack.getDatabaseEventHolder().getGuild().getModeratorRoles();
-        Set <Long> adminRoles = stack.getDatabaseEventHolder().getGuild().getAdministratorRoles();
-        Set <Long> managerRoles = stack.getDatabaseEventHolder().getGuild().getManagerRoles();
-
-        List <Role> roles = new ArrayList <>();
-
-        for (Long i : moderatorRoles) {
-            Role r = message.getGuild().getRoleById(i);
-            if (r != null) {
-                roles.add(r);
-            }
-        }
-
-        for (Long i : managerRoles) {
-            Role r = message.getGuild().getRoleById(i);
-            if (r != null) {
-                roles.add(r);
-            }
-        }
-
-        for (Long i : adminRoles) {
-            Role r = message.getGuild().getRoleById(i);
-            if (r != null) {
-                roles.add(r);
-            }
-        }
-
-        return roles.stream().anyMatch(message.getMember().getRoles()::contains);
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        return permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel();
     }
 
     private boolean isCategoryCommands(MiddlewareStack stack) {

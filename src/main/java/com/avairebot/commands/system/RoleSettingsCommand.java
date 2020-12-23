@@ -29,10 +29,12 @@ import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.contracts.commands.SystemCommand;
 import com.avairebot.database.transformers.GuildTransformer;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.ComparatorUtil;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,18 +97,29 @@ public class RoleSettingsCommand extends SystemCommand {
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
         GuildTransformer guildTransformer = context.getGuildTransformer();
+
+        if (guildTransformer == null) {
+            context.makeError("Server settings could not be gathered").queue();
+            return false;
+        }
+
         if (args.length == 0 || NumberUtil.parseInt(args[0], -1) > 0) {
             return sendEnabledRoles(context, guildTransformer);
         }
+
+        if (args[0].equals("get-level")) {
+            return getUserLevel(context, guildTransformer);
+        }
+
         if (args[0].equals("setup-basic-roles")) {
             return handleFirstSetupRoles(context, guildTransformer);
         }
+
 
         Role role = MentionableUtil.getRole(context.getMessage(), new String[]{args[0]});
         if (role == null) {
             return sendErrorMessage(context, context.i18n("invalidRole", args[0]));
         }
-
 
 
         if (args.length > 1) {
@@ -122,6 +135,21 @@ public class RoleSettingsCommand extends SystemCommand {
 
         }
         return handleToggleRole(context, role, "mod", ComparatorUtil.ComparatorType.UNKNOWN);
+    }
+
+    private boolean getUserLevel(CommandMessage context, GuildTransformer guildTransformer) {
+        if (context.getMessage().getMentionedMembers().size() == 1) {
+            Member m = context.getMessage().getMentionedMembers().get(0);
+            context.makeInfo(m.getAsMention() + " has permission level ``"
+                + CheckPermissionUtil.getPermissionLevel(guildTransformer, context.guild, m).getLevel() +
+                "`` and is classified as a **" + CheckPermissionUtil.getPermissionLevel(guildTransformer, context.guild, m).getRankName()
+                + "**").queue();
+            return true;
+        }
+        context.makeInfo(context.member.getAsMention() + " has permission level ``" +
+            CheckPermissionUtil.getPermissionLevel(context).getLevel() + "`` and is classified as a **" +
+            CheckPermissionUtil.getPermissionLevel(context).getRankName() + "**").queue();
+        return true;
     }
 
     private boolean handleFirstSetupRoles(CommandMessage context, GuildTransformer transformer) {

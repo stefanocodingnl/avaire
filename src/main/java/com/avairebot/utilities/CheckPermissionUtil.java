@@ -21,9 +21,14 @@
 
 package com.avairebot.utilities;
 
+import com.avairebot.AvaIre;
 import com.avairebot.Constants;
+import com.avairebot.audio.AudioHandler;
+import com.avairebot.audio.DJGuildLevel;
 import com.avairebot.contracts.commands.CommandContext;
+import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.transformers.GuildTransformer;
+import com.avairebot.permissions.Permissions;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
@@ -154,42 +159,46 @@ public class CheckPermissionUtil {
 
 
     public enum GuildPermissionCheckType {
-        ADMIN(3),
-        MANAGER(2),
-        MOD(1),
-        USER(0);
+        FACILITATOR(6, "Facilitator / Bot Admin / Global Admin"),
+        PIA(5, "PIA / Global Moderator"),
+        ADMIN(4, "Admin / Division Leader / Local Admin"),
+        MANAGER(3, "Manager / Local Managment Mod"),
+        MOD(2, "Mod / HR / Local Mod"),
+        DJ(1, "DJ / Regular User With Music"),
+        USER(0, "Regular User");
 
         private final int permissionLevel;
+        private final String rankName;
 
-        GuildPermissionCheckType(Integer pL) {
+        GuildPermissionCheckType(Integer pL, String rankName) {
             this.permissionLevel = pL;
+            this.rankName = rankName;
         }
 
         public int getLevel() {
             return permissionLevel;
         }
+
+        public String getRankName() {
+            return rankName;
+        }
     }
 
     public static GuildPermissionCheckType getPermissionLevel(GuildTransformer guildTransformer, Guild guild, Member member) {
-        if (member.getUser().getId().equals("173839105615069184")) {
-            return GuildPermissionCheckType.ADMIN;
+        if (AvaIre.getInstance().getBotAdmins().getUserById(member.getUser().getIdLong(), true).isGlobalAdmin()) {
+            return GuildPermissionCheckType.FACILITATOR;
         }
 
         if (Constants.bypass_users.contains(member.getUser().getId())) {
-            return GuildPermissionCheckType.ADMIN;
+            return GuildPermissionCheckType.PIA;
         }
-
-        List <Role> roles = new ArrayList <>();
 
         if (guildTransformer != null) {
             for (Long roleId : guildTransformer.getAdministratorRoles()) {
                 Role r = guild.getRoleById(roleId);
                 if (r != null) {
-                    roles.add(r);
-                    if (roles.stream().anyMatch(l -> member.getRoles().contains(l))) {
+                    if (member.getRoles().contains(r)) {
                         return GuildPermissionCheckType.ADMIN;
-                    } else {
-                        roles.clear();
                     }
                 }
             }
@@ -197,26 +206,54 @@ public class CheckPermissionUtil {
             for (Long roleId : guildTransformer.getManagerRoles()) {
                 Role r = guild.getRoleById(roleId);
                 if (r != null) {
-                    roles.add(r);
-                    if (roles.stream().anyMatch(l -> member.getRoles().contains(l))) {
+                    if (member.getRoles().contains(r)) {
                         return GuildPermissionCheckType.MANAGER;
-                    } else {
-                        roles.clear();
                     }
                 }
             }
             for (Long roleId : guildTransformer.getModeratorRoles()) {
                 Role r = guild.getRoleById(roleId);
                 if (r != null) {
-                    roles.add(r);
-                    if (roles.stream().anyMatch(l -> member.getRoles().contains(l))) {
+                    if (member.getRoles().contains(r)) {
                         return GuildPermissionCheckType.MOD;
-                    } else {
-                        roles.clear();
                     }
                 }
             }
+
+
+            DJGuildLevel guildLevel = guildTransformer.getDJLevel();
+            if (guildLevel != null) {
+                switch (guildLevel) {
+                    case NORMAL:
+                        return hasRole(guildTransformer, guild, member);
+
+                    case ALL:
+                        return GuildPermissionCheckType.DJ;
+
+                    default:
+                        return GuildPermissionCheckType.USER;
+                }
+            }
+
             return GuildPermissionCheckType.USER;
+        }
+        return GuildPermissionCheckType.USER;
+    }
+
+    private static GuildPermissionCheckType hasRole(GuildTransformer guildTransformer, Guild guild, Member member) {
+        if (guildTransformer.getDjRole() != null) {
+            Role role = guild.getRoleById(guildTransformer.getDjRole());
+            if (role != null) {
+                if (RoleUtil.hasRole(member, role)) {
+                    return GuildPermissionCheckType.DJ;
+                }
+            }
+        }
+
+        for (Role role : member.getRoles()) {
+            if (role.getName().equalsIgnoreCase("DJ")) {
+                return GuildPermissionCheckType.DJ;
+            }
         }
         return GuildPermissionCheckType.USER;
     }

@@ -104,10 +104,6 @@ public class LockChannelsCommand extends Command {
     @Override
     @SuppressWarnings("ConstantConditions")
     public boolean onCommand(CommandMessage context, String[] args) {
-        if (!context.guild.getId().equals("438134543837560832")) {
-            context.makeError("Sorry, but this is a command restricted to the PBST Guild only as of this moment.").queue();
-            return true;
-        }
         List <Role> r = new ArrayList <>();
         context.getGuildTransformer().getLockableChannelRoles().forEach(v -> {
             Role role = context.getGuild().getRoleById(v);
@@ -118,7 +114,7 @@ public class LockChannelsCommand extends Command {
 
         if (args.length > 0 && context.getMentionedChannels().size() < 1) {
             if (args[0].equals("all")) {
-                if (!(context.member.getId().equals("173839105615069184") || Constants.bypass_users.contains(context.member.getId()) || CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.ADMIN.getLevel())) {
+                if (!(CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.ADMIN.getLevel())) {
                     context.makeError("Sorry, but you have to be a PIA member, or a Admin+ to use this command!").queue();
                     return false;
                 }

@@ -6,7 +6,10 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.factories.RequestFactory;
 import com.avairebot.pinewood.waiters.HandbookReportWaiters;
+import com.avairebot.requests.Request;
+import com.avairebot.requests.Response;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -15,12 +18,10 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class EmbedGeneratorCommand extends Command {
 
@@ -99,8 +100,6 @@ public class EmbedGeneratorCommand extends Command {
                     return runSendArgument(context, args);
             }
             return false;*/
-
-            context.makeInfo(String.valueOf(HandbookReportWaiters.isNotBlacklisted(7263821))).queue();
             return false;
         } else {
             context.makeError("Command still has to be created...").requestedBy(context).queue();
