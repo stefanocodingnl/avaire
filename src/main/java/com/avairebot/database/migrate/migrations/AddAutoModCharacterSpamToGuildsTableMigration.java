@@ -43,7 +43,7 @@ public class AddAutoModCharacterSpamToGuildsTableMigration implements Migration 
 
         if (schema.getDbm().getConnection() instanceof MySQL) {
             schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `automod_character_spam` INT NOT NULL DEFAULT '0' AFTER `automod_image_spam`;",
+                "ALTER TABLE `%s` ADD `automod_character_spam` INT NOT NULL DEFAULT '0' AFTER `filter`;",
                 Constants.GUILD_TABLE_NAME
             ));
         } else {

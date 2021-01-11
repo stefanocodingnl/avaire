@@ -26,7 +26,7 @@ import com.avairebot.audio.AudioHandler;
 import com.avairebot.audio.AudioSession;
 import com.avairebot.audio.GuildMusicManager;
 import com.avairebot.audio.LavalinkManager;
-import com.avairebot.blacklist.Ratelimit;
+import com.avairebot.blacklist.bot.Ratelimit;
 import com.avairebot.cache.CacheType;
 import com.avairebot.cache.adapters.MemoryAdapter;
 import com.avairebot.commands.administration.MuteRoleCommand;

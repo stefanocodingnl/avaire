@@ -31,7 +31,7 @@ import com.avairebot.audio.AudioHandler;
 import com.avairebot.audio.GuildMusicManager;
 import com.avairebot.audio.LavalinkManager;
 import com.avairebot.audio.cache.AudioState;
-import com.avairebot.blacklist.Blacklist;
+import com.avairebot.blacklist.bot.Blacklist;
 import com.avairebot.cache.CacheManager;
 import com.avairebot.cache.CacheType;
 import com.avairebot.chat.ConsoleColor;
@@ -59,6 +59,7 @@ import com.avairebot.handlers.MainEventHandler;
 import com.avairebot.handlers.PluginEventHandler;
 import com.avairebot.handlers.events.ApplicationShutdownEvent;
 import com.avairebot.imagegen.RankBackgroundHandler;
+import com.avairebot.blacklist.kronos.BlacklistManager;
 import com.avairebot.language.I18n;
 import com.avairebot.level.LevelManager;
 import com.avairebot.metrics.Metrics;
@@ -68,7 +69,7 @@ import com.avairebot.mute.MuteManager;
 import com.avairebot.onwatch.OnWatchManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
-import com.avairebot.reportblacklist.ReportBlacklist;
+import com.avairebot.blacklist.reports.ReportBlacklist;
 import com.avairebot.scheduler.ScheduleHandler;
 import com.avairebot.servlet.WebServlet;
 import com.avairebot.servlet.routes.*;
@@ -150,6 +151,7 @@ public class AvaIre {
     private final BotAdmin botAdmins;
     private final WebServlet servlet;
     private final ReportBlacklist reportBlacklist;
+    private final BlacklistManager blacklistManager;
     private GitLabApi gitLabApi;
     private Carbon shutdownTime = null;
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
@@ -392,6 +394,9 @@ public class AvaIre {
         reportBlacklist = new ReportBlacklist(this);
         reportBlacklist.syncBlacklistWithDatabase();
 
+        log.info("Preparing user blacklist and syncing the list with the manager");
+        blacklistManager = new BlacklistManager(this);
+
         log.info("Preparing and setting up web servlet");
         servlet = new WebServlet(config.getInt("web-servlet.port",
             config.getInt("metrics.port", WebServlet.defaultPort)
@@ -621,6 +626,10 @@ public class AvaIre {
 
     public ReportBlacklist getReportBlacklist() {
         return reportBlacklist;
+    }
+
+    public BlacklistManager getBlacklistManager() {
+        return blacklistManager;
     }
 
     public void shutdown() {

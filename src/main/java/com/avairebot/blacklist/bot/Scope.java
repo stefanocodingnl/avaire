@@ -19,7 +19,7 @@
  *
  */
 
-package com.avairebot.blacklist;
+package com.avairebot.blacklist.bot;
 
 import com.avairebot.utilities.NumberUtil;
 

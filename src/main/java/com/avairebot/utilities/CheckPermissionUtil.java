@@ -193,6 +193,10 @@ public class CheckPermissionUtil {
             return GuildPermissionCheckType.PIA;
         }
 
+        if (guild == null) {
+            return GuildPermissionCheckType.USER;
+        }
+
         if (guildTransformer != null) {
             for (Long roleId : guildTransformer.getAdministratorRoles()) {
                 Role r = guild.getRoleById(roleId);

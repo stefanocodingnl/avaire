@@ -28,15 +28,16 @@ import com.avairebot.contracts.scheduler.Task;
 import com.avairebot.factories.RequestFactory;
 import com.avairebot.requests.Response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class GithubChangesJob extends Job {
+public class TMSBlacklistUpdateJob extends Job {
 
-    private final String cacheToken = "gitlab.commits";
+    private final String cacheToken = "blacklist.tms.blacklists";
 
-    public GithubChangesJob(AvaIre avaire) {
+    public TMSBlacklistUpdateJob(AvaIre avaire) {
         super(avaire, 90, 90, TimeUnit.MINUTES);
 
         if (!avaire.getCache().getAdapter(CacheType.FILE).has(cacheToken)) {
@@ -46,10 +47,11 @@ public class GithubChangesJob extends Job {
 
     @Override
     public void run() {
-        handleTask((Task) avaire -> {
-            RequestFactory.makeGET("https://gitlab.com/api/v4/projects/17658373/repository/commits")
+        handleTask(avaire -> {
+            RequestFactory.makeGET("https://pb-kronos.dev/tms/blacklist")
+                .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosApiKey"))
                 .send((Consumer<Response>) response -> {
-                    List service = (List) response.toService(List.class);
+                    ArrayList service = (ArrayList) response.toService(ArrayList.class);
 
                     avaire.getCache().getAdapter(CacheType.FILE).forever(cacheToken, service);
                 });

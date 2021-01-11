@@ -168,7 +168,7 @@ public class GlobalBanCommand extends Command {
                 o.set("punisherId", context.getAuthor().getId());
                 o.set("reason", reason, true);
             });
-            context.makeSuccess("Permbanned ``" + args[0] + "`` in the database, global-ban the user if he's still in a discord.").queue();
+            context.makeSuccess("Permbanned ``" + args[0] + "`` in the database.").queue();
         } else {
             context.makeError("This user already has a permban in the database!").queue();
         }

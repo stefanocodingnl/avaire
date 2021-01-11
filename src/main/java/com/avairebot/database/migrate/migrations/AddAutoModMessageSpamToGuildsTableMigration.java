@@ -32,7 +32,7 @@ public class AddAutoModMessageSpamToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Wen, Dec 12, 2020 3:07 AM";
+        return "Wen, Dec 12, 2020 3:08 AM";
     }
 
     @Override

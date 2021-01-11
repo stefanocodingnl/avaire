@@ -7,9 +7,9 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'idea'
 
-version = '0.10.15'
+version = '1.1.4'
 group = 'com.avairebot'
-description = 'AvaIre Discord Bot'
+description = 'Xeus Discord Bot'
 mainClassName = 'com.avairebot.Main'
 
 sourceCompatibility = 1.8

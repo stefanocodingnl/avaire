@@ -22,41 +22,42 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
-import com.avairebot.blacklist.bot.Scope;
+import com.avairebot.blacklist.reports.Scope;
 import com.avairebot.chat.SimplePaginator;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.commands.CommandPriority;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.language.I18n;
 import com.avairebot.utilities.NumberUtil;
+import net.dv8tion.jda.api.entities.User;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class BlacklistCommand extends Command {
+public class ReportBlacklistCommand extends Command {
 
-    public BlacklistCommand(AvaIre avaire) {
+    public ReportBlacklistCommand(AvaIre avaire) {
         super(avaire);
     }
 
     @Override
     public String getName() {
-        return "Blacklist Command";
+        return "Report Blacklist Command";
     }
 
     @Override
     public String getDescription() {
-        return "Add, Remove, and list users and servers on the blacklist.";
+        return "Add, Remove, and list users and servers on the Report blacklist.";
     }
 
     @Override
     public List <String> getUsageInstructions() {
         return Arrays.asList(
-            "`:command list` - Lists users and servers on the blacklist",
-            "`:command remove <id>` - Removes the entry with the given ID from the blacklist",
-            "`:command add <type> <id> <reason>` - Add the type with the given ID to the blacklist"
+            "`:command list` - Lists users and servers on the Report blacklist",
+            "`:command remove <id>` - Removes the entry with the given ID from the Report blacklist",
+            "`:command add <type> <id> <reason>` - Add the type with the given ID to the Report blacklist"
         );
     }
 
@@ -64,21 +65,20 @@ public class BlacklistCommand extends Command {
     public List <String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "isValidPIAMember"
+            "isAdminOrHigher"
         );
     }
 
     @Override
     public List <String> getExampleUsage() {
         return Arrays.asList(
-            "`:command add G 123` - Blacklists the guild with an ID of 123",
             "`:command add U 321 Doing stuff` - Blacklists the user with an ID of 321 for \"Doing stuff\""
         );
     }
 
     @Override
     public List <String> getTriggers() {
-        return Collections.singletonList("blacklist");
+        return Collections.singletonList("report-blacklist");
     }
 
     @Override
@@ -110,11 +110,12 @@ public class BlacklistCommand extends Command {
     private boolean listBlacklist(CommandMessage context, String[] args) {
         List<String> records = new ArrayList<>();
 
-        avaire.getBlacklist().getBlacklistEntities().forEach(entity -> {
-            records.add(I18n.format("{0} **{1}** `{2}`\n ► _\"{3}\"_",
+        avaire.getReportBlacklist().getBlacklistEntities().forEach(entity -> {
+            records.add(I18n.format("{0} **{1}** `{2}` - `{3}`\n ► _\"{4}\"_",
                 entity.getScope().getId() == 0 ? "\uD83E\uDD26" : "\uD83C\uDFEC",
                 entity.getScope().getName(),
                 entity.getId(),
+                entity.getGuildId(),
                 entity.getReason() == null ? "No reason was given" : entity.getReason()
             ));
         });
@@ -143,17 +144,28 @@ public class BlacklistCommand extends Command {
         }
 
         long id;
+        long guildId = context.guild.getIdLong();
         try {
             id = Long.parseLong(args[0]);
         } catch (NumberFormatException e) {
             return sendErrorMessage(context, "Invalid ID given, the ID must be a valid number value!");
         }
 
-        if (!avaire.getBlacklist().isBlacklisted(id)) {
+        User user;
+        try {
+            user = avaire.getShardManager().getUserById(id);
+            if (user == null) {
+                return sendErrorMessage(context, "User does not exists, please try again.");
+            }
+        } catch (NumberFormatException e) {
+            return sendErrorMessage(context, "Invalid ID given, the ID must be a valid number value!");
+        }
+
+        if (!avaire.getReportBlacklist().isBlacklisted(user, guildId)) {
             return sendErrorMessage(context, "There are no records in the blacklist with an ID of `{0}`", "" + id);
         }
 
-        avaire.getBlacklist().remove(id);
+        avaire.getReportBlacklist().remove(id, guildId);
 
         context.makeSuccess("The Blacklist record with an ID of **:id** has been removed from the blacklist")
             .set("id", id)
@@ -169,7 +181,7 @@ public class BlacklistCommand extends Command {
 
         Scope scope = Scope.parse(args[0]);
         if (scope == null) {
-            return sendErrorMessage(context, "Invalid type given, the type must be a valid blacklist scope!\nValid types are `G` for guilds/servers, or `U` for users.");
+            return sendErrorMessage(context, "Invalid type given, the type must be a valid blacklist scope!\nValid types are `M` for users.");
         }
 
         long id;
@@ -185,11 +197,12 @@ public class BlacklistCommand extends Command {
             reason = String.join(" ", args);
         }
 
-        avaire.getBlacklist().addIdToBlacklist(scope, id, reason);
+        avaire.getReportBlacklist().addIdToBlacklist(scope, id, reason, context.guild.getIdLong());
 
-        context.makeSuccess("The **:type** with an ID of **:id** has been added to the blacklist!")
+        context.makeSuccess("The **:type** with an ID of **:id** has been added to the report blacklist of :guild!")
             .set("type", scope.name().toLowerCase())
             .set("id", id)
+            .set("guild", context.getGuild().getName())
             .queue();
 
         return true;

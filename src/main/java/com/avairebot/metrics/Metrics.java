@@ -23,7 +23,7 @@ package com.avairebot.metrics;
 
 import ch.qos.logback.classic.LoggerContext;
 import com.avairebot.AvaIre;
-import com.avairebot.blacklist.Ratelimit;
+import com.avairebot.blacklist.bot.Ratelimit;
 import com.avairebot.commands.Category;
 import com.avairebot.commands.administration.MuteRoleCommand;
 import com.avairebot.commands.utility.GlobalLeaderboardCommand;

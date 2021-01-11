@@ -275,6 +275,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                             String username = c.getString("reported_roblox_name");
                             String description = c.getString("report_reason");
                             String evidence = c.getString("report_evidence");
+                            String warningEvidence = c.getString("report_evidence_warning");
                             long reporter = c.getLong("reporter_discord_id");
                             String rank = c.getString("reported_roblox_rank");
                             Member memberAsReporter = e.getGuild().getMemberById(reporter);
@@ -293,7 +294,8 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                     "**Violator**: " + username + "\n" +
                                                         (rank != null ? "**Rank**: ``:rRank``\n" : "") +
                                                         "**Information**: \n" + description + "\n\n" +
-                                                        "**Evidence**: \n" + evidence)
+                                                        "**Evidence**: \n" + evidence +
+                                                        (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence : ""))
                                                 .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember())
                                                 .setTimestamp(Instant.now()).set("rRank", rank)
                                                 .buildEmbed())
@@ -458,7 +460,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                     }
 
                     String id = null;
-                    if (qb.get().size() > 1) {
+                    if (qb.get().size() > 0) {
                         id = qb.get().get(0).getString("suggester_discord_id");
                     }
 
@@ -501,7 +503,6 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             } else {
                                                 mb.requestedBy(m);
                                             }
-
 
                                             finalCtc.sendMessage(mb.buildEmbed()).queue(p -> {
                                                 p.addReaction("✅").queue();

@@ -19,14 +19,14 @@
  *
  */
 
-package com.avairebot.reportblacklist;
+package com.avairebot.blacklist.bot;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
 import com.avairebot.database.collection.Collection;
 import com.avairebot.database.query.ChangeableStatement;
 import com.avairebot.time.Carbon;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 
@@ -38,20 +38,41 @@ import java.util.Iterator;
 import java.util.List;
 
 @SuppressWarnings("SuspiciousMethodCalls")
-public class ReportBlacklist {
+public class Blacklist {
 
     private final AvaIre avaire;
-    private final List<ReportBlacklistEntity> blacklist;
+    private final List<BlacklistEntity> blacklist;
+    private final Ratelimit ratelimit;
 
     /**
      * Creates a new blacklist instance.
      *
      * @param avaire The main avaire instance.
      */
-    public ReportBlacklist(AvaIre avaire) {
+    public Blacklist(AvaIre avaire) {
         this.avaire = avaire;
 
-        this.blacklist = new ReportBlacklistList();
+        this.blacklist = new BlacklistList();
+        this.ratelimit = new Ratelimit(this);
+    }
+
+    /**
+     * Gets the ratelimiter instance for the current blacklist.
+     *
+     * @return The ratelimiter instance for the current blacklist.
+     */
+    public Ratelimit getRatelimit() {
+        return ratelimit;
+    }
+
+    /**
+     * Checks if the given ID is blacklisted.
+     *
+     * @param id Checks if the given ID is blacklisted.
+     * @return <code>True</code> if the ID is on the blacklist, <code>False</code> otherwise.
+     */
+    public boolean isBlacklisted(long id) {
+        return blacklist.contains(id);
     }
 
     /**
@@ -63,7 +84,9 @@ public class ReportBlacklist {
      * server is blacklisted, <code>False</code> otherwise.
      */
     public boolean isBlacklisted(@Nonnull Message message) {
-        return isBlacklisted(message.getAuthor(), message.getGuild().getIdLong());
+        return isBlacklisted(message.getAuthor())
+            || (message.getChannelType().isGuild()
+            && isBlacklisted(message.getGuild()));
     }
 
     /**
@@ -72,21 +95,46 @@ public class ReportBlacklist {
      * @param user The user that should be checked.
      * @return <code>True</code> if the user is on the blacklist, <code>False</code> otherwise.
      */
-    public boolean isBlacklisted(@Nonnull User user, long guildId) {
+    public boolean isBlacklisted(@Nonnull User user) {
         if (avaire.getBotAdmins().getUserById(user.getIdLong(), true).isAdmin()) {
             return false;
         }
 
-        ReportBlacklistEntity entity = getEntity(user.getIdLong(), Scope.USER, guildId);
+        BlacklistEntity entity = getEntity(user.getIdLong(), Scope.USER);
+        return entity != null && entity.isBlacklisted();
+    }
+
+    /**
+     * Checks if the given guild is on the blacklist.
+     *
+     * @param guild The guild that should be checked.
+     * @return <code>True</code> if the guild is on the blacklist, <code>False</code> otherwise.
+     */
+    public boolean isBlacklisted(@Nonnull Guild guild) {
+        BlacklistEntity entity = getEntity(guild.getIdLong(), Scope.GUILD);
         return entity != null && entity.isBlacklisted();
     }
 
     /**
      * Adds the given user to the blacklist with the given reason, the blacklist
+     * record will last until it is {@link #remove(long) removed}.
+     *
+     * @param user   The user that should be added to the blacklist.
      * @param reason The reason for the user being added to the blacklist.
      */
-    public void addUser(@Nonnull Member member, @Nullable String reason, long guildId) {
-        addIdToBlacklist(Scope.USER, member.getIdLong(), reason, guildId);
+    public void addUser(@Nonnull User user, @Nullable String reason) {
+        addIdToBlacklist(Scope.USER, user.getIdLong(), reason);
+    }
+
+    /**
+     * Adds the given guild to the blacklist with the given reason, the blacklist
+     * record will last until it is {@link #remove(long) removed}.
+     *
+     * @param guild  The guild that should be added to the blacklist.
+     * @param reason The reason for the guild being added to the blacklist.
+     */
+    public void addGuild(@Nonnull Guild guild, @Nullable String reason) {
+        addIdToBlacklist(Scope.GUILD, guild.getIdLong(), reason);
     }
 
     /**
@@ -94,23 +142,23 @@ public class ReportBlacklist {
      *
      * @param id The ID to remove from teh blacklist.
      */
-    public void remove(long id, long guildId) {
+    public void remove(long id) {
         if (!blacklist.contains(id)) {
             return;
         }
 
-        Iterator<ReportBlacklistEntity> iterator = blacklist.iterator();
+        Iterator<BlacklistEntity> iterator = blacklist.iterator();
         while (iterator.hasNext()) {
-            ReportBlacklistEntity next = iterator.next();
+            BlacklistEntity next = iterator.next();
 
-            if (next.getId() == id && next.getGuildId() == guildId) {
+            if (next.getId() == id) {
                 iterator.remove();
                 break;
             }
         }
 
         try {
-            avaire.getDatabase().newQueryBuilder(Constants.REPORT_BLACKLIST_TABLE_NAME)
+            avaire.getDatabase().newQueryBuilder(Constants.BLACKLIST_TABLE_NAME)
                 .where("id", id)
                 .delete();
         } catch (SQLException e) {
@@ -125,8 +173,8 @@ public class ReportBlacklist {
      * @return Possibly-null, the blacklist entity matching the given ID.
      */
     @Nullable
-    public ReportBlacklistEntity getEntity(long id, Long guild) {
-        return getEntity(id, null, guild);
+    public BlacklistEntity getEntity(long id) {
+        return getEntity(id, null);
     }
 
     /**
@@ -137,9 +185,9 @@ public class ReportBlacklist {
      * @return Possible-null, the blacklist entity matching the given ID and scope.
      */
     @Nullable
-    public ReportBlacklistEntity getEntity(long id, @Nullable Scope scope, Long guild) {
-        for (ReportBlacklistEntity entity : blacklist) {
-            if (entity.getId() == id && entity.getGuildId() == guild) {
+    public BlacklistEntity getEntity(long id, @Nullable Scope scope) {
+        for (BlacklistEntity entity : blacklist) {
+            if (entity.getId() == id) {
                 if (scope != null && scope != entity.getScope()) {
                     continue;
                 }
@@ -156,8 +204,8 @@ public class ReportBlacklist {
      * @param id     The ID that should be added to the blacklist.
      * @param reason The reason that the ID was added to the blacklist.
      */
-    public void addIdToBlacklist(Scope scope, final long id, final @Nullable String reason, Long guild) {
-        addIdToBlacklist(scope, id, reason, null, guild);
+    public void addIdToBlacklist(Scope scope, final long id, final @Nullable String reason) {
+        addIdToBlacklist(scope, id, reason, null);
     }
 
     /**
@@ -168,28 +216,25 @@ public class ReportBlacklist {
      * @param reason    The reason that the ID was added to the blacklist.
      * @param expiresIn The carbon time instance for when the entity should expire.
      */
-    public void addIdToBlacklist(Scope scope, final long id, final @Nullable String reason, @Nullable Carbon expiresIn, Long guild) {
-        ReportBlacklistEntity entity = getEntity(id, scope, guild);
+    public void addIdToBlacklist(Scope scope, final long id, final @Nullable String reason, @Nullable Carbon expiresIn) {
+        BlacklistEntity entity = getEntity(id, scope);
         if (entity != null) {
             blacklist.remove(entity);
         }
 
-        blacklist.add(new ReportBlacklistEntity(scope, id, reason, expiresIn, guild));
+        blacklist.add(new BlacklistEntity(scope, id, reason, expiresIn));
 
         try {
-            avaire.getDatabase().newQueryBuilder(Constants.REPORT_BLACKLIST_TABLE_NAME)
-                .where("id", id)
-                .andWhere("guild_id", guild)
-                .andWhere("type", scope.getId())
+            avaire.getDatabase().newQueryBuilder(Constants.BLACKLIST_TABLE_NAME)
+                .where("id", id).andWhere("type", scope.getId())
                 .delete();
 
-            avaire.getDatabase().newQueryBuilder(Constants.REPORT_BLACKLIST_TABLE_NAME)
+            avaire.getDatabase().newQueryBuilder(Constants.BLACKLIST_TABLE_NAME)
                 .useAsync(true)
                 .insert((ChangeableStatement statement) -> {
                     statement.set("id", id);
                     statement.set("type", scope.getId());
                     statement.set("expires_in", expiresIn);
-                    statement.set("guild_id", guild);
 
                     if (expiresIn == null) {
                         statement.set("expires_in", Carbon.now().addYears(10));
@@ -207,11 +252,11 @@ public class ReportBlacklist {
     /**
      * Get the all the entities currently on the blacklist, this
      * includes both users and guilds, the type can be checked
-     * through the {@link ReportBlacklistEntity#getScope() scope}.
+     * through the {@link BlacklistEntity#getScope() scope}.
      *
      * @return The entities currently on the blacklist.
      */
-    public List<ReportBlacklistEntity> getBlacklistEntities() {
+    public List<BlacklistEntity> getBlacklistEntities() {
         return blacklist;
     }
 
@@ -221,7 +266,7 @@ public class ReportBlacklist {
     public synchronized void syncBlacklistWithDatabase() {
         blacklist.clear();
         try {
-            Collection collection = avaire.getDatabase().newQueryBuilder(Constants.REPORT_BLACKLIST_TABLE_NAME)
+            Collection collection = avaire.getDatabase().newQueryBuilder(Constants.BLACKLIST_TABLE_NAME)
                 .where("expires_in", ">", Carbon.now())
                 .get();
 
@@ -235,11 +280,10 @@ public class ReportBlacklist {
                     long longId = Long.parseLong(id);
                     Scope scope = Scope.fromId(row.getInt("type", 0));
 
-                    blacklist.add(new ReportBlacklistEntity(
+                    blacklist.add(new BlacklistEntity(
                         scope, longId,
                         row.getString("reason"),
-                        row.getTimestamp("expires_in"),
-                        row.getLong("guild_id")
+                        row.getTimestamp("expires_in")
                     ));
                 } catch (NumberFormatException ignored) {
                     // This is ignored
@@ -250,21 +294,21 @@ public class ReportBlacklist {
         }
     }
 
-    private class ReportBlacklistList extends ArrayList<ReportBlacklistEntity> {
+    private class BlacklistList extends ArrayList<BlacklistEntity> {
 
-        public boolean contains(Object userId, Object guildId) {
-            if (userId instanceof Long && guildId instanceof Long) {
-                long id = (long) userId;
-                long gid = (long) guildId;
-                for (ReportBlacklistEntity entity : this) {
-                    if (entity.getId() == id && entity.getGuildId() == gid) {
+        @Override
+        public boolean contains(Object o) {
+            if (o instanceof Long) {
+                long id = (long) o;
+                for (BlacklistEntity entity : this) {
+                    if (entity.getId() == id) {
                         return true;
                     }
                 }
                 return false;
             }
 
-            return super.contains(userId) || super.contains(guildId);
+            return super.contains(o);
         }
     }
 }

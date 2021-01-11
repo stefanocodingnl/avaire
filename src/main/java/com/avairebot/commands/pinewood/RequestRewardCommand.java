@@ -128,7 +128,7 @@ public class RequestRewardCommand extends Command {
 
                             } else {
                                 context.makeInfo(String.valueOf(response2.getResponse().code())).queue();
-                                makeErrorMessage(context, "The user who you've requested a reward for isn't in PBST, please check if this is correct or not.");
+                                makeErrorMessage(context, "The user who you've requested a ested for isn't in PBST, please check if this is correct or not.");
                             }
                         }
                     });

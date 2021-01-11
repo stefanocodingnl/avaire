@@ -68,10 +68,6 @@ public class ThrottleMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (!message.getChannelType().isGuild()) {
-            return stack.next();
-        }
-
         int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();

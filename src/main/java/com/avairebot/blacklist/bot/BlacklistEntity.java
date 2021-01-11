@@ -19,7 +19,7 @@
  *
  */
 
-package com.avairebot.reportblacklist;
+package com.avairebot.blacklist.bot;
 
 import com.avairebot.contracts.debug.Evalable;
 import com.avairebot.time.Carbon;
@@ -27,13 +27,12 @@ import com.avairebot.time.Carbon;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("WeakerAccess")
-public class ReportBlacklistEntity extends Evalable {
+public class BlacklistEntity extends Evalable {
 
     private final Scope scope;
     private final long id;
     private final Carbon expiresIn;
     private final String reason;
-    private final long guildId;
 
     /**
      * Create a new blacklist entity with the given scope, id, and expires time.
@@ -43,12 +42,11 @@ public class ReportBlacklistEntity extends Evalable {
      * @param reason    The reason the entity was blacklisted.
      * @param expiresIn The carbon time instance for when the blacklist entity should expire.
      */
-    ReportBlacklistEntity(Scope scope, long id, @Nullable String reason, @Nullable Carbon expiresIn, long guildId) {
+    BlacklistEntity(Scope scope, long id, @Nullable String reason, @Nullable Carbon expiresIn) {
         this.scope = scope;
         this.id = id;
         this.reason = reason;
         this.expiresIn = expiresIn;
-        this.guildId = guildId;
     }
 
     /**
@@ -60,8 +58,8 @@ public class ReportBlacklistEntity extends Evalable {
      * @param id     The ID that the blacklist entity should be linked to.
      * @param reason The reason the entity was blacklisted.
      */
-    public ReportBlacklistEntity(Scope scope, long id, @Nullable String reason, long guildId) {
-        this(scope, id, reason, null, guildId);
+    public BlacklistEntity(Scope scope, long id, @Nullable String reason) {
+        this(scope, id, reason, null);
     }
 
     /**
@@ -80,15 +78,6 @@ public class ReportBlacklistEntity extends Evalable {
      */
     public long getId() {
         return id;
-    }
-
-    /**
-     * The guildId that the blacklist entity is linked to.
-     *
-     * @return The guildId that the blacklist entity is linked to.
-     */
-    public long getGuildId() {
-        return guildId;
     }
 
     /**

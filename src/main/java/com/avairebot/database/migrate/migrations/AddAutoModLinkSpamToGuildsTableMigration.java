@@ -32,7 +32,7 @@ public class AddAutoModLinkSpamToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Wen, Dec 12, 2020 3:06 AM";
+        return "Wen, Dec 12, 2020 3:07 AM";
     }
 
     @Override
@@ -43,7 +43,7 @@ public class AddAutoModLinkSpamToGuildsTableMigration implements Migration {
 
         if (schema.getDbm().getConnection() instanceof MySQL) {
             schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `automod_link_spam` INT NOT NULL DEFAULT '0' AFTER `automod_emoji_spam`;",
+                "ALTER TABLE `%s` ADD `automod_link_spam` INT NOT NULL DEFAULT '0' AFTER `filter`;",
                 Constants.GUILD_TABLE_NAME
             ));
         } else {

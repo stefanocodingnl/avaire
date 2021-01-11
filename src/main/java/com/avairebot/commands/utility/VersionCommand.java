@@ -125,19 +125,19 @@ public class VersionCommand extends Command {
 
     @SuppressWarnings("unchecked")
     private PlaceholderMessage addAndFormatLatestCommits(CommandMessage context, PlaceholderMessage message) {
-        if (avaire.getCache().getAdapter(CacheType.FILE).has("github.commits")) {
+        if (avaire.getCache().getAdapter(CacheType.FILE).has("gitlab.commits")) {
             List<LinkedTreeMap<String, Object>> items = (List<LinkedTreeMap<String, Object>>) avaire.getCache()
-                .getAdapter(CacheType.FILE).get("github.commits");
+                .getAdapter(CacheType.FILE).get("gitlab.commits");
 
             StringBuilder commitChanges = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 LinkedTreeMap<String, Object> item = items.get(i);
-                LinkedTreeMap<String, Object> commit = (LinkedTreeMap<String, Object>) item.get("commit");
+                //LinkedTreeMap<String, Object> commit = (LinkedTreeMap<String, Object>) item.get("commit");
 
                 commitChanges.append(String.format("[`%s`](%s) %s\n",
-                    item.get("sha").toString().substring(0, 7),
-                    item.get("html_url"),
-                    commit.get("message").toString().split("\n")[0].trim()
+                    item.get("short_id").toString().substring(0, 7),
+                    item.get("web_url"),
+                    item.get("message").toString().split("\n")[0].trim()
                 ));
             }
 
@@ -149,10 +149,10 @@ public class VersionCommand extends Command {
     private SemanticVersion getLatestVersion() {
         Object version = avaire.getCache().getAdapter(CacheType.FILE).remember("github.version", 1800, () -> {
             try {
-                return Jsoup.connect("https://raw.githubusercontent.com/avaire/avaire/master/build.gradle")
+                return Jsoup.connect("https://gitlab.com/pinewood-builders/discord/xeus/-/raw/master/build.gradle")
                     .execute().body().split("version = '")[1].split("'")[0];
             } catch (IOException e) {
-                AvaIre.getLogger().error("Failed to get latest version from github", e);
+                AvaIre.getLogger().error("Failed to get latest version from gitlab", e);
                 return null;
             }
         });

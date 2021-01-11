@@ -24,7 +24,6 @@ package com.avairebot.scheduler.jobs;
 import com.avairebot.AvaIre;
 import com.avairebot.cache.CacheType;
 import com.avairebot.contracts.scheduler.Job;
-import com.avairebot.contracts.scheduler.Task;
 import com.avairebot.factories.RequestFactory;
 import com.avairebot.requests.Response;
 
@@ -32,11 +31,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class GithubChangesJob extends Job {
+public class PBSTBlacklistUpdateJob extends Job {
 
-    private final String cacheToken = "gitlab.commits";
+    private final String cacheToken = "blacklist.pbst.blacklists";
 
-    public GithubChangesJob(AvaIre avaire) {
+    public PBSTBlacklistUpdateJob(AvaIre avaire) {
         super(avaire, 90, 90, TimeUnit.MINUTES);
 
         if (!avaire.getCache().getAdapter(CacheType.FILE).has(cacheToken)) {
@@ -46,8 +45,9 @@ public class GithubChangesJob extends Job {
 
     @Override
     public void run() {
-        handleTask((Task) avaire -> {
-            RequestFactory.makeGET("https://gitlab.com/api/v4/projects/17658373/repository/commits")
+        handleTask(avaire -> {
+            RequestFactory.makeGET("https://pb-kronos.dev/pbst/blacklist")
+                .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosApiKey"))
                 .send((Consumer<Response>) response -> {
                     List service = (List) response.toService(List.class);
 

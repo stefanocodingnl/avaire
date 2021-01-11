@@ -22,8 +22,8 @@
 package com.avairebot.scheduler.tasks;
 
 import com.avairebot.AvaIre;
-import com.avairebot.blacklist.BlacklistEntity;
-import com.avairebot.blacklist.Scope;
+import com.avairebot.blacklist.bot.BlacklistEntity;
+import com.avairebot.blacklist.bot.Scope;
 import com.avairebot.contracts.scheduler.Task;
 import com.avairebot.metrics.Metrics;
 
