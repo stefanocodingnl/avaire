@@ -10,6 +10,7 @@ import com.avairebot.database.collection.DataRow;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.RequestFactory;
+import com.avairebot.reportblacklist.ReportBlacklist;
 import com.avairebot.requests.Request;
 import com.avairebot.requests.Response;
 import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
@@ -93,6 +94,8 @@ public class ReportUserCommand extends Command {
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
             if (args.length > 0) {
                 switch (args[0]) {
+                    case "debug-permission":
+                        return runBlacklistCheck(context, args);
                     case "sr":
                     case "set-reports":
                         return runSetReportChannel(context, args);
@@ -170,7 +173,7 @@ public class ReportUserCommand extends Command {
                                                         return;
                                                     }
 
-                                                    int requestedId = getRobloxId(content.getMessage().getContentRaw());
+                                                    Long requestedId = getRobloxId(content.getMessage().getContentRaw());
                                                     if (requestedId == 0) {
                                                         context.makeError("Sorry, but your username you gave us, does not exist on roblox. Please give us a username that's on roblox").queue();
                                                         removeAllUserMessages(messagesToRemove);
@@ -179,10 +182,15 @@ public class ReportUserCommand extends Command {
 
                                                     if (!d.getString("id").equals("371062894315569173") && d.getInt("roblox_group_id") != 0) {
                                                         Request requestedRequest = RequestFactory.makeGET("https://groups.roblox.com/v1/users/" + requestedId + "/groups/roles");
+
                                                         requestedRequest.send((Consumer <Response>) response -> {
                                                             if (response.getResponse().code() == 200) {
                                                                 RobloxUserGroupRankService grs = (RobloxUserGroupRankService) response.toService(RobloxUserGroupRankService.class);
                                                                 Optional <RobloxUserGroupRankService.Data> b = grs.getData().stream().filter(g -> g.getGroup().getId() == d.getInt("roblox_group_id")).findFirst();
+
+
+                                                                Request kronosBlacklist = RequestFactory.makeGET("https://pb-kronos.dev/pbst/blacklist/checkusers");
+                                                                //kronosBlacklist.addHeader()
 
                                                                 if (b.isPresent()) {
                                                                     message.editMessage(context.makeInfo(
@@ -242,6 +250,15 @@ public class ReportUserCommand extends Command {
 
         //context.makeInfo(context.getGuildTransformer().getHandbookReportInfoMessage()).set("user", context.getMember().getEffectiveName()).set("guild", ).queue();
 
+        return false;
+    }
+
+    private boolean runBlacklistCheck(CommandMessage context, String[] args) {
+        if (avaire.getReportBlacklist().isBlacklisted(context.getAuthor(), context.getGuild().getIdLong())) {
+            context.makeSuccess("You are blacklisted here.").queue();
+        } else {
+            context.makeError("You are not blacklisted here").queue();
+        }
         return false;
     }
 
@@ -565,12 +582,12 @@ public class ReportUserCommand extends Command {
         r.addReaction("\uD83D\uDD04").queue(); // 🔄
     }
 
-    private static int getRobloxId(String un) {
+    private static Long getRobloxId(String un) {
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
-            return json.getInt("Id");
+            return json.getLong("Id");
         } catch (Exception e) {
-            return 0;
+            return 0L;
         }
     }
 

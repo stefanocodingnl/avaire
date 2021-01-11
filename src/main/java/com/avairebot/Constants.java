@@ -34,6 +34,7 @@ public class Constants {
     public static final String GUILD_TYPES_TABLE_NAME = "guild_types";
     public static final String STATISTICS_TABLE_NAME = "statistics";
     public static final String BLACKLIST_TABLE_NAME = "blacklists";
+    public static final String REPORT_BLACKLIST_TABLE_NAME = "blacklists_reports";
     public static final String PLAYER_EXPERIENCE_TABLE_NAME = "experiences";
     public static final String VOTES_TABLE_NAME = "votes";
     public static final String FEEDBACK_TABLE_NAME = "feedback";
@@ -93,6 +94,7 @@ public class Constants {
     public static final ArrayList <String> guilds = new ArrayList<String>() {{
         add("495673170565791754"); // Aerospace
         add("438134543837560832"); // PBST
+        add("791168471093870622"); // Kronos Dev
         add("371062894315569173"); // Official PB Server
         add("514595433176236078"); // PBQA
         add("436670173777362944"); // PET

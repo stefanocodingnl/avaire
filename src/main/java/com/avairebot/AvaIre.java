@@ -68,6 +68,7 @@ import com.avairebot.mute.MuteManager;
 import com.avairebot.onwatch.OnWatchManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
+import com.avairebot.reportblacklist.ReportBlacklist;
 import com.avairebot.scheduler.ScheduleHandler;
 import com.avairebot.servlet.WebServlet;
 import com.avairebot.servlet.routes.*;
@@ -126,7 +127,7 @@ public class AvaIre {
             .serializeNulls()
             .create();
 
-    private static final Logger log = LoggerFactory.getLogger(AvaIre.class);
+    private static final Logger log = LoggerFactory.getLogger("Xeus");
 
     protected static AvaIre avaire;
 
@@ -148,6 +149,7 @@ public class AvaIre {
     private final EventEmitter eventEmitter;
     private final BotAdmin botAdmins;
     private final WebServlet servlet;
+    private final ReportBlacklist reportBlacklist;
     private GitLabApi gitLabApi;
     private Carbon shutdownTime = null;
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
@@ -386,6 +388,10 @@ public class AvaIre {
         blacklist = new Blacklist(this);
         blacklist.syncBlacklistWithDatabase();
 
+        log.info("Preparing report blacklist and syncing the list with the database");
+        reportBlacklist = new ReportBlacklist(this);
+        reportBlacklist.syncBlacklistWithDatabase();
+
         log.info("Preparing and setting up web servlet");
         servlet = new WebServlet(config.getInt("web-servlet.port",
             config.getInt("metrics.port", WebServlet.defaultPort)
@@ -611,6 +617,10 @@ public class AvaIre {
 
     public BotAdmin getBotAdmins() {
         return botAdmins;
+    }
+
+    public ReportBlacklist getReportBlacklist() {
+        return reportBlacklist;
     }
 
     public void shutdown() {

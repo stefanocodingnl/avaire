@@ -27,29 +27,27 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class CreateLogTableMigration implements Migration {
+public class CreateReportBlacklistTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sat, Oct 20, 2018 8:40 PM";
+        return "Sun, Jan 10, 2021 11:16 PM";
     }
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        return schema.createIfNotExists(Constants.LOG_TABLE_NAME, table -> {
-            table.Integer("type", 2);
-            table.Integer("modlogCase");
-            table.Long("guild_id").unsigned();
-            table.Long("user_id").unsigned();
-            table.Long("target_id").unsigned().nullable();
-            table.Long("message_id").unsigned().nullable();
-            table.Text("reason").nullable();
+        return schema.createIfNotExists(Constants.REPORT_BLACKLIST_TABLE_NAME, table -> {
+            table.Increments("id");
+            table.Long("user_id").unsigned().nullable();
+            table.Long("guild_id").unsigned().nullable();
+            table.String("reason").nullable();
+            table.String("expires_in", 128);
             table.Timestamps();
         });
     }
 
     @Override
     public boolean down(Schema schema) throws SQLException {
-        return schema.dropIfExists(Constants.LOG_TABLE_NAME);
+        return schema.dropIfExists(Constants.REPORT_BLACKLIST_TABLE_NAME);
     }
 }

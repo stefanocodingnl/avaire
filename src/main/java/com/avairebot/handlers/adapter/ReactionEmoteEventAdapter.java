@@ -710,16 +710,6 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         });
     }
 
-    private CharSequence buildSuggestionEmbed(GuildMessageReactionAddEvent e, Message msg) {
-        if (e.getGuild().getId().equals("438134543837560832") || e.getGuild().getId().equals("758057400635883580") || e.getGuild().getId().equals("436670173777362944")) {
-            return msg.getEmbeds().get(0).getDescription();
-        } else if (e.getGuild().getId().equals("371062894315569173")) {
-
-            return msg.getEmbeds().get(0).getDescription();
-        }
-        return "ROLE OR PERSON NOT FOUND";
-    }
-
     private String getImageByName(Guild guild, String username) {
         List <Member> members = guild.getMembersByEffectiveName(username, true);
 

@@ -22,11 +22,13 @@
 package com.avairebot.commands.administration;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.CacheFingerprint;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.database.collection.Collection;
 import com.avairebot.modlog.Modlog;
 import com.avairebot.modlog.ModlogAction;
 import com.avairebot.modlog.ModlogType;
@@ -35,6 +37,7 @@ import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Guild;
 
 import javax.annotation.Nonnull;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,19 +60,19 @@ public class UnbanCommand extends Command {
     }
 
     @Override
-    public List<String> getUsageInstructions() {
+    public List <String> getUsageInstructions() {
         return Collections.singletonList(
             "`:command <user id> [reason]` - Unbans the user with given ID and for the given reason."
         );
     }
 
     @Override
-    public List<String> getExampleUsage() {
+    public List <String> getExampleUsage() {
         return Collections.singletonList("`:command 88739639380172800 Wasn't actually a twat`");
     }
 
     @Override
-    public List<Class<? extends Command>> getRelations() {
+    public List <Class <? extends Command>> getRelations() {
         return Arrays.asList(
             SoftBanCommand.class,
             BanCommand.class
@@ -77,12 +80,12 @@ public class UnbanCommand extends Command {
     }
 
     @Override
-    public List<String> getTriggers() {
+    public List <String> getTriggers() {
         return Collections.singletonList("unban");
     }
 
     @Override
-    public List<String> getMiddleware() {
+    public List <String> getMiddleware() {
         return Arrays.asList(
             "isModOrHigher",
             "require:bot,general.ban_members",
@@ -92,7 +95,7 @@ public class UnbanCommand extends Command {
 
     @Nonnull
     @Override
-    public List<CommandGroup> getGroups() {
+    public List <CommandGroup> getGroups() {
         return Collections.singletonList(CommandGroups.MODERATION);
     }
 
@@ -104,6 +107,16 @@ public class UnbanCommand extends Command {
 
         if (!NumberUtil.isNumeric(args[0]) || args[0].length() < 17) {
             return sendErrorMessage(context, context.i18n("invalidUserIdGiven"));
+        }
+
+        try {
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", args[0]).get();
+            if (c.size() > 0) {
+                context.makeError("This user is globally banned by a PIA Member, meaning you're not allowed to unban them thought this command. Please use the global unban command as a PIA member to revert this ban!").set("userId", args[0]).queue();
+                return false;
+            }
+        } catch (SQLException ignored) {
+            //
         }
 
         try {

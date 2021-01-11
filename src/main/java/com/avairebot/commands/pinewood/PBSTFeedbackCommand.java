@@ -143,7 +143,7 @@ public class PBSTFeedbackCommand extends Command {
                     message.editMessage(context.makeInfo("You've selected a suggestion for: ``:guild``\nPlease tell me, what is your suggestion?").set("guild", d.getString("name")).buildEmbed()).queue();
                     message.clearReactions().queue();
                     waiter.waitForEvent(GuildMessageReceivedEvent.class, l -> l.getMember().equals(context.member) && message.getChannel().equals(l.getChannel()) && antiSpamInfo(context, l), p -> {
-                        if (p.getMessage().getContentRaw().equals("cancel")) {
+                        if (p.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
                             context.makeInfo("Cancelled suggestion.").queue();
                             return;
                         }

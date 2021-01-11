@@ -11,7 +11,7 @@ public class AddAutoModToggleColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Tue, May 6, 2020 02:48 AM";
+        return "Tue, May 6, 2020 02:40 AM";
     }
 
     @Override

@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Migrations {
 
@@ -102,7 +104,7 @@ public class Migrations {
             migration.getMigration().up(dbm.getSchema());
             updateRemoteMigrationBatchValue(migration, 1);
 
-            log.info("Created \"{}\"", migration.getName());
+            log.info("Created \"{}\" + \"{}\"", migration.getName(), migration.getMigration().created_at());
 
             ranMigrations = true;
         }

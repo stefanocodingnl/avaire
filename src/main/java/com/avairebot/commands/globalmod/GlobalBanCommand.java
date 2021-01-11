@@ -7,6 +7,7 @@ import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
+import com.avairebot.database.collection.DataRow;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.Guild;
@@ -17,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class GlobalBanCommand extends Command {
 
@@ -68,6 +70,7 @@ public class GlobalBanCommand extends Command {
     public final ArrayList <String> guilds = new ArrayList <String>() {{
         add("495673170565791754"); // Aerospace
         add("438134543837560832"); // PBST
+        add("791168471093870622"); // Kronos Dev
         add("371062894315569173"); // Official PB Server
         add("514595433176236078"); // PBQA
         add("436670173777362944"); // PET
@@ -84,9 +87,14 @@ public class GlobalBanCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+
         if (args.length < 1) {
-            context.makeError("Sorry, but you didn't give any member id to globbaly ban!").queue();
+            context.makeError("Sorry, but you didn't give any member id to globbaly ban, or argument to use!").queue();
             return true;
+        }
+
+        if (args[0].equalsIgnoreCase("sync")) {
+            return syncGlobalPermBansWithGuild(context);
         }
 
         if (args.length == 1) {
@@ -132,6 +140,23 @@ public class GlobalBanCommand extends Command {
             context.makeError("Something went adding this user to the global perm ban database.").queue();
         }
 
+        return true;
+    }
+
+    private boolean syncGlobalPermBansWithGuild(CommandMessage context) {
+        try {
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).get();
+            for (DataRow dr : c) {
+                context.guild.ban(dr.getString("userId"), 0, "THIS BAN MAY ONLY BE REVERTED BY A PIA MEMBER. ORIGINAL BAN REASON: " + dr.getString("reason")).reason("Ban sync").queue();
+                context.makeInfo("Banned ``" + dr.getString("userId") + "`` (<@" + dr.getString("userId") + ">) from the guild.").setFooter("This message deletes after 10 seconds.").queue(v -> {
+                    v.delete().queueAfter(10, TimeUnit.SECONDS);
+                });
+            }
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+            context.makeError("Something went wrong when syncing.").queue();
+            return false;
+        }
         return true;
     }
 
