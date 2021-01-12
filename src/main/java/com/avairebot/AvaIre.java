@@ -67,6 +67,7 @@ import com.avairebot.middleware.*;
 import com.avairebot.middleware.global.IsCategoryEnabled;
 import com.avairebot.mute.MuteManager;
 import com.avairebot.onwatch.OnWatchManager;
+import com.avairebot.pinewood.VoiceWhitelistManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
 import com.avairebot.blacklist.reports.ReportBlacklist;
@@ -152,10 +153,12 @@ public class AvaIre {
     private final WebServlet servlet;
     private final ReportBlacklist reportBlacklist;
     private final BlacklistManager blacklistManager;
+    private final VoiceWhitelistManager voiceWhitelistManager;
     private GitLabApi gitLabApi;
     private Carbon shutdownTime = null;
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
     private ShardManager shardManager = null;
+
 
     public AvaIre(Settings settings) throws IOException, SQLException, InvalidApplicationEnvironmentException {
         this.settings = settings;
@@ -462,6 +465,9 @@ public class AvaIre {
 
         log.info("Preparing on watch manager");
         onWatchManger = new OnWatchManager(this);
+
+        log.info("Preparing voice whitelist manager.");
+        voiceWhitelistManager = new VoiceWhitelistManager(this);
 
         log.info("Preparing Lavalink");
         AudioHandler.setAvaire(this);
@@ -821,5 +827,9 @@ public class AvaIre {
             root.addAppender(sentryAppender);
         }
         return sentryAppender;
+    }
+
+    public VoiceWhitelistManager getVoiceWhitelistManager() {
+        return voiceWhitelistManager;
     }
 }

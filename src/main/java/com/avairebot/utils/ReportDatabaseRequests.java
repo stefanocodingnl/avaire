@@ -1,4 +1,4 @@
-package com.avairebot.pinewood.utils.database;
+package com.avairebot.utils;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;

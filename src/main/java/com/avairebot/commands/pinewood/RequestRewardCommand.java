@@ -12,16 +12,16 @@ import com.avairebot.requests.Request;
 import com.avairebot.requests.Response;
 import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
 import com.avairebot.utilities.NumberUtil;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -57,7 +57,6 @@ public class RequestRewardCommand extends Command {
             "`:command` - Start the reward system."
         );
     }
-
 
     @Override
     public List<String> getTriggers() {
@@ -148,6 +147,26 @@ public class RequestRewardCommand extends Command {
             d.delete().queueAfter(20, TimeUnit.SECONDS);
             //context.message.delete().queueAfter(20, TimeUnit.SECONDS);
         });
+    }
+
+    private static boolean checkEvidenceAcceptance(CommandMessage context, GuildMessageReceivedEvent pm) {
+        String message = pm.getMessage().getContentRaw();
+        if (!(message.startsWith("https://youtu.be") ||
+            message.startsWith("http://youtu.be") ||
+            message.startsWith("https://www.youtube.com/") ||
+            message.startsWith("http://www.youtube.com/") ||
+            message.startsWith("https://youtube.com/") ||
+            message.startsWith("http://youtube.com/") ||
+            message.startsWith("https://streamable.com/") ||
+            message.contains("cdn.discordapp.com") ||
+            message.contains("media.discordapp.com") ||
+            message.contains("gyazo.com") ||
+            message.contains("prntscr.com") ||
+            message.contains("prnt.sc") || message.contains("imgur.com"))) {
+            pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again (Do not restart the reward system, I'm still listening).").buildEmbed()).queue();
+            return false;
+        }
+        return true;
     }
 
     private void sendSpecialRanksAndRolesMessage(CommandMessage context, long requestedId, String requestedName, String requesterName, Optional<RobloxUserGroupRankService.Data> rUs, Optional<RobloxUserGroupRankService.Data> rU) {
@@ -274,26 +293,6 @@ public class RequestRewardCommand extends Command {
 
     private boolean checkBypass(int requester) {
         return requester == 31 || requester == 32;
-    }
-
-    private static boolean checkEvidenceAcceptance(CommandMessage context, GuildMessageReceivedEvent pm) {
-        String message = pm.getMessage().getContentRaw();
-        if (!(message.startsWith("https://youtu.be") ||
-            message.startsWith("http://youtu.be") ||
-            message.startsWith("https://www.youtube.com/") ||
-            message.startsWith("http://www.youtube.com/") ||
-            message.startsWith("https://youtube.com/") ||
-            message.startsWith("http://youtube.com/") ||
-            message.startsWith("https://streamable.com/") ||
-            message.contains("cdn.discordapp.com") ||
-            message.contains("media.discordapp.com") ||
-            message.contains("gyazo.com") ||
-            message.contains("prntscr.com") ||
-            message.contains("prnt.sc") || message.contains("imgur.com"))) {
-            pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again (Do not restart the reward system, I'm still listening).").buildEmbed()).queue();
-            return false;
-        }
-        return true;
     }
 
     private boolean isValidRobloxian(CommandMessage context, int userId) {

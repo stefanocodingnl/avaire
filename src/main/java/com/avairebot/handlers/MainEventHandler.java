@@ -28,12 +28,10 @@ import com.avairebot.contracts.handlers.EventHandler;
 import com.avairebot.database.controllers.PlayerController;
 import com.avairebot.handlers.adapter.*;
 import com.avairebot.metrics.Metrics;
+import com.avairebot.pinewood.adapter.WhitelistEventAdapter;
 import com.avairebot.utilities.CacheUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import net.dv8tion.jda.api.audit.ActionType;
-import net.dv8tion.jda.api.audit.AuditLogKey;
-import net.dv8tion.jda.api.audit.AuditLogOption;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.GenericEvent;
@@ -54,6 +52,8 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateRegionEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -76,14 +76,12 @@ import net.dv8tion.jda.api.events.user.update.UserUpdateNameEvent;
 import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.avairebot.pinewood.waiters.HandbookReportWaiters;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class MainEventHandler extends EventHandler {
 
@@ -96,6 +94,7 @@ public class MainEventHandler extends EventHandler {
     private final ChangelogEventAdapter changelogEventAdapter;
     private final ReactionEmoteEventAdapter reactionEmoteEventAdapter;
     private final GuildEventAdapter guildEventAdapter;
+    private final WhitelistEventAdapter whitelistEventAdapter;
 
     public static final Cache <Long, Boolean> cache = CacheBuilder.newBuilder()
         .recordStats()
@@ -121,7 +120,7 @@ public class MainEventHandler extends EventHandler {
         this.changelogEventAdapter = new ChangelogEventAdapter(avaire);
         this.reactionEmoteEventAdapter = new ReactionEmoteEventAdapter(avaire);
         this.guildEventAdapter = new GuildEventAdapter(avaire);
-        new HandbookReportWaiters(avaire);
+        this.whitelistEventAdapter = new WhitelistEventAdapter(avaire, avaire.getVoiceWhitelistManager());
     }
 
     @Override
@@ -191,6 +190,14 @@ public class MainEventHandler extends EventHandler {
     public void onTextChannelUpdatePosition(TextChannelUpdatePositionEvent event) {
         channelEvent.updateChannelData(event.getGuild());
     }
+
+    public void onGuildVoiceJoin(@Nonnull GuildVoiceJoinEvent event) {
+        whitelistEventAdapter.whitelistCheckEvent(event);
+    }
+    public void onGuildVoiceMove(@Nonnull GuildVoiceMoveEvent event) {
+        whitelistEventAdapter.whitelistCheckEvent(event);
+    }
+
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {

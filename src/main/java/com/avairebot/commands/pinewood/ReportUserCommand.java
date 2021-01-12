@@ -16,7 +16,6 @@ import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.NumberUtil;
-import com.google.gson.internal.LinkedTreeMap;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -26,8 +25,8 @@ import javax.annotation.Nonnull;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -219,7 +218,7 @@ public class ReportUserCommand extends Command {
             }
 
             Long requestedId = getRobloxId(content.getMessage().getContentRaw());
-            if (requestedId == 0) {
+            if (requestedId == 0L) {
                 context.makeError("Sorry, but your username you gave us, does not exist on roblox. Please give us a username that's on roblox").queue();
                 removeAllUserMessages(messagesToRemove);
                 return;
@@ -657,7 +656,7 @@ public class ReportUserCommand extends Command {
     private static Long getRobloxId(String un) {
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
-            return json.getLong("Id");
+            return Double.valueOf(json.getString("Id")).longValue();
         } catch (Exception e) {
             return 0L;
         }
