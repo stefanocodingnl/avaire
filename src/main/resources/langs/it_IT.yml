@@ -9,7 +9,7 @@ errors:
   missingMusicQueue: 'Link o titolo mancante nella `ricerca`, devi includere un link valido alla canzone che vuoi riprodurre, o almeno darmi un titolo da cercare!'
   cantMentionEveryone: "You don't have permissions to mention everyone."
   requireLevelFeatureToBeEnabled: 'Questo comando richiede che la funzionalità `Livelli ed Esperienza` sia abilitata per questo server, puoi chiedere ad un amministratore del server di abilitarla con `{0}`'
-  errorOccurredWhileLoading: 'Errore caricando {0}, prova di nuovo, se il problema persiste segnalalo ad uno degli sviluppatori sul server [AvaIre support server](https://avairebot.com/support).'
+  errorOccurredWhileLoading: 'Errore caricando {0}, prova di nuovo, se il problema persiste segnalalo ad uno degli sviluppatori sul server [Xeus support server](https://discord.gg/SUPJEt3Ma9).'
 levelupMessages:
   - "GG :user, hai raggiunto il **livello :level**"
   - "Ehy :user, sei salito di livello! Ora sei **livello :level**"
@@ -81,7 +81,7 @@ administration:
     invalidAmountGiven: "The `amount` property must be between 1 and {0} to add or take XP from a user."
     aboutToResetEverything: "You're about to reset the XP for everyone on the entire server. If you're sure you wanna continue, run the command to completely reset the servers XP.\n\n```:command server-reset :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
     aboutToSyncEverything: "You're about to sync the XP with the global leaderboard, this will effectively revert any custom XP changes made on the entire server. If you're sure you wanna continue, run the command to completely sync the servers XP.\n\n```:command server-sync :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
-    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [AvaIre support server](https://avairebot.com/support)."
+    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [Xeus support server](https://discord.gg/SUPJEt3Ma9)."
     mustBeAnAdmin: "You must be a server admin to use this action."
     invalidSecurityToken: "Invalid security token given, please provide the correct security token to reset all the servers XP."
     warning: "Warning!"
@@ -175,7 +175,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "Codice lingua non valido, `{0}` non è un linguaggio valido, o non è ancora supportato dal bot!"
     changed: "La lingua del server è stata aggiornata con successo per utilizzare :name language!"
-    note: "AvaIre supporta diverse lingue fornite dagli utenti che è possibile selezionare con questo comando. Le traduzioni possono non essere accurate al 100% o complete.\nPer selezionare una lingua utilizza `{0} <code>`"
+    note: "Xeus supporta diverse lingue fornite dagli utenti che è possibile selezionare con questo comando. Le traduzioni possono non essere accurate al 100% o complete.\nPer selezionare una lingua utilizza `{0} <code>`"
   LevelAlertsCommand:
     message: "Il modulo `Avviso di level-up` è stato `:status` per il server.:note"
     note: "\nTutti i messaggi di level-up saranno reindirizzati al canale <#{0}>."
@@ -763,7 +763,7 @@ utility:
       10000: 'non ha senso :thinking: #BlameAlexis'
       other: 'slow af. :dizzy_face:'
   RankBackgroundCommand:
-    canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/avaire)**,\nyou'll get **1 point** each time you vote for the bot."
+    canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/Xeus)**,\nyou'll get **1 point** each time you vote for the bot."
     listTitle: "Rank Backgrounds ({0})"
     youHaveVotePoints: "You have {0} vote points."
     exampleTitle: "{0} Example"
@@ -814,8 +814,8 @@ utility:
     allShards: 'Tutti gli Shards'
     totalShards: 'Shards Totali'
   SourceCommand:
-    noArgs: 'AvaIre codice sorgente:'
-    command: 'AvaIre codice sorgente per il comando **:command** :'
+    noArgs: 'Xeus codice sorgente:'
+    command: 'Xeus codice sorgente per il comando **:command** :'
     invalidCommand: 'Comando non valido, qui invece trovi il codice sorgente completo.'
     externalCommand: "Il comando è registrato tramite un plugin esterno, l'autore del plugin non ha reso pubblica la sorgente del comando, o si sono dimenticati di aggiungere un collegamento ad esso, qui invece è il codice sorgente completo per il bot."
   StatsCommand:
@@ -865,9 +865,9 @@ utility:
     timeFormat: 'EEE, dd MMM yyyy HH:mm'
   VersionCommand:
     current: 'Al momento sono `:difference` :type versioni indietro!'
-    getLatest: 'Puoi ottenere la mia ultima versione su github a [avaire/avaire](https://github.com/avaire/avaire)'
-    usingLatest: "Stai utilizzando l'ultima versione di AvaIre!"
-    latestVersion: 'Ultima versione di AvaIre: v{0}'
+    getLatest: 'Puoi ottenere la mia ultima versione su github a [Xeus/Xeus](https://github.com/Xeus/Xeus)'
+    usingLatest: "Stai utilizzando l'ultima versione di Xeus!"
+    latestVersion: 'Ultima versione di Xeus: v{0}'
     latestChanges: 'Ultime modifiche:'
     versions:
       majorName: 'Principale'
