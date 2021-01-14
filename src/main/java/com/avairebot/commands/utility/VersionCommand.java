@@ -147,7 +147,7 @@ public class VersionCommand extends Command {
     }
 
     private SemanticVersion getLatestVersion() {
-        Object version = avaire.getCache().getAdapter(CacheType.FILE).remember("github.version", 1800, () -> {
+        Object version = avaire.getCache().getAdapter(CacheType.FILE).remember("gitlab.version", 1800, () -> {
             try {
                 return Jsoup.connect("https://gitlab.com/pinewood-builders/discord/xeus/-/raw/master/build.gradle")
                     .execute().body().split("version = '")[1].split("'")[0];
