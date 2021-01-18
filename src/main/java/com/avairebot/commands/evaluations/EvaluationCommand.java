@@ -96,7 +96,6 @@ public class EvaluationCommand extends Command {
             List <Member> members = context.getMessage().getMentionedMembers();
             Role r = context.guild.getRolesByName("Evaluators", true).get(0);
 
-
             for (Member m : members) {
                 if (m.getRoles().contains(r)) {
                     context.guild.removeRoleFromMember(m, r).queue(p -> {
@@ -198,7 +197,7 @@ public class EvaluationCommand extends Command {
                 if (args.length == 3) {
                     if (args[2].equalsIgnoreCase("patrol") || args[2].equalsIgnoreCase("quiz") || args[2].equalsIgnoreCase("combat")) {
                         if (collection.size() < 1) {
-                            int roblox_id = getRobloxId(args[0]);
+                            Long roblox_id = getRobloxId(args[0]);
                             avaire.getDatabase()
                                 .newQueryBuilder(Constants.EVALS_DATABASE_TABLE_NAME)
                                 .where("roblox_id", roblox_id)
@@ -222,7 +221,7 @@ public class EvaluationCommand extends Command {
                             return false;
                         }
                         if (collection.size() == 1) {
-                            int roblox_id = getRobloxId(args[0]);
+                            Long roblox_id = getRobloxId(args[0]);
                             avaire.getDatabase()
                                 .newQueryBuilder(Constants.EVALS_DATABASE_TABLE_NAME)
                                 .where("roblox_id", roblox_id)
@@ -261,7 +260,7 @@ public class EvaluationCommand extends Command {
                 if (args.length == 3) {
                     if (args[2].equalsIgnoreCase("patrol") || args[2].equalsIgnoreCase("quiz") || args[2].equalsIgnoreCase("combat")) {
                         if (collection.size() < 1) {
-                            int roblox_id = getRobloxId(args[0]);
+                            Long roblox_id = getRobloxId(args[0]);
                             avaire.getDatabase()
                                 .newQueryBuilder(Constants.EVALS_DATABASE_TABLE_NAME)
                                 .where("roblox_id", roblox_id)
@@ -286,7 +285,7 @@ public class EvaluationCommand extends Command {
                             return false;
                         }
                         if (collection.size() == 1) {
-                            int roblox_id = getRobloxId(args[0]);
+                            Long roblox_id = getRobloxId(args[0]);
                             avaire.getDatabase()
                                 .newQueryBuilder(Constants.EVALS_DATABASE_TABLE_NAME)
                                 .where("roblox_id", roblox_id)
@@ -333,7 +332,7 @@ public class EvaluationCommand extends Command {
         return true;
     }
 
-    private static String getRobloxUsernameFromId(int id) {
+    private static String getRobloxUsernameFromId(Long id) {
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/" + id);
             return json.getString("Username");
@@ -342,13 +341,13 @@ public class EvaluationCommand extends Command {
         }
     }
 
-    public int getRobloxId(String un) {
+    public Long getRobloxId(String un) {
 
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
-            return json.getInt("Id");
+            return json.getLong("Id");
         } catch (Exception e) {
-            return 0;
+            return 0L;
         }
     }
 

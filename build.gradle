@@ -114,6 +114,11 @@ dependencies {
     //Emoji API
     compile group: 'com.vdurmont', name: 'emoji-java', version: '5.1.1'
 
+    // Expiring Map API
+    // https://mvnrepository.com/artifact/net.jodah/expiringmap
+    compile group: 'net.jodah', name: 'expiringmap', version: '0.5.9'
+
+
 
     // Tests
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions

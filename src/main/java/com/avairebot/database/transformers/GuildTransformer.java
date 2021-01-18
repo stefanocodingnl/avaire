@@ -80,6 +80,9 @@ public class GuildTransformer extends Transformer {
     private boolean filter = false;
     private String levelChannel = null;
     private String voteValidationChannel = null;
+
+    private long audit_log = 0;
+
     private String suggestionChannel = null;
     private String suggestionCommunityChannel = null;
     private String suggestionEmoteId = null;
@@ -156,8 +159,11 @@ public class GuildTransformer extends Transformer {
             massMentionSpam = data.getInt("automod_mass_mention");
             messageSpam = data.getInt("automod_message_spam");
 
+
             reportCategory = data.getLong("report_discord_category");
             voteValidationChannel = data.getString("vote_validation_channel");
+
+            audit_log = data.getLong("audit_log");
 
             suggestionChannel = data.getString("suggestion_channel");
             suggestionCommunityChannel = data.getString("suggestion_community_channel");
@@ -504,6 +510,14 @@ public class GuildTransformer extends Transformer {
 
     public void setLevelChannel(String levelChannel) {
         this.levelChannel = levelChannel;
+    }
+
+    public long getAuditLogChannel() {
+        return audit_log;
+    }
+
+    public void setAuditLogChannel(long audit_log) {
+        this.audit_log = audit_log;
     }
 
     public String getSuggestionChannel() {

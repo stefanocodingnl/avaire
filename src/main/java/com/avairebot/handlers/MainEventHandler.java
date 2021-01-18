@@ -207,6 +207,11 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
+    public void onGenericGuild(GenericGuildEvent event) {
+        guildEventAdapter.onGenericGuildEvent(event);
+    }
+
+    @Override
     public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
         if (!avaire.getSettings().isMusicOnlyMode()) {
             memberEvent.onGuildMemberRemove(event);
@@ -236,14 +241,7 @@ public class MainEventHandler extends EventHandler {
                     }
                 }
             }
-            if (event.getChannel().getId().equals("771523398693158953")) {
-                event.getChannel().retrieveMessageById(event.getMessageId()).queue(p -> {
-                    if (p.getContentRaw().equals("__**COMPLETED**__") || p.getContentRaw().equals("**__COMPLETED__**"))
-                        return;
-                    p.addReaction("\uD83D\uDC4D").queue();
-                    p.addReaction("\uD83D\uDC4E").queue();
-                });
-            }
+
         }
 
     }

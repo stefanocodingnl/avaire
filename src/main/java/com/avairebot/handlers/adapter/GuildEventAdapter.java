@@ -23,43 +23,55 @@ package com.avairebot.handlers.adapter;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
-import com.avairebot.changelog.ChangelogHandler;
-import com.avairebot.changelog.ChangelogMessage;
+import com.avairebot.cache.MessageCache;
+import com.avairebot.contracts.cache.CachedMessage;
 import com.avairebot.contracts.handlers.EventAdapter;
 import com.avairebot.database.collection.Collection;
+import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.query.QueryBuilder;
+import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.MessageFactory;
-import com.avairebot.utilities.CheckPermissionUtil;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
-import net.dv8tion.jda.api.audit.AuditLogOption;
 import net.dv8tion.jda.api.audit.TargetType;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.guild.GenericGuildEvent;
+import net.dv8tion.jda.api.events.guild.GuildBanEvent;
 import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
+import net.dv8tion.jda.api.events.guild.update.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 
+import java.awt.*;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GuildEventAdapter extends EventAdapter {
+    private DateTimeFormatter formatter =
+        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)
+            .withLocale(Locale.UK);
 
     public GuildEventAdapter(AvaIre avaire) {
         super(avaire);
     }
-
 
     public void onGuildPIAMemberBanEvent(GuildUnbanEvent e) {
         try {
             QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", e.getUser().getId());
             Collection unbanCollection = qb.get();
             if (unbanCollection.size() > 0) {
-                List <AuditLogEntry> logs = e.getGuild().retrieveAuditLogs().stream().filter(d -> d.getType().equals(ActionType.UNBAN) && d.getTargetType().equals(TargetType.MEMBER) && d.getTargetId().equals(e.getUser().getId())).collect(Collectors.toList());
+                List<AuditLogEntry> logs = e.getGuild().retrieveAuditLogs().stream().filter(d -> d.getType().equals(ActionType.UNBAN) && d.getTargetType().equals(TargetType.MEMBER) && d.getTargetId().equals(e.getUser().getId())).collect(Collectors.toList());
                 MessageChannel tc = avaire.getShardManager().getTextChannelById("788316320747094046");
 
                 if (logs.size() < 1) {
@@ -85,13 +97,230 @@ public class GuildEventAdapter extends EventAdapter {
                         }
                     }
                 }
-            } else {
-                return;
             }
-
-
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
     }
+
+    public void onGenericGuildEvent(GenericGuildEvent event) {
+
+        GuildTransformer transformer = GuildController.fetchGuild(avaire, event.getGuild());
+        if (transformer.getAuditLogChannel() != 0) {
+            TextChannel tc = event.getGuild().getTextChannelById(transformer.getAuditLogChannel());
+            if (tc != null) {
+                if (event instanceof GuildBanEvent) {
+                    GuildBanEvent e = (GuildBanEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 71, 15))
+                        .setAuthor("User banned"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription(e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "(:banned)")
+                        .set("banned", e.getUser().getAsMention())
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildUnbanEvent) {
+                    GuildUnbanEvent e = (GuildUnbanEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 233, 44))
+                        .setAuthor("User unbanned"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription(e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "(:unbanned)")
+                        .set("unbanned", e.getUser().getAsMention())
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildUpdateAfkChannelEvent) {
+                    GuildChannel oldChannel = getModifiedChannel(event, false);
+                    GuildChannel newChannel = getModifiedChannel(event, true);
+
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 0, 15))
+                        .setAuthor("AFK Channel was modified"
+                            , null, event.getGuild().getIconUrl())
+                        .addField("Old Channel:", oldChannel.getName(), true)
+                        .addField("New channel:", newChannel.getName(), true)
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildUpdateSystemChannelEvent) {
+                    GuildChannel oldChannel = getModifiedChannel(event, false);
+                    GuildChannel newChannel = getModifiedChannel(event, true);
+
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(120, 120, 120))
+                        .setAuthor("System Channel was modified"
+                            , null, event.getGuild().getIconUrl())
+                        .addField("Old Channel:", oldChannel.getName(), true)
+                        .addField("New channel:", newChannel.getName(), true)
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildUpdateRegionEvent) {
+                    GuildUpdateRegionEvent e = (GuildUpdateRegionEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 71, 15))
+                        .setAuthor("Region was updated"
+                            , null, event.getGuild().getIconUrl())
+                        .addField("Old region:", e.getOldRegion().getName() + " - " + e.getOldRegion().getEmoji(), true)
+                        .addField("New region:", e.getOldRegion().getName() + " - " + e.getNewRegion().getEmoji(), true)
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildUpdateBoostCountEvent) {
+                    GuildUpdateBoostCountEvent e = (GuildUpdateBoostCountEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 0, 255))
+                        .setAuthor("Boost count was updated"
+                            , null, event.getGuild().getIconUrl())
+                        .addField("Old Boost count:", String.valueOf(e.getOldBoostCount()), true)
+                        .addField("New Boost count:", String.valueOf(e.getNewBoostCount()), true)
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildUpdateBoostTierEvent) {
+                    GuildUpdateBoostTierEvent e = (GuildUpdateBoostTierEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 0, 255))
+                        .setAuthor("Boost **tier** was updated"
+                            , null, event.getGuild().getIconUrl())
+                        .addField("Old Boost **Tier**:", String.valueOf(e.getOldBoostTier()), true)
+                        .addField("New Boost **Tier**:", String.valueOf(e.getNewBoostTier()), true)
+                        .setTimestamp(Instant.now()).queue();
+                } else if (event instanceof GuildMemberJoinEvent) {
+                    GuildMemberJoinEvent e = (GuildMemberJoinEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(77, 224, 102))
+                        .setAuthor("Member joined the server!"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
+                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "Account Age: " + formatter.format(e.getUser().getTimeCreated().toInstant()))
+                        .setFooter("UserID: " + e.getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildMemberRemoveEvent) {
+                    GuildMemberRemoveEvent e = (GuildMemberRemoveEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 67, 65))
+                        .setAuthor("Member left the server (Both ban or left)!"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
+                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "Account Age: " + formatter.format(e.getUser().getTimeCreated().toInstant()))
+                        .setFooter("UserID: " + e.getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildMemberRoleAddEvent) {
+                    GuildMemberRoleAddEvent e = (GuildMemberRoleAddEvent) event;
+                    StringBuilder sb = new StringBuilder();
+                    for (Role role : e.getRoles()) {
+                        sb.append("\n - ``").append(role.getName()).append("``");
+                    }
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 129, 31))
+                        .setAuthor("Roles where added to member!"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
+                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "\nRoles given: " + sb.toString())
+                        .setFooter("UserID: " + e.getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildMemberRoleRemoveEvent) {
+                    GuildMemberRoleRemoveEvent e = (GuildMemberRoleRemoveEvent) event;
+                    StringBuilder sb = new StringBuilder();
+                    for (Role role : e.getRoles()) {
+                        sb.append("\n - ``").append(role.getName()).append("``");
+                    }
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(92, 135, 186))
+                        .setAuthor("Roles where removed from member!"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
+                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "\nRoles removed: " + sb.toString())
+                        .setFooter("UserID: " + e.getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildMemberUpdateNicknameEvent) {
+                    GuildMemberUpdateNicknameEvent e = (GuildMemberUpdateNicknameEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 195, 0))
+                        .setAuthor("User nick was changed!"
+                            , null, e.getUser().getEffectiveAvatarUrl())
+                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
+                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "Old name: ``" + e.getOldNickname() + "``\n" +
+                            "New name: ``" + e.getNewNickname() + "``")
+                        .setFooter("UserID: " + e.getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildMessageDeleteEvent) {
+                    GuildMessageDeleteEvent e = (GuildMessageDeleteEvent) event;
+                    messageDeleteEvent(e, tc);
+                } else if (event instanceof GuildMessageUpdateEvent) {
+                    GuildMessageUpdateEvent e = (GuildMessageUpdateEvent) event;
+                    messageUpdateEvent(e, tc);
+                }
+
+            }
+
+        }
+    }
+
+    private void messageUpdateEvent(GuildMessageUpdateEvent event, TextChannel tc) {
+        MessageCache cache = MessageCache.getCache(event.getGuild().getIdLong());
+
+        if (cache.isInCache(event.getMessage())) {
+            Message newMessage = event.getMessage();
+            CachedMessage oldMessage = cache.get(event.getMessageIdLong());
+            MessageChannel channel = event.getChannel();
+            String oldContent = oldMessage.getContentRaw();
+            String newContent = newMessage.getContentRaw();
+            Guild guild = event.getGuild();
+
+            if (newMessage.getAuthor().isBot()) return;
+            if (newContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
+            if (oldContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
+
+            tc.sendMessage(new EmbedBuilder()
+                .setAuthor("A message was edited", newMessage.getJumpUrl(), newMessage.getAuthor().getEffectiveAvatarUrl())
+                .setDescription("Author: " + newMessage.getAuthor().getAsMention() +
+                    "\nSent In: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                    "\nSent On: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                    "\n\nMessage Content Before: " + oldContent +
+                    "\nMessage Content After: " + newContent)
+                .setColor(new Color(255, 123, 0))
+                .setTimestamp(Instant.now())
+                .build()).queue();
+
+            cache.update(oldMessage, new CachedMessage(newMessage));
+
+        }
+    }
+
+    private void messageDeleteEvent(GuildMessageDeleteEvent event, TextChannel tc) {
+        if (event.getChannel().getType().equals(ChannelType.TEXT)) {
+            MessageCache cache = MessageCache.getCache(event.getGuild());
+
+            if (cache.isInCache(event.getMessageIdLong())) {
+                CachedMessage message = cache.get(event.getMessageIdLong());
+                Guild guild = event.getGuild();
+                MessageChannel channel = event.getChannel();
+                String content = message.getContentRaw();
+
+                if (tc != null) {
+                    if (message.getAuthor().isBot()) return;
+                    if (content.length() >= 1500) content = content.substring(0, 1500) + " **...**";
+
+                    tc.sendMessage(new EmbedBuilder()
+                        .setAuthor("A message was deleted", null, message.getAuthor().getGetEffectiveAvatarUrl())
+                        .setDescription("Author: " + message.getAuthor().getAsMention() +
+                            "\nSent In: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                            "\nSent On: " + message.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                            "\n\nMessage Content: " + content)
+                        .setColor(new Color(255, 0, 0))
+                        .setTimestamp(Instant.now())
+                        .build()).queue();
+                    cache.remove(message);
+                }
+            }
+        }
+    }
+
+    private GuildChannel getModifiedChannel(GenericGuildEvent event, boolean newChannel) {
+        if (event instanceof GuildUpdateAfkChannelEvent) {
+            if (newChannel) {
+                return ((GuildUpdateAfkChannelEvent) event).getNewAfkChannel();
+            } else {
+                return ((GuildUpdateAfkChannelEvent) event).getOldAfkChannel();
+            }
+        } else if (event instanceof GuildUpdateSystemChannelEvent) {
+            if (newChannel) {
+                return ((GuildUpdateSystemChannelEvent) event).getNewSystemChannel();
+            } else {
+                return ((GuildUpdateSystemChannelEvent) event).getOldSystemChannel();
+            }
+        }
+        return null;
+    }
+
 }

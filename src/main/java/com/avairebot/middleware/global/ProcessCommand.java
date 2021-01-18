@@ -187,6 +187,9 @@ public class ProcessCommand extends Middleware {
     }
 
     private String[] combineArguments(String[] aliasArguments, String[] userArguments) {
+        if (Arrays.stream(aliasArguments).anyMatch(m -> {return m.contains("repeat");})) {
+            return aliasArguments;
+        }
         int length = aliasArguments.length + userArguments.length;
 
         String[] result = new String[length];
