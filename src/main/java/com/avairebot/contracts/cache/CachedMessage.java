@@ -11,6 +11,7 @@ public class CachedMessage
     private final CachedUser author;
     private final String channelId;
     private final long id;
+    private final String attachment;
 
     public CachedMessage(Message message)
     {
@@ -19,6 +20,7 @@ public class CachedMessage
         this.author = new CachedUser(message.getAuthor());
         this.channelId = message.getChannel().getId();
         this.id = message.getIdLong();
+        this.attachment = message.getAttachments().size() == 1 ? message.getAttachments().get(0).getUrl() : null;
     }
 
     public OffsetDateTime getTimeCreated()
@@ -44,5 +46,9 @@ public class CachedMessage
     public long getIdLong()
     {
         return id;
+    }
+
+    public String getAttachment() {
+        return attachment;
     }
 }

@@ -31,7 +31,6 @@ import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.MessageFactory;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.audit.TargetType;
@@ -52,15 +51,11 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.List;
-import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class GuildEventAdapter extends EventAdapter {
-    private DateTimeFormatter formatter =
-        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)
-            .withLocale(Locale.UK);
 
     public GuildEventAdapter(AvaIre avaire) {
         super(avaire);
@@ -76,23 +71,23 @@ public class GuildEventAdapter extends EventAdapter {
 
                 if (logs.size() < 1) {
                     if (tc != null) {
-                        tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription(e.getUser().getAsTag() + " has been unbanned from ``" + e.getGuild() + "``, however, I could not find the user responsible for the unban. Please check the audit logs in the responsible server for more information. (User has been re-banned)").buildEmbed()).queue();
+                        tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription(e.getUser().getAsTag() + " has been unbanned from **" + e.getGuild() + "**, however, I could not find the user responsible for the unban. Please check the audit logs in the responsible server for more information. (User has been re-banned)").buildEmbed()).queue();
                     }
                     e.getGuild().ban(e.getUser().getId(), 0, "User was unbanned, user has been re-banned due to permban system in Xeus. Original ban reason (Do not unban without PIA permission): " + unbanCollection.get(0).getString("reason")).reason("PIA BAN: " + unbanCollection.get(0).getString("reason")).queue();
                 } else {
                     if (tc != null) {
                         if (Constants.bypass_users.contains(logs.get(0).getUser().getId())) {
-                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("``" + e.getUser().getName() + e.getUser().getDiscriminator() + "``" + " has been unbanned from ``" + e.getGuild().getName() + "``\nIssued by PIA Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + "\nWith reason: " + (logs.get(0).getReason() != null ? logs.get(0).getReason() : "No reason given")).buildEmbed()).queue();
+                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "**" + " has been unbanned from **" + e.getGuild().getName() + "**\nIssued by PIA Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + "\nWith reason: " + (logs.get(0).getReason() != null ? logs.get(0).getReason() : "No reason given")).buildEmbed()).queue();
                             logs.get(0).getUser().openPrivateChannel().queue(o -> {
                                 if (o.getUser().isBot()) return;
                                 o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("You have curr").buildEmbed()).queue();
                             });
                         } else {
-                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("``" + e.getUser().getName() + e.getUser().getDiscriminator() + "`` has been unbanned from ``" + e.getGuild().getName() + "``\nIssued by Guild Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + " (User has been re-banned)").buildEmbed()).queue();
+                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "** has been unbanned from **" + e.getGuild().getName() + "**\nIssued by Guild Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + " (User has been re-banned)").buildEmbed()).queue();
                             e.getGuild().ban(e.getUser().getId(), 0, "User was unbanned, user has been re-banned due to permban system in Xeus. Original ban reason (Do not unban without PIA permission): " + unbanCollection.get(0).getString("reason")).reason("PIA BAN: " + unbanCollection.get(0).getString("reason")).queue();
                             logs.get(0).getUser().openPrivateChannel().queue(o -> {
                                 if (o.getUser().isBot()) return;
-                                o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("Sorry, but this user ``:bannedUser`` was permbanned of PB though the Xeus blacklist feature and may **not** be unbanned. Please ask a PIA agent to handle an unban if deemed necessary.").buildEmbed()).queue();
+                                o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("Sorry, but this user **:bannedUser** was permbanned of PB though the Xeus blacklist feature and may **not** be unbanned. Please ask a PIA agent to handle an unban if deemed necessary.").buildEmbed()).queue();
                             });
                         }
                     }
@@ -111,10 +106,10 @@ public class GuildEventAdapter extends EventAdapter {
             if (tc != null) {
                 if (event instanceof GuildBanEvent) {
                     GuildBanEvent e = (GuildBanEvent) event;
-                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 71, 15))
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 50, 0))
                         .setAuthor("User banned"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription(e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "(:banned)")
+                        .setDescription(e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "**(:banned)**")
                         .set("banned", e.getUser().getAsMention())
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildUnbanEvent) {
@@ -122,7 +117,7 @@ public class GuildEventAdapter extends EventAdapter {
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 233, 44))
                         .setAuthor("User unbanned"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription(e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "(:unbanned)")
+                        .setDescription(e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "**(:unbanned)**")
                         .set("unbanned", e.getUser().getAsMention())
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildUpdateAfkChannelEvent) {
@@ -132,8 +127,8 @@ public class GuildEventAdapter extends EventAdapter {
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 0, 15))
                         .setAuthor("AFK Channel was modified"
                             , null, event.getGuild().getIconUrl())
-                        .addField("Old Channel:", oldChannel.getName(), true)
-                        .addField("New channel:", newChannel.getName(), true)
+                        .addField("**Old Channel**:", oldChannel.getName(), true)
+                        .addField("**New channel**:", newChannel.getName(), true)
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildUpdateSystemChannelEvent) {
                     GuildChannel oldChannel = getModifiedChannel(event, false);
@@ -142,24 +137,24 @@ public class GuildEventAdapter extends EventAdapter {
                     MessageFactory.makeEmbeddedMessage(tc, new Color(120, 120, 120))
                         .setAuthor("System Channel was modified"
                             , null, event.getGuild().getIconUrl())
-                        .addField("Old Channel:", oldChannel.getName(), true)
-                        .addField("New channel:", newChannel.getName(), true)
+                        .addField("**Old Channel**:", oldChannel.getName(), true)
+                        .addField("**New channel**:", newChannel.getName(), true)
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildUpdateRegionEvent) {
                     GuildUpdateRegionEvent e = (GuildUpdateRegionEvent) event;
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 71, 15))
                         .setAuthor("Region was updated"
                             , null, event.getGuild().getIconUrl())
-                        .addField("Old region:", e.getOldRegion().getName() + " - " + e.getOldRegion().getEmoji(), true)
-                        .addField("New region:", e.getOldRegion().getName() + " - " + e.getNewRegion().getEmoji(), true)
+                        .addField("**Old region**:", e.getOldRegion().getName() + " - " + e.getOldRegion().getEmoji(), true)
+                        .addField("**New region**:", e.getOldRegion().getName() + " - " + e.getNewRegion().getEmoji(), true)
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildUpdateBoostCountEvent) {
                     GuildUpdateBoostCountEvent e = (GuildUpdateBoostCountEvent) event;
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 0, 255))
                         .setAuthor("Boost count was updated"
                             , null, event.getGuild().getIconUrl())
-                        .addField("Old Boost count:", String.valueOf(e.getOldBoostCount()), true)
-                        .addField("New Boost count:", String.valueOf(e.getNewBoostCount()), true)
+                        .addField("**Old Boost count**:", String.valueOf(e.getOldBoostCount()), true)
+                        .addField("**New Boost count**:", String.valueOf(e.getNewBoostCount()), true)
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildUpdateBoostTierEvent) {
                     GuildUpdateBoostTierEvent e = (GuildUpdateBoostTierEvent) event;
@@ -171,12 +166,20 @@ public class GuildEventAdapter extends EventAdapter {
                         .setTimestamp(Instant.now()).queue();
                 } else if (event instanceof GuildMemberJoinEvent) {
                     GuildMemberJoinEvent e = (GuildMemberJoinEvent) event;
+
+                    if (checkAccountAge(e)) {
+                        MessageFactory.makeEmbeddedMessage(event.getGuild().getTextChannelById("554164213363507201"))
+                            .setThumbnail(e.getUser().getEffectiveAvatarUrl())
+                            .setDescription("User found with an *VERY* new account!!!\n\n" + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                                "**Created on**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))).queue();
+                    }
+
                     MessageFactory.makeEmbeddedMessage(tc, new Color(77, 224, 102))
                         .setAuthor("Member joined the server!"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
-                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "Account Age: " + formatter.format(e.getUser().getTimeCreated().toInstant()))
+                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "**Account Age**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
                         .setFooter("UserID: " + e.getUser().getId())
                         .setTimestamp(Instant.now())
                         .queue();
@@ -185,9 +188,9 @@ public class GuildEventAdapter extends EventAdapter {
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 67, 65))
                         .setAuthor("Member left the server (Both ban or left)!"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
-                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "Account Age: " + formatter.format(e.getUser().getTimeCreated().toInstant()))
+                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "**Account Age**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
                         .setFooter("UserID: " + e.getUser().getId())
                         .setTimestamp(Instant.now())
                         .queue();
@@ -195,14 +198,14 @@ public class GuildEventAdapter extends EventAdapter {
                     GuildMemberRoleAddEvent e = (GuildMemberRoleAddEvent) event;
                     StringBuilder sb = new StringBuilder();
                     for (Role role : e.getRoles()) {
-                        sb.append("\n - ``").append(role.getName()).append("``");
+                        sb.append("\n - **").append(role.getName()).append("**");
                     }
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 129, 31))
                         .setAuthor("Roles where added to member!"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
-                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "\nRoles given: " + sb.toString())
+                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "\n**Roles given**: " + sb.toString())
                         .setFooter("UserID: " + e.getUser().getId())
                         .setTimestamp(Instant.now())
                         .queue();
@@ -210,14 +213,14 @@ public class GuildEventAdapter extends EventAdapter {
                     GuildMemberRoleRemoveEvent e = (GuildMemberRoleRemoveEvent) event;
                     StringBuilder sb = new StringBuilder();
                     for (Role role : e.getRoles()) {
-                        sb.append("\n - ``").append(role.getName()).append("``");
+                        sb.append("\n - **").append(role.getName()).append("**");
                     }
                     MessageFactory.makeEmbeddedMessage(tc, new Color(92, 135, 186))
                         .setAuthor("Roles where removed from member!"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
-                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "\nRoles removed: " + sb.toString())
+                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "\n**Roles removed**: " + sb.toString())
                         .setFooter("UserID: " + e.getUser().getId())
                         .setTimestamp(Instant.now())
                         .queue();
@@ -226,10 +229,10 @@ public class GuildEventAdapter extends EventAdapter {
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 195, 0))
                         .setAuthor("User nick was changed!"
                             , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("Member: " + e.getUser().getAsMention() + "\n" +
-                            "User: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "Old name: ``" + e.getOldNickname() + "``\n" +
-                            "New name: ``" + e.getNewNickname() + "``")
+                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                            "**Old name**: ``" + e.getOldNickname() + "``\n" +
+                            "**New name**: ``" + e.getNewNickname() + "``")
                         .setFooter("UserID: " + e.getUser().getId())
                         .setTimestamp(Instant.now())
                         .queue();
@@ -244,6 +247,10 @@ public class GuildEventAdapter extends EventAdapter {
             }
 
         }
+    }
+
+    private boolean checkAccountAge(GuildMemberJoinEvent event) {
+        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - event.getMember().getUser().getTimeCreated().toInstant().toEpochMilli()) < 60;
     }
 
     private void messageUpdateEvent(GuildMessageUpdateEvent event, TextChannel tc) {
@@ -261,16 +268,17 @@ public class GuildEventAdapter extends EventAdapter {
             if (newContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
             if (oldContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
 
-            tc.sendMessage(new EmbedBuilder()
+            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
                 .setAuthor("A message was edited", newMessage.getJumpUrl(), newMessage.getAuthor().getEffectiveAvatarUrl())
-                .setDescription("Author: " + newMessage.getAuthor().getAsMention() +
-                    "\nSent In: " + guild.getTextChannelById(channel.getId()).getAsMention() +
-                    "\nSent On: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
-                    "\n\nMessage Content Before: " + oldContent +
-                    "\nMessage Content After: " + newContent)
+                .setDescription("**Author**: " + newMessage.getAuthor().getAsMention() +
+                    "\n**Sent In**: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                    "\n**Sent On**: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                    "\n\n**Message Content Before**:\n" + oldContent +
+                    "\n\n**Message Content After**:\n" + newContent)
                 .setColor(new Color(255, 123, 0))
+                .setThumbnail(oldMessage.getAttachment())
                 .setTimestamp(Instant.now())
-                .build()).queue();
+                .buildEmbed()).queue();
 
             cache.update(oldMessage, new CachedMessage(newMessage));
 
@@ -291,15 +299,15 @@ public class GuildEventAdapter extends EventAdapter {
                     if (message.getAuthor().isBot()) return;
                     if (content.length() >= 1500) content = content.substring(0, 1500) + " **...**";
 
-                    tc.sendMessage(new EmbedBuilder()
+                    tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
                         .setAuthor("A message was deleted", null, message.getAuthor().getGetEffectiveAvatarUrl())
-                        .setDescription("Author: " + message.getAuthor().getAsMention() +
-                            "\nSent In: " + guild.getTextChannelById(channel.getId()).getAsMention() +
-                            "\nSent On: " + message.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
-                            "\n\nMessage Content: " + content)
+                        .setDescription("**Author**: " + message.getAuthor().getAsMention() +
+                            "\n**Sent In**: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                            "\n**Sent On**: " + message.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                            "\n\n**Message Content**:\n" + content)
                         .setColor(new Color(255, 0, 0))
                         .setTimestamp(Instant.now())
-                        .build()).queue();
+                        .buildEmbed()).queue();
                     cache.remove(message);
                 }
             }

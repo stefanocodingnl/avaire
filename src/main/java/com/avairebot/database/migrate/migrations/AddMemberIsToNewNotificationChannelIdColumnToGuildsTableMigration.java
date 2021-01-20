@@ -7,28 +7,28 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class AddAuditLogIdColumnToGuildsTableMigration implements Migration {
+public class AddMemberIsToNewNotificationChannelIdColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sunday, January 17, 2021 11:14PM";
+        return "Monday, January 19, 2021 12:16 PM";
     }
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "audit_log")) {
+        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "member_to_young_channel_id")) {
             return true;
         }
 
         if (schema.getDbm().getConnection() instanceof MySQL) {
             schema.getDbm().queryUpdate(String.format(
 
-                "ALTER TABLE `%s` ADD `audit_log` VARCHAR(32) NULL DEFAULT NULL AFTER `filter`;",
+                "ALTER TABLE `%s` ADD `member_to_young_channel_id` VARCHAR(32) NULL DEFAULT NULL AFTER `filter`;",
                 Constants.GUILD_TABLE_NAME
             ));
         } else {
             schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `audit_log` VARCHAR(32) NULL DEFAULT NULL;",
+                "ALTER TABLE `%s` ADD `member_to_young_channel_id` VARCHAR(32) NULL DEFAULT NULL;",
                 Constants.GUILD_TABLE_NAME
             ));
         }
@@ -38,12 +38,12 @@ public class AddAuditLogIdColumnToGuildsTableMigration implements Migration {
 
     @Override
     public boolean down(Schema schema) throws SQLException {
-        if (!schema.hasColumn(Constants.GUILD_TABLE_NAME, "audit_log")) {
+        if (!schema.hasColumn(Constants.GUILD_TABLE_NAME, "member_to_young_channel_id")) {
             return true;
         }
 
         schema.getDbm().queryUpdate(String.format(
-            "ALTER TABLE `%s` DROP `audit_log`;",
+            "ALTER TABLE `%s` DROP `member_to_young_channel_id`;",
             Constants.GUILD_TABLE_NAME
         ));
 

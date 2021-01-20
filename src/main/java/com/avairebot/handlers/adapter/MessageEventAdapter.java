@@ -117,7 +117,9 @@ public class MessageEventAdapter extends EventAdapter {
 
         if(!event.getAuthor().isBot())
         {
-            MessageCache.getCache(event.getGuild()).set(new CachedMessage(event.getMessage()));
+            if (event.isFromType(ChannelType.TEXT)) {
+                MessageCache.getCache(event.getGuild()).set(new CachedMessage(event.getMessage()));
+            }
         }
 
         if (avaire.getBlacklist().isBlacklisted(event.getMessage())) {

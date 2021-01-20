@@ -510,6 +510,39 @@ public class VoteCommand extends Command {
         return false;
     }
 
+
+
+    private boolean disableVoteValidation(CommandMessage context, GuildTransformer transformer) {
+        try {
+            updateVoteValidation(transformer, context, null);
+
+            context.makeSuccess("The vote validation channel has been disabled on this guild.")
+                .queue();
+        } catch (SQLException ex) {
+            AvaIre.getLogger().error(ex.getMessage(), ex);
+        }
+
+        return true;
+    }
+
+    private PlaceholderMessage sendVoteValidationChannel(CommandMessage context, GuildTransformer transformer) {
+        if (transformer.getVoteValidationChannel() == null) {
+            return context.makeWarning("The vote validation channel is disabled on this guild.");
+        }
+
+        TextChannel modlogChannel = context.getGuild().getTextChannelById(transformer.getVoteValidationChannel());
+        if (modlogChannel == null) {
+            try {
+                updateVoteValidation(transformer, context, null);
+            } catch (SQLException ex) {
+                AvaIre.getLogger().error(ex.getMessage(), ex);
+            }
+            return context.makeInfo("The vote validation channel is disabled on this guild.");
+        }
+
+        return context.makeSuccess("The vote validation channel is set to :channel this guild.")
+            .set("channel", modlogChannel.getAsMention());
+    }
     private Boolean runVoteUpdateChannelChannelCommand(CommandMessage context, String[] args) {
         GuildTransformer transformer = context.getGuildTransformer();
         if (transformer == null) {
@@ -545,39 +578,6 @@ public class VoteCommand extends Command {
         }
         return true;
     }
-
-    private boolean disableVoteValidation(CommandMessage context, GuildTransformer transformer) {
-        try {
-            updateVoteValidation(transformer, context, null);
-
-            context.makeSuccess("The vote validation channel has been disabled on this guild.")
-                .queue();
-        } catch (SQLException ex) {
-            AvaIre.getLogger().error(ex.getMessage(), ex);
-        }
-
-        return true;
-    }
-
-    private PlaceholderMessage sendVoteValidationChannel(CommandMessage context, GuildTransformer transformer) {
-        if (transformer.getVoteValidationChannel() == null) {
-            return context.makeWarning("The vote validation channel is disabled on this guild.");
-        }
-
-        TextChannel modlogChannel = context.getGuild().getTextChannelById(transformer.getVoteValidationChannel());
-        if (modlogChannel == null) {
-            try {
-                updateVoteValidation(transformer, context, null);
-            } catch (SQLException ex) {
-                AvaIre.getLogger().error(ex.getMessage(), ex);
-            }
-            return context.makeInfo("The vote validation channel is disabled on this guild.");
-        }
-
-        return context.makeSuccess("The vote validation channel is set to :channel this guild.")
-            .set("channel", modlogChannel.getAsMention());
-    }
-
     private void updateVoteValidation(GuildTransformer transformer, CommandMessage context, String value) throws
         SQLException {
         transformer.setVoteValidationChannel(value);
