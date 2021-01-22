@@ -99,6 +99,8 @@ public class AuditLogChannelCommand extends Command {
             case "sc":
             case "set-channel":
                 return runVoteUpdateChannelChannelCommand(context, args, guildTransformer);
+            case "set-join-logs":
+                return runJoinLogsUpdateChannelChannelCommand(context, args, guildTransformer);
             default:
                 return sendErrorMessage(context, "No valid argument given");
         }
@@ -171,12 +173,85 @@ public class AuditLogChannelCommand extends Command {
             .set("channel", modlogChannel.getAsMention());
     }
 
-    private void updateVoteValidation(GuildTransformer transformer, CommandMessage context, long value) throws
-        SQLException {
+    private void updateVoteValidation(GuildTransformer transformer, CommandMessage context, long value) throws SQLException {
         transformer.setAuditLogChannel(value);
         avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
             .where("id", context.getGuild().getId())
             .update(statement -> statement.set("audit_log", value));
+    }
+
+    private boolean runJoinLogsUpdateChannelChannelCommand(CommandMessage context, String[] args, GuildTransformer transformer) {
+        if (transformer == null) {
+            return sendErrorMessage(context, "The guildtransformer can't be found :(");
+        }
+
+        if (args.length == 1) {
+            sendJoinLogsChannel(context, transformer).queue();
+            return true;
+        }
+
+        if (ComparatorUtil.isFuzzyFalse(args[1])) {
+            return disableJoinLogs(context, transformer);
+        }
+
+        GuildChannel channel = MentionableUtil.getChannel(context.getMessage(), args, 1);
+        if (!(channel instanceof TextChannel)) {
+            return sendErrorMessage(context, "You must mentions a channel, or call out it's exact name!");
+        }
+
+        if (!((TextChannel) channel).canTalk() || !context.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_EMBED_LINKS)) {
+            return sendErrorMessage(context, context.i18n("\"I can't send embedded messages in the specified channel, please change my permission level for the {0} channel if you want to use it as a \"Join Logs\" channel.", ((TextChannel) channel).getAsMention()));
+        }
+
+        try {
+            updateJoinLogs(transformer, context, channel.getIdLong());
+
+            context.makeSuccess("The join log channel is set to :channel this guild.")
+                .set("channel", ((TextChannel) channel).getAsMention())
+                .queue();
+        } catch (SQLException ex) {
+            AvaIre.getLogger().error(ex.getMessage(), ex);
+        }
+        return true;
+    }
+
+    private boolean disableJoinLogs(CommandMessage context, GuildTransformer transformer) {
+        try {
+            updateJoinLogs(transformer, context, 0);
+
+            context.makeSuccess("The join logs channel has been disabled on this guild.")
+                .queue();
+        } catch (SQLException ex) {
+            AvaIre.getLogger().error(ex.getMessage(), ex);
+        }
+
+        return true;
+    }
+
+    private PlaceholderMessage sendJoinLogsChannel(CommandMessage context, GuildTransformer transformer) {
+        if (transformer.getJoinLogsChannel() == 0) {
+            return context.makeWarning("The join log channel is disabled on this guild.");
+        }
+
+        TextChannel modlogChannel = context.getGuild().getTextChannelById(transformer.getJoinLogsChannel());
+        if (modlogChannel == null) {
+            try {
+                updateJoinLogs(transformer, context, 0);
+            } catch (SQLException ex) {
+                AvaIre.getLogger().error(ex.getMessage(), ex);
+            }
+            return context.makeInfo("The join log channel is disabled on this guild.");
+        }
+
+        return context.makeSuccess("The join log channel is set to :channel this guild.")
+            .set("channel", modlogChannel.getAsMention());
+    }
+
+    private void updateJoinLogs(GuildTransformer transformer, CommandMessage context, long value) throws SQLException {
+        transformer.setJoinLogs(value);
+        avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
+            .where("id", context.getGuild().getId())
+            .update(statement -> statement.set("join_logs", value));
     }
 
 }

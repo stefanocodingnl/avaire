@@ -149,10 +149,10 @@ public class ReportUserCommand extends Command {
                 l.editMessage(context.makeInfo("Welcome to the pinewood report system. With this feature, you can report any Pinewood member in any of the pinewood groups!\n\n" + sb.toString()).buildEmbed()).queue(
                     message -> {
                         avaire.getWaiter().waitForEvent(GuildMessageReactionAddEvent.class, event -> {
-                            return event.getMember().equals(context.member) && event.getMessageId().equals(message.getId());
+                            return event.getMember().equals(context.member) && event.getMessageId().equalsIgnoreCase(message.getId());
                         }, react -> {
                             try {
-                                if (react.getReactionEmote().getName().equals("❌")) {
+                                if (react.getReactionEmote().getName().equalsIgnoreCase("❌")) {
                                     message.editMessage(context.makeWarning("Cancelled the system").buildEmbed()).queue();
                                     message.clearReactions().queue();
                                     return;
@@ -211,7 +211,7 @@ public class ReportUserCommand extends Command {
         {
             List<Message> messagesToRemove = new ArrayList<>();
             messagesToRemove.add(content.getMessage());
-            if (content.getMessage().getContentRaw().equals("cancel")) {
+            if (content.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
                 message.editMessage(context.makeWarning("Cancelled the system").buildEmbed()).queue();
                 removeAllUserMessages(messagesToRemove);
                 return;
@@ -231,7 +231,7 @@ public class ReportUserCommand extends Command {
                 return;
             }
 
-            if (!d.getString("id").equals("371062894315569173") && d.getInt("roblox_group_id") != 0) {
+            if (!d.getString("id").equalsIgnoreCase("371062894315569173") && d.getInt("roblox_group_id") != 0) {
                 Request requestedRequest = RequestFactory.makeGET("https://groups.roblox.com/v1/users/" + requestedId + "/groups/roles");
                 requestedRequest.send((Consumer <Response>) response -> {
                     if (response.getResponse().code() == 200) {
@@ -267,9 +267,9 @@ public class ReportUserCommand extends Command {
 
     private boolean checkIfBlacklisted(Long requestedId, TextChannel c) {
 
-        if (c.getGuild().getId().equals("438134543837560832")) {
+        if (c.getGuild().getId().equalsIgnoreCase("438134543837560832")) {
             return avaire.getBlacklistManager().getPBSTBlacklist().contains(requestedId);
-        } else if (c.getGuild().getId().equals("572104809973415943")) {
+        } else if (c.getGuild().getId().equalsIgnoreCase("572104809973415943")) {
             return avaire.getBlacklistManager().getTMSBlacklist().contains(requestedId);
         } else {
             return false;
@@ -310,6 +310,12 @@ public class ReportUserCommand extends Command {
                 context.getMember().equals(a.getMember()) && antiSpamInfo(context, a),
             r -> {
                 messagesToRemove.add(r.getMessage());
+                if (r.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
+                    message.editMessage(context.makeWarning("Cancelled the system").buildEmbed()).queue();
+                    removeAllUserMessages(messagesToRemove);
+                    return;
+                }
+
                 startEvidenceWaiter(context, r.getMessage().getContentRaw(), message, b, d, content.getMessage().getContentRaw(), messagesToRemove);
             },
             5, TimeUnit.MINUTES,
@@ -330,9 +336,14 @@ public class ReportUserCommand extends Command {
             "- [LightShot Links](https://app.prntscr.com/)\n" +
             "- [Streamable](https://streamable.com)\n" +
             "If you want a link/video/image service added, please ask ``Stefano#7366``").buildEmbed()).queue(evi -> avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, pm ->
-                context.getMember().equals(pm.getMember()) && checkEvidenceAcceptance(context, pm),
+                context.getMember().equals(pm.getMember()) && context.getChannel().equals(pm.getChannel()) && checkEvidenceAcceptance(context, pm),
             evidence -> {
                 messagesToRemove.add(evidence.getMessage());
+                if (evidence.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
+                    message.editMessage(context.makeWarning("Cancelled the system").buildEmbed()).queue();
+                    removeAllUserMessages(messagesToRemove);
+                    return;
+                }
                 startConfirmWarnedEvidence(context, message, groupInfo, dataRow, username, evidence.getMessage().getContentRaw(), contentRaw, messagesToRemove);
             },
             5, TimeUnit.MINUTES,
@@ -344,7 +355,7 @@ public class ReportUserCommand extends Command {
     }
 
     private void startConfirmWarnedEvidence(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String contentRaw, String evidence, List<Message> messagesToRemove) {
-        if (!(dataRow.getString("id").equals("572104809973415943") || dataRow.getString("id").equals("371062894315569173"))) {
+        if (!(dataRow.getString("id").equalsIgnoreCase("572104809973415943") || dataRow.getString("id").equalsIgnoreCase("371062894315569173"))) {
             message.editMessage(context.makeWarning("You've given evidence about reporting someone, **however** we now need proof that they did something wrong.\n" +
                 "Please enter a **LINK** to evidence to proof you've warned the user about their misbehavior.\n\n" +
                 "**We're accepting**:\n" +
@@ -355,7 +366,7 @@ public class ReportUserCommand extends Command {
                 "- [LightShot Links](https://app.prntscr.com/)\n" +
                 "- [Streamable](https://streamable.com)\n" +
                 "If you want a link/video/image service added, please ask ``Stefano#7366``").buildEmbed()).queue(evi -> avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, pm ->
-                    context.getMember().equals(pm.getMember()) && checkEvidenceAcceptance(context, pm),
+                    context.getMember().equals(pm.getMember()) && context.getChannel().equals(pm.getChannel()) && checkEvidenceAcceptance(context, pm),
                 explainedEvidence -> {
                     messagesToRemove.add(explainedEvidence.getMessage());
                     startConfirmationWaiter(context, message, groupInfo, dataRow, username, evidence, contentRaw, messagesToRemove, explainedEvidence.getMessage().getContentRaw());
@@ -384,10 +395,10 @@ public class ReportUserCommand extends Command {
             l.addReaction("✅").queue();
             l.addReaction("❌").queue();
             avaire.getWaiter().waitForEvent(GuildMessageReactionAddEvent.class, r -> isValidMember(r, context, l), send -> {
-                if (send.getReactionEmote().getName().equals("❌") || send.getReactionEmote().getName().equals("x")) {
+                if (send.getReactionEmote().getName().equalsIgnoreCase("❌") || send.getReactionEmote().getName().equalsIgnoreCase("x")) {
                     message.editMessage("Report has been canceled, if you want to restart the report. Do ``!ru`` in any bot-commands channel.").queue();
                     removeAllUserMessages(messagesToRemove);
-                } else if (send.getReactionEmote().getName().equals("✅")) {
+                } else if (send.getReactionEmote().getName().equalsIgnoreCase("✅")) {
                     message.editMessage("Report has been \"sent\".").queue();
                     sendReport(context, message, groupInfo, dataRow, username, evidence, description, messagesToRemove, explainedEvidence);
                     removeAllUserMessages(messagesToRemove);
@@ -402,7 +413,7 @@ public class ReportUserCommand extends Command {
         });
     }
 
-    private void sendReport(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String evidence, String description, List<Message> messagesToRemove, String explainedEvidence) {
+    private void sendReport(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String description, String evidence, List<Message> messagesToRemove, String explainedEvidence) {
         TextChannel tc = avaire.getShardManager().getTextChannelById(dataRow.getString("handbook_report_channel"));
 
         if (tc != null) {
@@ -456,7 +467,7 @@ public class ReportUserCommand extends Command {
     }
 
     private static boolean isValidMember(GuildMessageReactionAddEvent r, CommandMessage context, Message l) {
-        return context.getMember().equals(r.getMember()) && r.getReaction().getMessageId().equals(l.getId());
+        return context.getMember().equals(r.getMember()) && r.getReaction().getMessageId().equalsIgnoreCase(l.getId());
     }
 
     private boolean runSetReportMessage(CommandMessage context) {

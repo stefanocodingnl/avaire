@@ -82,6 +82,7 @@ public class GuildTransformer extends Transformer {
     private String voteValidationChannel = null;
 
     private long audit_log = 0;
+    private long join_logs = 0;
 
     private String suggestionChannel = null;
     private String suggestionCommunityChannel = null;
@@ -96,7 +97,7 @@ public class GuildTransformer extends Transformer {
     private int emojiSpam = 0;
     private int imageSpam = 0;
     private int linkSpam = 0;
-    private int massMentionSpam = 0;
+    private int massMentionSpam =0;
     private int messageSpam = 0;
 
     private String autorole = null;
@@ -164,6 +165,7 @@ public class GuildTransformer extends Transformer {
             voteValidationChannel = data.getString("vote_validation_channel");
 
             audit_log = data.getLong("audit_log");
+            join_logs = data.getLong("join_logs");
 
             suggestionChannel = data.getString("suggestion_channel");
             suggestionCommunityChannel = data.getString("suggestion_community_channel");
@@ -172,7 +174,7 @@ public class GuildTransformer extends Transformer {
             reportEmoteId = data.getString("report_emote_id");
             handbookReportChannel = data.getString("handbook_report_channel");
             reportInfoMessage = data.getString("report_info_message");
-            robloxGroupId = data.getInt("robloxGroupId");
+            robloxGroupId = data.getInt("roblox_group_id");
 
             onWatchCase = data.getInt("on_watch_case");
             onWatchRole = data.getString("on_watch_role");
@@ -518,6 +520,14 @@ public class GuildTransformer extends Transformer {
 
     public void setAuditLogChannel(long audit_log) {
         this.audit_log = audit_log;
+    }
+
+    public long getJoinLogsChannel() {
+        return join_logs;
+    }
+
+    public void setJoinLogs(long join_logs) {
+        this.join_logs = join_logs;
     }
 
     public String getSuggestionChannel() {
@@ -905,6 +915,4 @@ public class GuildTransformer extends Transformer {
 
         return AvaIre.gson.toJson(objects);
     }
-
-
 }

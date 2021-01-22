@@ -44,6 +44,9 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.events.guild.update.*;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 
@@ -242,8 +245,43 @@ public class GuildEventAdapter extends EventAdapter {
                 } else if (event instanceof GuildMessageUpdateEvent) {
                     GuildMessageUpdateEvent e = (GuildMessageUpdateEvent) event;
                     messageUpdateEvent(e, tc);
-                }
+                } else if (event instanceof GuildVoiceJoinEvent) {
+                    GuildVoiceJoinEvent e = (GuildVoiceJoinEvent) event;
 
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(28, 255, 0))
+                        .setAuthor(e.getMember().getEffectiveName() + " joined a voice channel!"
+                            , null, e.getMember().getUser().getEffectiveAvatarUrl())
+                        .setDescription("**Member**: " + e.getMember().getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getMember().getUser().getName() + "#" + e.getMember().getUser().getDiscriminator() + "\n" +
+                            "**Joined channel**: \uD83D\uDD08 " + e.getChannelJoined().getName())
+                        .setFooter("UserID: " + e.getMember().getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildVoiceLeaveEvent) {
+                    GuildVoiceLeaveEvent e = (GuildVoiceLeaveEvent) event;
+
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 11, 0))
+                        .setAuthor(e.getMember().getEffectiveName() + " left a voice channel!"
+                            , null, e.getMember().getUser().getEffectiveAvatarUrl())
+                        .setDescription("**Member**: " + e.getMember().getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getMember().getUser().getName() + "#" + e.getMember().getUser().getDiscriminator() + "\n" +
+                            "**Left channel**: \uD83D\uDD07 " + e.getChannelLeft().getName())
+                        .setFooter("UserID: " + e.getMember().getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                } else if (event instanceof GuildVoiceMoveEvent) {
+                    GuildVoiceMoveEvent e = (GuildVoiceMoveEvent) event;
+                    MessageFactory.makeEmbeddedMessage(tc, new Color(156, 0, 255))
+                        .setAuthor(e.getMember().getEffectiveName() + " moved voice channels!"
+                            , null, e.getMember().getUser().getEffectiveAvatarUrl())
+                        .setDescription("**Member**: " + e.getMember().getUser().getAsMention() + "\n" +
+                            "**User**: " + e.getMember().getUser().getName() + "#" + e.getMember().getUser().getDiscriminator() + "\n" +
+                            "**Joined channel**: \uD83D\uDD08 " + e.getChannelJoined().getName() + "\n" +
+                            "**Left channel**: \uD83D\uDD07 " + e.getChannelLeft().getName())
+                        .setFooter("UserID: " + e.getMember().getUser().getId())
+                        .setTimestamp(Instant.now())
+                        .queue();
+                }
             }
 
         }
@@ -268,17 +306,43 @@ public class GuildEventAdapter extends EventAdapter {
             if (newContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
             if (oldContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
 
-            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
-                .setAuthor("A message was edited", newMessage.getJumpUrl(), newMessage.getAuthor().getEffectiveAvatarUrl())
-                .setDescription("**Author**: " + newMessage.getAuthor().getAsMention() +
-                    "\n**Sent In**: " + guild.getTextChannelById(channel.getId()).getAsMention() +
-                    "\n**Sent On**: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
-                    "\n\n**Message Content Before**:\n" + oldContent +
-                    "\n\n**Message Content After**:\n" + newContent)
-                .setColor(new Color(255, 123, 0))
-                .setThumbnail(oldMessage.getAttachment())
-                .setTimestamp(Instant.now())
-                .buildEmbed()).queue();
+            if (oldContent.equals(newContent)) {
+                if (!oldMessage.isPinned()) {
+                    tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
+                        .setAuthor("A message was pinned", newMessage.getJumpUrl(), guild.getIconUrl())
+                        .setDescription("**Message sent by**: " + newMessage.getAuthor().getAsMention() +
+                            "\n**Sent In**: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                            "\n**Sent On**: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                            "\n**[Pinned message](:jumpurl)**")
+                        .setColor(new Color(211, 255, 0))
+                        .setThumbnail(oldMessage.getAttachment())
+                        .setTimestamp(Instant.now()).set("jumpurl", newMessage.getJumpUrl())
+                        .buildEmbed()).queue();
+                } else {
+                    tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
+                        .setAuthor("A message was unpinned", newMessage.getJumpUrl(), guild.getIconUrl())
+                        .setDescription("**Message sent by**: " + newMessage.getAuthor().getAsMention() +
+                            "\n**Sent In**: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                            "\n**Sent On**: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                            "\n**[Unpinned message](:jumpurl)**")
+                        .setColor(new Color(255, 61, 0))
+                        .setThumbnail(oldMessage.getAttachment())
+                        .setTimestamp(Instant.now()).set("jumpurl", newMessage.getJumpUrl())
+                        .buildEmbed()).queue();
+                }
+            } else {
+                tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
+                    .setAuthor("A message was edited", newMessage.getJumpUrl(), newMessage.getAuthor().getEffectiveAvatarUrl())
+                    .setDescription("**Author**: " + newMessage.getAuthor().getAsMention() +
+                        "\n**Sent In**: " + guild.getTextChannelById(channel.getId()).getAsMention() +
+                        "\n**Sent On**: " + newMessage.getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) +
+                        "\n\n**Message Content Before**:\n" + oldContent +
+                        "\n\n**Message Content After**:\n" + newContent)
+                    .setColor(new Color(0, 255, 171))
+                    .setThumbnail(oldMessage.getAttachment())
+                    .setTimestamp(Instant.now())
+                    .buildEmbed()).queue();
+            }
 
             cache.update(oldMessage, new CachedMessage(newMessage));
 
