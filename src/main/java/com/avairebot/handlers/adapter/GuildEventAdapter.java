@@ -102,7 +102,6 @@ public class GuildEventAdapter extends EventAdapter {
     }
 
     public void onGenericGuildEvent(GenericGuildEvent event) {
-
         GuildTransformer transformer = GuildController.fetchGuild(avaire, event.getGuild());
         if (transformer.getAuditLogChannel() != 0) {
             TextChannel tc = event.getGuild().getTextChannelById(transformer.getAuditLogChannel());
@@ -176,27 +175,6 @@ public class GuildEventAdapter extends EventAdapter {
                             .setDescription("User found with an *VERY* new account!!!\n\n" + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
                                 "**Created on**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))).queue();
                     }
-
-                    MessageFactory.makeEmbeddedMessage(tc, new Color(77, 224, 102))
-                        .setAuthor("Member joined the server!"
-                            , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
-                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "**Account Age**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
-                        .setFooter("UserID: " + e.getUser().getId())
-                        .setTimestamp(Instant.now())
-                        .queue();
-                } else if (event instanceof GuildMemberRemoveEvent) {
-                    GuildMemberRemoveEvent e = (GuildMemberRemoveEvent) event;
-                    MessageFactory.makeEmbeddedMessage(tc, new Color(255, 67, 65))
-                        .setAuthor("Member left the server (Both ban or left)!"
-                            , null, e.getUser().getEffectiveAvatarUrl())
-                        .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
-                            "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                            "**Account Age**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
-                        .setFooter("UserID: " + e.getUser().getId())
-                        .setTimestamp(Instant.now())
-                        .queue();
                 } else if (event instanceof GuildMemberRoleAddEvent) {
                     GuildMemberRoleAddEvent e = (GuildMemberRoleAddEvent) event;
                     StringBuilder sb = new StringBuilder();
@@ -284,6 +262,39 @@ public class GuildEventAdapter extends EventAdapter {
                 }
             }
 
+        }
+    }
+
+    public void onJoinLogsEvent(GenericGuildEvent event) {
+        GuildTransformer transformer = GuildController.fetchGuild(avaire, event.getGuild());
+        if (transformer == null) return;
+
+        if (transformer.getJoinLogsChannel() != 0) {
+            TextChannel tc = avaire.getShardManager().getTextChannelById(transformer.getJoinLogsChannel());
+            if (event instanceof GuildMemberJoinEvent) {
+                GuildMemberJoinEvent e = (GuildMemberJoinEvent) event;
+                MessageFactory.makeEmbeddedMessage(tc, new Color(77, 224, 102))
+                    .setAuthor("Member joined the server!"
+                        , null, e.getUser().getEffectiveAvatarUrl())
+                    .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                        "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                        "**Account Age**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
+                    .setFooter("UserID: " + e.getUser().getId())
+                    .setTimestamp(Instant.now())
+                    .queue();
+            } else if (event instanceof GuildMemberRemoveEvent) {
+                GuildMemberRemoveEvent e = (GuildMemberRemoveEvent) event;
+
+                MessageFactory.makeEmbeddedMessage(tc, new Color(255, 67, 65))
+                    .setAuthor("Member left the server!"
+                        , null, e.getUser().getEffectiveAvatarUrl())
+                    .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
+                        "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                        "**Account Age**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")))
+                    .setFooter("UserID: " + e.getUser().getId())
+                    .setTimestamp(Instant.now())
+                    .queue();
+            }
         }
     }
 

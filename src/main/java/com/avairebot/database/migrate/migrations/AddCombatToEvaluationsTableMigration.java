@@ -32,7 +32,7 @@ public class AddCombatToEvaluationsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Mon, Sep 14, 2020 4:54 PM";
+        return "Mon, Sep 14, 2020 4:50 PM";
     }
 
     @Override

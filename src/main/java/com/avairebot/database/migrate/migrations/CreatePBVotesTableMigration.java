@@ -10,7 +10,7 @@ public class CreatePBVotesTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Thursday, October 15th, 2020 10:38 PM";
+        return "Thu, Oct 15th, 2020 10:38 PM";
     }
 
     @Override

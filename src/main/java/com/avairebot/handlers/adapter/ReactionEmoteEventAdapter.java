@@ -37,25 +37,21 @@ import com.avairebot.handlers.DatabaseEventHolder;
 import com.avairebot.scheduler.tasks.DrainReactionRoleQueueTask;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RoleUtil;
-import com.google.gson.reflect.TypeToken;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
-import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.management.Query;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -490,7 +486,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                         }
                                     }
 
-                                    if (likes == 31) {
+                                    if (likes == 26) {
                                         if (finalCtc != null) {
                                             PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
                                                 .setAuthor("Suggestion for: " + e.getGuild().getName()  + " | " + likes + " - " + dislikes, null, e.getGuild().getIconUrl())
@@ -537,7 +533,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                         msg.clearReactions("\uD83D\uDC4E").queueAfter(1, TimeUnit.SECONDS);
                                     }
 
-                                    if (dislikes == 31) {
+                                    if (dislikes == 26) {
                                         PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
                                             .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Denied by community", null, e.getGuild().getIconUrl())
                                             .setDescription(msg.getEmbeds().get(0).getDescription())

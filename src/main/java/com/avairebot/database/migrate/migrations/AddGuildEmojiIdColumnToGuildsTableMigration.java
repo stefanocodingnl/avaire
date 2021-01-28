@@ -11,7 +11,7 @@ public class AddGuildEmojiIdColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Friday, November 27, 2020 11:33 PM";
+        return "Fri, Nov 27, 2020 11:33 PM";
     }
 
     @Override

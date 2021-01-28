@@ -25,7 +25,7 @@ public class ToggleAutoModCommand extends Command {
 
     @Override
     public String getName() {
-        return "Alias Command";
+        return "Toggle AutoMod Command";
     }
 
     @Override

@@ -11,7 +11,7 @@ public class AddVoteValidationChannelIdColumnToGuildsTableMigration implements M
 
     @Override
     public String created_at() {
-        return "Thursday, October 15, 2020 10:49 AM";
+        return "Thu, Oct 15, 2020 10:49 AM";
     }
 
     @Override

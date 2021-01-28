@@ -71,7 +71,7 @@ public class RepeatCommand extends Command {
             return sendErrorMessage(context, "errors.cantMentionEveryone");
         }
 
-        context.getMessageChannel().sendMessage(context.getContentRaw()).queue();
+        context.getMessageChannel().sendMessage(String.join(" ", args)).queue();
 
         return true;
     }

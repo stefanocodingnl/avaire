@@ -207,8 +207,9 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
-    public void onGenericGuild(GenericGuildEvent event) {
+    public void onGenericGuild(@Nonnull GenericGuildEvent event) {
         guildEventAdapter.onGenericGuildEvent(event);
+        guildEventAdapter.onJoinLogsEvent(event);
     }
 
     @Override

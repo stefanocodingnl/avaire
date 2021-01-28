@@ -105,13 +105,14 @@ public class ProcessCommand extends Middleware {
                     stack.isMentionableCommand(),
                     container.getAliasArguments()
                 ),
-                combineArguments(container.getAliasArguments(), commandArguments)
+                container.getAliasArguments()
             );
         }
 
         Metrics.commandsExecuted.labels(stack.getCommand().getClass().getSimpleName()).inc();
 
-        return runCommand(stack, new CommandMessage(
+        return runCommand(stack,
+            new CommandMessage(
                 stack.getCommandContainer(),
                 stack.getDatabaseEventHolder(),
                 message,
@@ -187,9 +188,6 @@ public class ProcessCommand extends Middleware {
     }
 
     private String[] combineArguments(String[] aliasArguments, String[] userArguments) {
-        if (Arrays.stream(aliasArguments).anyMatch(m -> {return m.contains("repeat");})) {
-            return aliasArguments;
-        }
         int length = aliasArguments.length + userArguments.length;
 
         String[] result = new String[length];
@@ -197,6 +195,6 @@ public class ProcessCommand extends Middleware {
         System.arraycopy(aliasArguments, 0, result, 0, aliasArguments.length);
         System.arraycopy(userArguments, 0, result, aliasArguments.length, userArguments.length);
 
-        return result;
+        return aliasArguments;
     }
 }

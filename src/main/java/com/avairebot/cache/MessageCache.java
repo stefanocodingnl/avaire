@@ -26,7 +26,7 @@ public class MessageCache
         this.guildId = guildId;
 
         this.cachedMessages = ExpiringMap.builder()
-            .maxSize(1000)
+            .maxSize(5000)
             .expirationPolicy(ExpirationPolicy.ACCESSED)
             .expiration(1, TimeUnit.HOURS)
             .build();

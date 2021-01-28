@@ -11,7 +11,7 @@ public class AddGamenightRoleColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Wed, Mar 18, 2020 4:25 PM";
+        return "Wed, Mar 18, 2020 5:25 PM";
     }
 
     @Override

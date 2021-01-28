@@ -32,7 +32,7 @@ public class AddReportMessageToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Monday, November 30, 2020 10:47 PM";
+        return "Mon, Nov 30, 2020 10:47 PM";
     }
 
     @Override

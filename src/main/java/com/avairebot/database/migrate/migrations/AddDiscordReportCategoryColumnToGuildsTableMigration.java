@@ -11,7 +11,7 @@ public class AddDiscordReportCategoryColumnToGuildsTableMigration implements Mig
 
     @Override
     public String created_at() {
-        return "Sun, August 23, 2020 11:20 AM";
+        return "Sun, August 23, 2020 11:25 AM";
     }
 
     @Override

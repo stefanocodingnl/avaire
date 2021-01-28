@@ -31,7 +31,7 @@ public class AddPardonToOnWatchTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sat, Oct 20, 2018 8:45 PM";
+        return "Sat, Oct 20, 2018 8:47 PM";
     }
 
     @Override

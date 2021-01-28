@@ -11,7 +11,7 @@ public class AddAuditLogIdColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sunday, January 17, 2021 11:14PM";
+        return "Sun, Jan 17, 2021 11:15PM";
     }
 
     @Override

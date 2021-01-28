@@ -32,7 +32,7 @@ public class AddModlogToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Mon, Feb 12, 2018 3:11 AM";
+        return "Mon, Feb 12, 2018 3:20 AM";
     }
 
     @Override

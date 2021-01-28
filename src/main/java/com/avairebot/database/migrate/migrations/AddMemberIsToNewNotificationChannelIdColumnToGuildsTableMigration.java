@@ -11,7 +11,7 @@ public class AddMemberIsToNewNotificationChannelIdColumnToGuildsTableMigration i
 
     @Override
     public String created_at() {
-        return "Monday, January 19, 2021 12:16 PM";
+        return "Mon, Jan 19, 2021 12:16 PM";
     }
 
     @Override

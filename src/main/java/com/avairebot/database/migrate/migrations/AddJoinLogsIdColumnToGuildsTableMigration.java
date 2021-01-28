@@ -11,7 +11,7 @@ public class AddJoinLogsIdColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sunday, January 17, 2021 11:14PM";
+        return "Wed, Jan 20, 2021 11:14PM";
     }
 
     @Override

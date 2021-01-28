@@ -11,7 +11,7 @@ public class AddSuggestionChannelIdColumnToGuildsTableMigration implements Migra
 
     @Override
     public String created_at() {
-        return "Friday, November 27, 2020 9:42 PM";
+        return "Fri, Nov 27, 2020 9:42 PM";
     }
 
     @Override

@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Migrations {
 
@@ -245,6 +243,10 @@ public class Migrations {
         List<MigrationContainer> orderedMigrations = new ArrayList<>(migrations);
 
         orderedMigrations.sort(new MigrationComparator(orderByAsc));
+
+        for (MigrationContainer orderedMigration : orderedMigrations) {
+            log.warn(orderedMigration.getMigration().created_at() + " - " + orderedMigration.getName());
+        }
 
         return orderedMigrations;
     }

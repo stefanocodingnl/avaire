@@ -11,7 +11,7 @@ public class AddGroupIdColumnToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sunday, November 29, 2020 1:59 PM";
+        return "Sun, Nov 29, 2020 1:59 PM";
     }
 
     @Override
