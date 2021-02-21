@@ -58,10 +58,17 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
+import org.nibor.autolink.LinkExtractor;
+import org.nibor.autolink.LinkSpan;
+import org.nibor.autolink.LinkType;
+import org.nibor.autolink.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -337,12 +344,47 @@ public class MessageEventAdapter extends EventAdapter {
                 MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
                 return;
             }
-            checkPIAInviteFilter(event, databaseEventHolder, event);
+            checkPIAInviteFilter(event, databaseEventHolder);
+            checkPIALinkLoggerFilter(event);
         } else {
             System.out.println("Guild is null");
         }
     }
 
+    private void checkPIALinkLoggerFilter(Message event) {
+        LinkExtractor linkExtractor = LinkExtractor.builder()
+            .linkTypes(EnumSet.of(LinkType.URL)) // limit to URLs
+            .build();
+        Iterable<Span> spans = linkExtractor.extractSpans(event.getContentRaw());
+
+        for (Span span : spans) {
+            String text = event.getContentRaw().substring(span.getBeginIndex(), span.getEndIndex());
+            if (span instanceof LinkSpan) {
+                // span is a URL
+                try {
+                    List<String> redirects = fetchRedirect(text, new ArrayList<>());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+    private List<String> fetchRedirect(String url, List<String> redirects) throws IOException {
+        redirects.add(url);
+
+        HttpURLConnection con = (HttpURLConnection) (new URL(url).openConnection());
+        con.setRequestMethod("GET");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0");
+        con.setInstanceFollowRedirects(false);
+        con.connect();
+
+        if (con.getHeaderField("Location") == null) {
+            return redirects;
+        }
+        return fetchRedirect(con.getHeaderField("Location"), redirects);
+    }
     private boolean checkAutomodFilters(String string, GuildTransformer transformer, Message message) {
 
         if (transformer.getMassMentionSpam() > 0) {
@@ -465,7 +507,7 @@ public class MessageEventAdapter extends EventAdapter {
         }
     }
 
-    private void checkPIAInviteFilter(Message message, DatabaseEventHolder databaseEventHolder, Message event) {
+    private void checkPIAInviteFilter(Message message, DatabaseEventHolder databaseEventHolder) {
         for (String i : message.getInvites()) {
             Invite.resolve(message.getJDA(), i).queue(v -> {
                 if (!Constants.guilds.contains(v.getGuild().getId())) {
@@ -474,7 +516,7 @@ public class MessageEventAdapter extends EventAdapter {
                         "**Guild**: " + v.getGuild().getName() + "\n" +
                         "**Invite**: [Click here!](" + v.getUrl() + ")\n" +
                         "**Inviter**:" + v.getInviter(), new Color(0, 0, 0));
-                    MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), event);
+                    MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), message);
                 }
             });
         }

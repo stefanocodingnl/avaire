@@ -118,6 +118,8 @@ dependencies {
     // https://mvnrepository.com/artifact/net.jodah/expiringmap
     compile group: 'net.jodah', name: 'expiringmap', version: '0.5.9'
 
+    // Java Link Scanner
+    implementation 'org.nibor.autolink:autolink:0.10.0'
 
 
     // Tests

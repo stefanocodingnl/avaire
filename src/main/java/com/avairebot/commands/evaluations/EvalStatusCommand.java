@@ -8,7 +8,6 @@ import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
 import com.avairebot.database.collection.DataRow;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
@@ -18,7 +17,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.avairebot.utils.JsonReader.readArrayJsonFromUrl;
 import static com.avairebot.utils.JsonReader.readJsonFromUrl;
 
 public class EvalStatusCommand extends Command {
@@ -77,7 +75,7 @@ public class EvalStatusCommand extends Command {
 
         String name = context.member.getEffectiveName();
         try {
-        if (!(isValidRobloxUser(name) && isValidUserInPBSTGroup(getRobloxId(name)))){
+        if (!(isValidRobloxUser(name))){
             context.makeError("Your discord name is not a valid roblox name and/or is not in the PBST Group...\nPlease do ``!verify`` to re-verify yourself. (``v!verify`` if the prefix isn't changed").queue();
             return true;
         }
@@ -126,21 +124,6 @@ public class EvalStatusCommand extends Command {
         }
             return false;
 
-    }
-
-    public boolean isValidUserInPBSTGroup(int id) {
-
-        try {
-            JSONArray json = readArrayJsonFromUrl("https://api.roblox.com/users/" + id +"/groups");
-            for (int i = 0; i < json.length(); i++) {
-                JSONObject object = json.getJSONObject(i);
-                if (object.getInt("Id") != 645836) continue;
-                return true;
-            }
-            return false;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     public int getRobloxId(String un) {

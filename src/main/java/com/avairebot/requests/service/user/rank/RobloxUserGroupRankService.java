@@ -32,7 +32,7 @@ public class RobloxUserGroupRankService {
                 return buildersClubMembershipType;
             }
 
-            public int getUserId() {
+            public long getUserId() {
                 return userId;
             }
 
@@ -45,7 +45,7 @@ public class RobloxUserGroupRankService {
             }
 
             public String buildersClubMembershipType;
-            public int userId;
+            public long userId;
             public String username;
             public String displayName;
         }
@@ -55,7 +55,7 @@ public class RobloxUserGroupRankService {
                 return buildersClubMembershipType;
             }
 
-            public int getUserId() {
+            public long getUserId() {
                 return userId;
             }
 
@@ -68,7 +68,7 @@ public class RobloxUserGroupRankService {
             }
 
             public String buildersClubMembershipType;
-            public int userId;
+            public long userId;
             public String username;
             public String displayName;
         }
@@ -102,11 +102,11 @@ public class RobloxUserGroupRankService {
             public String description;
             public Owner owner;
             public Shout shout;
-            public int memberCount;
+            public long memberCount;
             public boolean isBuildersClubOnly;
             public boolean publicEntryAllowed;
 
-            public int getId() {
+            public long getId() {
                 return id;
             }
 
@@ -126,7 +126,7 @@ public class RobloxUserGroupRankService {
                 return shout;
             }
 
-            public int getMemberCount() {
+            public long getMemberCount() {
                 return memberCount;
             }
 
@@ -143,7 +143,7 @@ public class RobloxUserGroupRankService {
             public int id;
             public String name;
             public int rank;
-            public int memberCount;
+            public long memberCount;
 
             public int getId() {
                 return id;
@@ -157,7 +157,7 @@ public class RobloxUserGroupRankService {
                 return rank;
             }
 
-            public int getMemberCount() {
+            public long getMemberCount() {
                 return memberCount;
             }
         }
