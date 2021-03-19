@@ -128,7 +128,7 @@ public class GlobalPruneCommand extends Command {
         }
         for (Guild g : guild) {
             g.prune(30, true).reason("Global prune, executed by: " + context.getMember().getEffectiveName()).queue( v -> {
-                sb.append("Pruned ").append(v).append(" members from ").append(g.getName());
+                sb.append("Pruned ``").append(v.intValue()).append("`` members from ").append(g.getName());
             });
         }
         context.makeSuccess(sb.toString()).queue();

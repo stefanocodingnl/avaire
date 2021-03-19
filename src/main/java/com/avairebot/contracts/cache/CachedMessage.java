@@ -1,8 +1,10 @@
 package com.avairebot.contracts.cache;
 
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public class CachedMessage
 {
@@ -13,6 +15,7 @@ public class CachedMessage
     private final String channelId;
     private final String attachment;
     private final boolean pinned;
+    private final List<MessageEmbed> embedList;
 
     public CachedMessage(Message message)
     {
@@ -23,6 +26,7 @@ public class CachedMessage
         this.channelId = message.getChannel().getId();
         this.attachment = message.getAttachments().size() == 1 ? message.getAttachments().get(0).getUrl() : null;
         this.pinned = message.isPinned();
+        this.embedList = message.getEmbeds();
     }
 
     public long getIdLong() {
@@ -51,5 +55,9 @@ public class CachedMessage
 
     public boolean isPinned() {
         return pinned;
+    }
+
+    public List<MessageEmbed> getEmbedList() {
+        return embedList;
     }
 }

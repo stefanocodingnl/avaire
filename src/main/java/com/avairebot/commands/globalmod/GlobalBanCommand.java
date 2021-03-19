@@ -8,7 +8,6 @@ import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
 import com.avairebot.database.collection.DataRow;
-import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -16,11 +15,29 @@ import net.dv8tion.jda.api.entities.Role;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class GlobalBanCommand extends Command {
+
+    public final ArrayList<String> guilds = new ArrayList<String>() {{
+        add("495673170565791754"); // Aerospace
+        add("438134543837560832"); // PBST
+        add("791168471093870622"); // Kronos Dev
+        add("371062894315569173"); // Official PB Server
+        add("514595433176236078"); // PBQA
+        add("436670173777362944"); // PET
+        add("505828893576527892"); // MMFA
+        add("498476405160673286"); // PBM
+        add("572104809973415943"); // TMS
+        add("758057400635883580"); // PBOP
+        add("669672893730258964"); // PB Dev
+    }};
+    public final HashMap<Guild, Role> role = new HashMap<>();
+    private final ArrayList<Guild> guild = new ArrayList<>();
 
     public GlobalBanCommand(AvaIre avaire) {
         super(avaire, false);
@@ -37,24 +54,24 @@ public class GlobalBanCommand extends Command {
     }
 
     @Override
-    public List <String> getUsageInstructions() {
+    public List<String> getUsageInstructions() {
         return Collections.singletonList(
             "`:command` - Ban a member globally.");
     }
 
     @Override
-    public List <String> getExampleUsage(@Nullable Message message) {
+    public List<String> getExampleUsage(@Nullable Message message) {
         return Collections.singletonList(
             "`:command` - Ban a member globally.");
     }
 
     @Override
-    public List <String> getTriggers() {
+    public List<String> getTriggers() {
         return Arrays.asList("global-ban");
     }
 
     @Override
-    public List <String> getMiddleware() {
+    public List<String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
             "isValidPIAMember"
@@ -63,27 +80,9 @@ public class GlobalBanCommand extends Command {
 
     @Nonnull
     @Override
-    public List <CommandGroup> getGroups() {
+    public List<CommandGroup> getGroups() {
         return Collections.singletonList(CommandGroups.MODERATION);
     }
-
-    public final ArrayList <String> guilds = new ArrayList <String>() {{
-        add("495673170565791754"); // Aerospace
-        add("438134543837560832"); // PBST
-        add("791168471093870622"); // Kronos Dev
-        add("371062894315569173"); // Official PB Server
-        add("514595433176236078"); // PBQA
-        add("436670173777362944"); // PET
-        add("505828893576527892"); // MMFA
-        add("498476405160673286"); // PBM
-        add("572104809973415943"); // TMS
-        add("758057400635883580"); // PBOP
-        add("669672893730258964"); // PB Dev
-    }};
-
-
-    public final HashMap <Guild, Role> role = new HashMap <>();
-    private final ArrayList <Guild> guild = new ArrayList <>();
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
@@ -122,6 +121,14 @@ public class GlobalBanCommand extends Command {
 
 
         final String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+
+        if (avaire.getShardManager().getUserById(args[0]) != null) {
+            avaire.getShardManager().getUserById(args[0]).openPrivateChannel().queue(p -> {
+                p.sendMessage(context.makeInfo("*You have been **global-banned** from all the Pinewood Builders discords by an PIA Agent. For the reason: *```" + reason + "```\n\n" +
+                    "If you feel that your ban was unjustified please appeal at the Pinewood Builders Appeal Center; https://discord.gg/mWnQm25").setColor(Color.BLACK).buildEmbed()).queue();
+            });
+        }
+
         StringBuilder sb = new StringBuilder();
         for (Guild g : guild) {
             g.ban(args[0], time, "Banned by: " + context.member.getEffectiveName() + "\n" +
@@ -129,7 +136,6 @@ public class GlobalBanCommand extends Command {
 
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
-
 
         context.makeSuccess("<@" + args[0] + "> has been banned from: \n\n" + sb.toString()).queue();
 

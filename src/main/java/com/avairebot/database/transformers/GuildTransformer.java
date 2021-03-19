@@ -97,7 +97,7 @@ public class GuildTransformer extends Transformer {
     private int emojiSpam = 0;
     private int imageSpam = 0;
     private int linkSpam = 0;
-    private int massMentionSpam =0;
+    private int massMentionSpam = 0;
     private int messageSpam = 0;
 
     private String autorole = null;
@@ -110,12 +110,14 @@ public class GuildTransformer extends Transformer {
     private String gamenightRole = null;
     private String djRole = null;
     private String filterLog = null;
+    private String memberToYoungChannelId = null;
     private int modlogCase = 0;
     private int onWatchCase = 0;
     private int defaultVolume = 100;
     private double levelModifier = -1;
     private long reportCategory = 0;
     private DJGuildLevel djGuildLevel = null;
+
 
     public GuildTransformer(Guild guild) {
         super(null);
@@ -182,6 +184,8 @@ public class GuildTransformer extends Transformer {
 
             filter = data.getBoolean("filter");
             filterLog = data.getString("filter_log");
+
+            memberToYoungChannelId = data.getString("member_to_young_channel_id");
 
             djGuildLevel = DJGuildLevel.fromId(data.getInt("dj_level", DJGuildLevel.getNormal().getId()));
             djRole = data.getString("dj_role");
@@ -788,6 +792,14 @@ public class GuildTransformer extends Transformer {
 
     public void setMessageSpam(int messageSpam) {
         this.messageSpam = messageSpam;
+    }
+
+    public String getMemberToYoungChannelId() {
+        return memberToYoungChannelId;
+    }
+
+    public void setMemberToYoungChannelId(String memberToYoungChannelId) {
+        this.memberToYoungChannelId = memberToYoungChannelId;
     }
 
     public Map <String, String> getSelfAssignableRoles() {

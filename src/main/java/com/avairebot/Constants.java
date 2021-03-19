@@ -34,7 +34,6 @@ public class Constants {
     public static final String GUILD_TYPES_TABLE_NAME = "guild_types";
     public static final String STATISTICS_TABLE_NAME = "statistics";
     public static final String BLACKLIST_TABLE_NAME = "blacklists";
-    public static final String REPORT_BLACKLIST_TABLE_NAME = "blacklists_reports";
     public static final String PLAYER_EXPERIENCE_TABLE_NAME = "experiences";
     public static final String VOTES_TABLE_NAME = "votes";
     public static final String FEEDBACK_TABLE_NAME = "feedback";
@@ -45,12 +44,19 @@ public class Constants {
     public static final String REACTION_ROLES_TABLE_NAME = "reaction_roles";
     public static final String PURCHASES_TABLE_NAME = "purchases";
     public static final String MUTE_TABLE_NAME = "mutes";
-    public static final String MOTS_VOTE_TABLE_NAME = "xeus_vote";
 
+    public static final String MUSIC_SEARCH_PROVIDERS_TABLE_NAME = "music_search_providers";
+    public static final String MUSIC_SEARCH_CACHE_TABLE_NAME = "music_search_cache";
+    public static final String INSTALLED_PLUGINS_TABLE_NAME = "installed_plugins";
+
+    // Pinewood Specific Tables
+    public static final String MOTS_VOTE_TABLE_NAME = "xeus_vote";
     public static final String MOTS_VOTES_TABLE_NAME = "xeus_votes";
     public static final String MOTS_VOTABLE_TABLE_NAME = "xeus_votable";
+
     public static final String PB_SUGGESTIONS_TABLE_NAME = "pinewood_suggestions";
     public static final String REPORTS_DATABASE_TABLE_NAME = "pinewood_reports";
+    public static final String EVENT_SCHEDULE_REQUESTS_TABLE = "pinewood_event_requests";
 
     public static final String ON_WATCH_TABLE_NAME = "on_watch";
     public static final String ON_WATCH_LOG_TABLE_NAME = "on_watch_logs";
@@ -58,11 +64,8 @@ public class Constants {
 
     public static final String ROLE_PERSISTENCE_TABLE_NAME = "role_persistence";
 
-    public static final String MUSIC_SEARCH_PROVIDERS_TABLE_NAME = "music_search_providers";
-    public static final String MUSIC_SEARCH_CACHE_TABLE_NAME = "music_search_cache";
-    public static final String INSTALLED_PLUGINS_TABLE_NAME = "installed_plugins";
-
     public static final String ANTI_UNBAN_TABLE_NAME = "pia_antiban";
+    public static final String REPORT_BLACKLIST_TABLE_NAME = "blacklists_reports";
 
     public static final String EVALS_DATABASE_TABLE_NAME = "pinewood_evaluations";
     public static final String EVALS_LOG_DATABASE_TABLE_NAME = "pinewood_evaluations_log";

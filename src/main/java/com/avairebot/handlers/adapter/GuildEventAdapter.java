@@ -170,10 +170,14 @@ public class GuildEventAdapter extends EventAdapter {
                     GuildMemberJoinEvent e = (GuildMemberJoinEvent) event;
 
                     if (checkAccountAge(e)) {
-                        MessageFactory.makeEmbeddedMessage(event.getGuild().getTextChannelById("554164213363507201"))
-                            .setThumbnail(e.getUser().getEffectiveAvatarUrl())
-                            .setDescription("User found with an *VERY* new account!!!\n\n" + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
-                                "**Created on**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))).queue();
+                        if (transformer.getMemberToYoungChannelId() != null && event.getGuild().getTextChannelById(transformer.getMemberToYoungChannelId()) != null) {
+                            MessageFactory.makeEmbeddedMessage(event.getGuild().getTextChannelById(transformer.getMemberToYoungChannelId()))
+                                .setThumbnail(e.getUser().getEffectiveAvatarUrl())
+                                .setDescription("User found with an *VERY* new account!!!\n\n" + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
+                                    "**Created on**: " + e.getUser().getTimeCreated().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + "\n**User ID**: ``" + e.getUser().getId() + "``"
+                                ).queue();
+                        }
+
                     }
                 } else if (event instanceof GuildMemberRoleAddEvent) {
                     GuildMemberRoleAddEvent e = (GuildMemberRoleAddEvent) event;
@@ -317,7 +321,7 @@ public class GuildEventAdapter extends EventAdapter {
             if (newContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
             if (oldContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
 
-            if (oldContent.equals(newContent)) {
+            if (oldContent.equals(newContent) && oldMessage.getEmbedList().size() == newMessage.getEmbeds().size()) {
                 if (!oldMessage.isPinned()) {
                     tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
                         .setAuthor("A message was pinned", newMessage.getJumpUrl(), guild.getIconUrl())

@@ -345,7 +345,7 @@ public class MessageEventAdapter extends EventAdapter {
                 return;
             }
             checkPIAInviteFilter(event, databaseEventHolder);
-            checkPIALinkLoggerFilter(event);
+            // checkPIALinkLoggerFilter(event); TODO: Create a link redirect filter
         } else {
             System.out.println("Guild is null");
         }

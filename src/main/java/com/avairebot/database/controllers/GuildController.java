@@ -62,7 +62,7 @@ public class GuildController {
         "guilds.report_info_message", "guilds.report_emote_id", "guilds.handbook_report_channel",
         "guilds.automod_character_spam", "guilds.automod_emoji_spam", "guilds.automod_image_spam", "guilds.automod_link_spam",
         "guilds.automod_mass_mention", "guilds.automod_message_spam", "guilds.audit_log", "guilds.roblox_group_id",
-        "guilds.member_to_young_channel_id", "guilds.join_logs"
+        "guilds.member_to_young_channel_id", "guilds.join_logs"//, TODO: "guilds.pinewood_event_requests"
     };
 
     /**

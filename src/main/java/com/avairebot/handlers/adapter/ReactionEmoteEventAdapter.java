@@ -320,6 +320,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                                 (rank != null ? "**Rank**: ``:rRank``\n" : "") +
                                                                 "**Information**: \n" + description + "\n\n" +
                                                                 "**Evidence**: \n" + evidence + "\n\n" +
+                                                                (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
                                                                 "**Punishment**: \n" + run.getMessage().getContentRaw())
                                                         .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember())
                                                         .setTimestamp(Instant.now()).set("rRank", rank)
@@ -366,6 +367,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                                 (rank != null ? "**Rank**: ``:rRank``\n" : "") +
                                                                 "**Information**: \n" + description + "\n\n" +
                                                                 "**Evidence**: \n" + evidence + "\n\n" +
+                                                                (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n": "") +
                                                                 "**Denial Reason**: \n" + run.getMessage().getContentRaw())
                                                         .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember())
                                                         .setTimestamp(Instant.now()).set("rRank", rank)
@@ -562,7 +564,8 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             }
                                             msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0))
                                                 .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Denied by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
-                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).setDescription(msg.getEmbeds().get(0).getDescription())
+                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl())
+                                                .setDescription(msg.getEmbeds().get(0).getDescription())
                                                 .setTimestamp(Instant.now())
                                                 .buildEmbed()).queue();
                                             msg.clearReactions().queue();
@@ -578,7 +581,8 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             }
                                             msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(0, 255, 0))
                                                 .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Approved by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
-                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl()).setDescription(msg.getEmbeds().get(0).getDescription())
+                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl())
+                                                .setDescription(msg.getEmbeds().get(0).getDescription())
                                                 .setTimestamp(Instant.now())
                                                 .buildEmbed()).queue();
 

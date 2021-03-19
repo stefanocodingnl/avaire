@@ -24,6 +24,7 @@ package com.avairebot.commands.fun;
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
+import com.avairebot.factories.MessageFactory;
 import net.dv8tion.jda.api.Permission;
 
 import java.util.Arrays;
@@ -71,7 +72,7 @@ public class RepeatCommand extends Command {
             return sendErrorMessage(context, "errors.cantMentionEveryone");
         }
 
-        context.getMessageChannel().sendMessage(String.join(" ", args)).queue();
+        context.getMessageChannel().sendMessage(MessageFactory.makeEmbeddedMessage(context.channel).setDescription(String.join(" ", args)).buildEmbed()).queue();
 
         return true;
     }

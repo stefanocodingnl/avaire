@@ -777,6 +777,7 @@ public class AvaIre {
             .setContextEnabled(true)
             .setShardsTotal(settings.getShardCount());
 
+
         if (!getConfig().getBoolean("use-music", true)) {
             log.info("Disabling voice events and voice caches due to music being disabled globally!");
 

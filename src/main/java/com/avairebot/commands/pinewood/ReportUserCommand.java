@@ -436,16 +436,16 @@ public class ReportUserCommand extends Command {
                         createReactions(finalMessage);
                         try {
                             avaire.getDatabase().newQueryBuilder(Constants.REPORTS_DATABASE_TABLE_NAME).insert(data -> {
-                               data.set("pb_server_id", finalMessage.getGuild().getId());
-                               data.set("report_message_id", finalMessage.getId());
-                               data.set("reporter_discord_id", context.getAuthor().getId());
-                               data.set("reporter_discord_name", context.getMember().getEffectiveName(), true);
-                               data.set("reported_roblox_id", getRobloxId(username));
-                               data.set("reported_roblox_name", username);
-                               data.set("report_evidence", evidence, true);
-                               data.set("report_evidence_warning", evidence, true);
-                               data.set("report_reason", description, true);
-                               data.set("reported_roblox_rank", groupInfo.map(value -> value.getRole().getName()).orElse(null));
+                                data.set("pb_server_id", finalMessage.getGuild().getId());
+                                data.set("report_message_id", finalMessage.getId());
+                                data.set("reporter_discord_id", context.getAuthor().getId());
+                                data.set("reporter_discord_name", context.getMember().getEffectiveName(), true);
+                                data.set("reported_roblox_id", getRobloxId(username));
+                                data.set("reported_roblox_name", username);
+                                data.set("report_evidence", evidence, true);
+                                data.set("report_evidence_warning", explainedEvidence, true);
+                                data.set("report_reason", description, true);
+                                data.set("reported_roblox_rank", groupInfo.map(value -> value.getRole().getName()).orElse(null));
                             });
                         } catch (SQLException throwables) {
                             throwables.printStackTrace();

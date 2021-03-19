@@ -9,10 +9,14 @@ import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class GlobalModCommand extends Command {
 
@@ -72,19 +76,19 @@ public class GlobalModCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+        GuildTransformer transformer = context.getGuildTransformer();
+
         if (args.length == 0) {
             context.makeInfo("Please select what setting you'd like to modify (0 = Disabled)\n" +
-                " - ``mass-mention``\n" +
-                " - ``emoji-spam``\n" +
-                " - ``link-spam``\n" +
-                " - ``message-spam``\n" +
-                " - ``image-spam``\n" +
-                " - ``character-spam``\n"
-            ).queue();
+                " - ``mass-mention`` - " + transformer.getMassMentionSpam() + "\n" +
+                " - ``emoji-spam`` - " + transformer.getEmojiSpam() +"\n" +
+                " - ``link-spam`` - " + transformer.getLinkSpam() +"\n" +
+                " - ``message-spam`` - " + transformer.getMessageSpam() +"\n" +
+                " - ``image-spam`` - " + transformer.getImageSpam() +"\n" +
+                " - ``character-spam`` - " + transformer.getCharacterSpam() +"\n" +
+                " - ``young-warning-channel`` (local) (" + (transformer.getMemberToYoungChannelId()!= null ? transformer.getMemberToYoungChannelId() : "**Empty/Disabled**") + ")").queue();
             return false;
         }
-
-        GuildTransformer transformer = context.getGuildTransformer();
         if (transformer == null) {
             context.makeError("Server settings cannot be loaded.").queue();
             return false;
@@ -103,8 +107,38 @@ public class GlobalModCommand extends Command {
                 return runImageSpamUpdateCommand(context, args, transformer);
             case "character-spam":
                 return runCharacterSpamUpdateCommand(context, args, transformer);
+            case "young-warning-channel":
+                return runYoungWarningChannelUpdateCommand(context, args, transformer);
         }
 
+        return true;
+    }
+
+    private boolean runYoungWarningChannelUpdateCommand(CommandMessage context, String[] args, GuildTransformer transformer) {
+        TextChannel c = context.getGuild().getTextChannelById(args[1]);
+
+        if (NumberUtil.isNumeric(args[1]) && c != null) {
+            context.makeInfo("Updated young member warning channel to " + c.getName()).queue();
+            transformer.setMemberToYoungChannelId(args[1]);
+            return updateLocalRecordInDatabase(context, "member_to_young_channel_id", transformer.getMemberToYoungChannelId());
+        } else {
+            context.makeError("Please enter a valid channel ID.").queue();
+            return false;
+        }
+    }
+
+    private boolean updateLocalRecordInDatabase(CommandMessage context, String member_to_young_channel_id, String memberToYoungChannelId) {
+        try {
+            avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.getGuild().getId()).update(p -> {
+                p.set(member_to_young_channel_id, memberToYoungChannelId);
+            });
+            context.makeSuccess("Channel was set!").queue();
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+            context.makeError("Something went wrong...");
+            return false;
+        }
+        context.makeSuccess("Done!").queue();
         return true;
     }
 

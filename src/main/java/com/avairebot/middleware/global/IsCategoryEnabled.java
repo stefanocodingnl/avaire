@@ -33,14 +33,10 @@ import com.avairebot.middleware.MiddlewareStack;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.Role;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class IsCategoryEnabled extends Middleware {
@@ -109,7 +105,6 @@ public class IsCategoryEnabled extends Middleware {
         }
 
         if (!channel.isCategoryEnabled(stack.getCommandContainer().getCategory()) && !isModOrHigher(stack, message)) {
-            // TODO: Make the mod+ check for channel command bypass so commands will be limited to the bot commands channel except for mods.
             if (isHelpCommand(stack) && stack.isMentionableCommand()) {
                 MessageFactory.makeError(message, "The help command is disabled in this channel, you can enable it by using the `:category` command.")
                     .set("category", CommandHandler.getCommand(ToggleCategoryCommand.class).getCommand().generateCommandTrigger(message))
