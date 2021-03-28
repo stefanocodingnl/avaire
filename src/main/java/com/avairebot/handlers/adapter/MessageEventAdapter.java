@@ -336,10 +336,11 @@ public class MessageEventAdapter extends EventAdapter {
                 return;
             } else if (checkAutomodFilters(message, guild, event)) {
                 event.getTextChannel().retrieveMessageById(event.getId()).queue(l -> {
-                    System.out.println("AutoMod removed in " + event.getGuild().getName() + " (<#" + event.getTextChannel().getId() + ">): " + event.getContentRaw());
                     l.delete().reason("Auto-Mod Violation").queue();
-                }, failure -> {
+                    System.out.println("AutoMod removed in " + event.getGuild().getName() + " (<#" + event.getTextChannel().getId() + ">): " + event.getContentRaw());
 
+                }, failure -> {
+                    System.out.println("AutoMod failed to remove in " + event.getGuild().getName() + " (<#" + event.getTextChannel().getId() + ">): " + event.getContentRaw());
                 });
                 MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
                 return;
@@ -412,6 +413,7 @@ public class MessageEventAdapter extends EventAdapter {
 
             if (count >= transformer.getEmojiSpam()) {
                 warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Emoji Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                message.delete().queue();
                 return true;
             }
         }
@@ -527,11 +529,10 @@ public class MessageEventAdapter extends EventAdapter {
     }
 
     private void warnUser(Message m, GuildTransformer databaseEventHolder, String reason) {
-
-        if (databaseEventHolder.getFilterLog() == null) {
+        /*if (databaseEventHolder.getFilterLog() == null) {
             return;
         }
-
+*/
 
         ModlogAction modlogAction = new ModlogAction(
             ModlogType.WARN,
@@ -546,9 +547,9 @@ public class MessageEventAdapter extends EventAdapter {
 
     private void warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color) {
 
-        if (databaseEventHolder.getFilterLog() == null) {
+        /*if (databaseEventHolder.getFilterLog() == null) {
             return;
-        }
+        }*/
 
 
         ModlogAction modlogAction = new ModlogAction(
@@ -568,7 +569,8 @@ public class MessageEventAdapter extends EventAdapter {
             .setTimestamp(Instant.now())
             .addField("User", m.getMember().getEffectiveName(), true)
             .addField("Moderator", "Xeus", true)
-            .addField("Reason", reason, false);
+            .addField("Reason", reason, false)
+            .addField("Note on the side", "Filter violations do NOT count against your warning total. These are not logged. **However**, we still recieve notifications about filter violations.", false);
 
         m.getGuild().getTextChannelById(databaseEventHolder.getFilterLog()).sendMessage(builder.build()).queue();
 
@@ -660,8 +662,8 @@ public class MessageEventAdapter extends EventAdapter {
                 strings.add("\nYou can tag me in a message with <@:botId> to send me a message that I should process using my AI.");
             }
 
-            strings.add("\n**Full list of commands**\n*https://avairebot.com/commands*");
-            strings.add("\nAvaIre Support Server:\n*https://avairebot.com/support*");
+            strings.add("\n**Full list of commands**\n*https://xeus.pinewood-builders.com/commands*");
+            strings.add("\nAvaIre Support Server:\n*https://xeus.pinewood-builders.com/support*");
 
             CommandContainer commandContainer = CommandHandler.getCommands().stream()
                 .filter(container -> !container.getCategory().isGlobalOrSystem())

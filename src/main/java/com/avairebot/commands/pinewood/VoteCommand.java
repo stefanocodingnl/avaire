@@ -12,6 +12,7 @@ import com.avairebot.database.collection.DataRow;
 import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.ComparatorUtil;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.RandomString;
@@ -24,8 +25,8 @@ import javax.annotation.Nonnull;
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class VoteCommand extends Command {
@@ -49,7 +50,10 @@ public class VoteCommand extends Command {
     @Override
     public List<String> getUsageInstructions() {
         return Arrays.asList(
-            "`:command` - Vote for a vote."
+            "**DM's**:\n" +
+                "`:command <id> <vote option> <Reason (If enabled on the guild)>` - Vote for a vote.",
+            "`:command create <Responses,Devided,By,Space_and_underscores> <Questions>` - Create a new vote",
+            "`:command `"
         );
     }
 
@@ -67,7 +71,6 @@ public class VoteCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "isAdminOrHigher",
             "throttle:user,1,25"
         );
     }
@@ -82,7 +85,11 @@ public class VoteCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
         if (!context.isGuildMessage()) {
             return runDMArguments(context, args);
+        }
 
+        if (CheckPermissionUtil.getPermissionLevel(context).getLevel() < CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
+            return sendErrorMessage(context, "You don't have the required permission to run the settings of these commands.\n" +
+                "If you're trying to vote on a current vote, then please send the vote message in the DMs of the bot.");
         }
 
         if (args.length < 1) {
@@ -135,7 +142,7 @@ public class VoteCommand extends Command {
                         statement.set("item", awnser);
                         statement.set("added_by", context.getMember().getEffectiveName());
                     });
-                    context.makeWarning("Added :awnser to :id").set("awnser", awnser).set("id", vote_id).queue();
+                    //context.makeWarning("Added :awnser to :id").set("awnser", awnser).set("id", vote_id).queue();
                 }
 
             } catch (SQLException throwables) {
@@ -383,6 +390,10 @@ public class VoteCommand extends Command {
             Collection answers = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTABLE_TABLE_NAME).where("vote_id", args[0]).get();
             QueryBuilder vote = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).where("voter_user_id", context.getAuthor().getId());
 
+            if (votes.size() < 1) {
+                context.makeError(":warning: It seems like this vote does not exist, please check if you have the correct **vote** ID.").queue();
+                return false;
+            }
 
             if (!votes.get(0).getBoolean("active")) {
                 context.makeError(":warning: This vote seems to be de-activated/closed. Please check if you have the correct ID!").queue();

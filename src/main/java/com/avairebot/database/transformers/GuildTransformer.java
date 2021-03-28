@@ -73,50 +73,50 @@ public class GuildTransformer extends Transformer {
     private String name;
     private String nameRaw;
     private String locale;
+    private String levelChannel = null;
     private boolean levels = false;
     private boolean levelAlerts = false;
     private boolean levelHierarchy = false;
     private boolean musicMessages = true;
     private boolean filter = false;
-    private String levelChannel = null;
-    private String voteValidationChannel = null;
-
-    private long audit_log = 0;
-    private long join_logs = 0;
-
-    private String suggestionChannel = null;
-    private String suggestionCommunityChannel = null;
-    private String suggestionEmoteId = null;
-
-    private String reportEmoteId = null;
-    private String handbookReportChannel = null;
-    private String reportInfoMessage = null;
-    private int robloxGroupId = 0;
-
-    private int characterSpam = 0;
-    private int emojiSpam = 0;
-    private int imageSpam = 0;
-    private int linkSpam = 0;
-    private int massMentionSpam = 0;
-    private int messageSpam = 0;
 
     private String autorole = null;
     private String modlog = null;
     private String musicChannelText = null;
     private String musicChannelVoice = null;
     private String muteRole = null;
+    private String djRole = null;
+    private DJGuildLevel djGuildLevel = null;
+
+    //Pinewood specific
     private String onWatchRole = null;
     private String onWatch = null;
     private String gamenightRole = null;
-    private String djRole = null;
     private String filterLog = null;
     private String memberToYoungChannelId = null;
+    private String pinewoodEventRequestsChannelId = null;
+    private String suggestionChannel = null;
+    private String suggestionCommunityChannel = null;
+    private String suggestionEmoteId = null;
+    private String reportEmoteId = null;
+    private String handbookReportChannel = null;
+    private String reportInfoMessage = null;
+    private String voteValidationChannel = null;
+
     private int modlogCase = 0;
     private int onWatchCase = 0;
     private int defaultVolume = 100;
     private double levelModifier = -1;
     private long reportCategory = 0;
-    private DJGuildLevel djGuildLevel = null;
+    private long audit_log = 0;
+    private long join_logs = 0;
+    private int robloxGroupId = 0;
+    private int characterSpam = 0;
+    private int emojiSpam = 0;
+    private int imageSpam = 0;
+    private int linkSpam = 0;
+    private int massMentionSpam = 0;
+    private int messageSpam = 0;
 
 
     public GuildTransformer(Guild guild) {
@@ -186,6 +186,8 @@ public class GuildTransformer extends Transformer {
             filterLog = data.getString("filter_log");
 
             memberToYoungChannelId = data.getString("member_to_young_channel_id");
+
+            pinewoodEventRequestsChannelId = data.getString("event_request_channel");
 
             djGuildLevel = DJGuildLevel.fromId(data.getInt("dj_level", DJGuildLevel.getNormal().getId()));
             djRole = data.getString("dj_role");
@@ -588,6 +590,14 @@ public class GuildTransformer extends Transformer {
 
     public void setHandbookReportInfoMessage(String reportInfoMessage) {
         this.reportInfoMessage = reportInfoMessage;
+    }
+
+    public String getPinewoodEventRequestsChannelId() {
+        return pinewoodEventRequestsChannelId;
+    }
+
+    public void setPinewoodEventRequestsChannelId(String id) {
+        this.pinewoodEventRequestsChannelId = id;
     }
 
     public String getVoteValidationChannel() {

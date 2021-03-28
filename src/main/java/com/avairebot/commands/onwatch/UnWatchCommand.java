@@ -48,13 +48,13 @@ public class UnWatchCommand extends OnWatchableCommand {
 
     @Override
     public String getName() {
-        return "Unmute Command";
+        return "Unwatch Command";
     }
 
     @Override
     public String getDescription(@Nullable CommandContext context) {
         return String.format(
-            "Unmutes the mentioned user by removing the %s role from them, this action will be reported to any channel that has modloging enabled.",
+            "Unwatches the mentioned user by removing the %s role from them, this action will be reported to any channel that has modloging enabled.",
             getOnWatchRoleFromContext(context)
         );
     }
@@ -62,15 +62,15 @@ public class UnWatchCommand extends OnWatchableCommand {
     @Override
     public List <String> getUsageInstructions() {
         return Collections.singletonList(
-            "`:command <user> [reason]` - Unmutes the given user."
+            "`:command <user> [reason]` - Unwatchs the given user."
         );
     }
 
     @Override
     public List <String> getExampleUsage() {
         return Arrays.asList(
-            "`:command @Senither` - Unmutes the user with no reason given.",
-            "`:command @Senither Calmed down` - Unmutes the user with the given reason."
+            "`:command @Senither` - Unwatchs the user with no reason given.",
+            "`:command @Senither Calmed down` - Unwatchs the user with the given reason."
         );
     }
 
@@ -120,14 +120,14 @@ public class UnWatchCommand extends OnWatchableCommand {
             return sendErrorMessage(context, context.i18n("requireMuteRoleToBeSet", prefix));
         }
 
-        Role muteRole = context.getGuild().getRoleById(transformer.getOnWatchRole());
-        if (muteRole == null) {
+        Role watchRole = context.getGuild().getRoleById(transformer.getOnWatchRole());
+        if (watchRole == null) {
             String prefix = generateCommandPrefix(context.getMessage());
             return sendErrorMessage(context, context.i18n("requireMuteRoleToBeSet", prefix));
         }
 
-        if (!context.getGuild().getSelfMember().canInteract(muteRole)) {
-            return sendErrorMessage(context, context.i18n("muteRoleIsPositionedHigher", muteRole.getAsMention()));
+        if (!context.getGuild().getSelfMember().canInteract(watchRole)) {
+            return sendErrorMessage(context, context.i18n("watchRoleIsPositionedHigher", watchRole.getAsMention()));
         }
 
         if (args.length == 0) {
@@ -139,7 +139,7 @@ public class UnWatchCommand extends OnWatchableCommand {
             return sendErrorMessage(context, context.i18n("invalidUserMentioned"));
         }
 
-        if (!RoleUtil.hasRole(context.getGuild().getMember(user), muteRole)) {
+        if (!RoleUtil.hasRole(context.getGuild().getMember(user), watchRole)) {
             return sendErrorMessage(context, context.i18n("userDoesntHaveMuteRole", user.getAsMention()));
         }
 
@@ -153,7 +153,7 @@ public class UnWatchCommand extends OnWatchableCommand {
         }
 
         context.getGuild().removeRoleFromMember(
-            context.getGuild().getMember(user), muteRole
+            context.getGuild().getMember(user), watchRole
         ).reason(reason).queue(aVoid -> {
             OnWatchAction modlogAction = new OnWatchAction(
                 OnWatchType.UN_ON_WATCH, context.getAuthor(), user, reason
@@ -163,7 +163,7 @@ public class UnWatchCommand extends OnWatchableCommand {
             OnWatchlog.notifyUser(user, context.getGuild(), modlogAction, caseId);
 
 
-            context.makeSuccess(context.i18n("userHasBeenUnmuted"))
+            context.makeSuccess(context.i18n("userHasBeenUnwatchd"))
                 .set("target", user.getAsMention())
                 .queue();
 

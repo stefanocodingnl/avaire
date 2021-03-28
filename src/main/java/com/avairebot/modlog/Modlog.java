@@ -371,8 +371,9 @@ public class Modlog {
                     action.getType().equals(ModlogType.WARN)
                         ? "in" : "from"
                 ))
-                .addField("Moderator", action.getModerator().getName() + "#" + action.getModerator().getDiscriminator(), true)
+                //.addField("Type", action.getType().getEmote() + action.getType().getName(guild), true)
                 .addField("Reason", action.getMessage(), true)
+                .addField("Note on the side", "Filter violations do NOT count against your warning total. These are not logged. **However**, we still recieve notifications about filter violations.", false)
                 .setTimestamp(Instant.now());
 
             if (caseId != null) {

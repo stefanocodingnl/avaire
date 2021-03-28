@@ -62,6 +62,16 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         super(avaire);
     }
 
+    public static void createReactions(Message r) {
+        r.addReaction("\uD83D\uDC4D").queue();   // 👍
+        r.addReaction("\uD83D\uDC4E").queue();  // 👎
+        r.addReaction("✅").queue();
+        r.addReaction("❌").queue();
+        r.addReaction("🚫").queue();
+        r.addReaction("\uD83D\uDD04").queue(); // 🔄
+
+    }
+
     public void onEmoteRemoved(EmoteRemovedEvent event) {
         Collection collection = ReactionController.fetchReactions(avaire, event.getGuild());
         if (collection == null || collection.isEmpty()) {
@@ -184,13 +194,12 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
     @Nullable
     private ReactionTransformer getReactionTransformerFromId(@Nonnull Collection collection, @Nonnull String messageId) {
-        List <DataRow> messages = collection.where("message_id", messageId);
+        List<DataRow> messages = collection.where("message_id", messageId);
         if (messages.isEmpty()) {
             return null;
         }
         return new ReactionTransformer(messages.get(0));
     }
-
 
     /**
      * Some custom stuff, related to Pinewood specifically.
@@ -210,11 +219,21 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             .setDescription(message.getEmbeds().get(0).getDescription())
                                             .setFooter(message.getEmbeds().get(0).getFooter().getText() + " | Accepted by: " + e.getMember().getEffectiveName())
                                             .setTimestamp(Instant.now()).buildEmbed()).queue();
-                                        avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).useAsync(true).where("vote_message_id", message.getId())
-                                            .update(statement -> {
-                                                statement.set("accepted", true);
-                                            });
 
+                                        Collection c = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME)
+                                            .where("vote_message_id", e.getMessageId()).get();
+                                        if (c.size() > 0) {
+                                            User u = avaire.getShardManager().getUserById(c.get(0).getLong("voter_user_id"));
+                                            if (u != null) {
+                                                u.openPrivateChannel().queue(v -> v.sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel()).setDescription("Congrats! Your vote for ``:Us`` has been approved. This means your vote is within against the total!")
+                                                    .set("Us", c.get(0).getString("voted_for")).buildEmbed()).queue());
+                                            }
+
+                                            avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).useAsync(true).where("vote_message_id", message.getId())
+                                                .update(statement -> {
+                                                    statement.set("accepted", true);
+                                                });
+                                        }
                                     } else if (e.getReactionEmote().getName().equals("❌")) {
                                         message.editMessage(MessageFactory.makeEmbeddedMessage(message.getTextChannel(), new Color(255, 0, 0))
                                             .setAuthor(message.getEmbeds().get(0).getAuthor().getName(), null, message.getEmbeds().get(0).getAuthor().getIconUrl())
@@ -222,10 +241,18 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             .setFooter(message.getEmbeds().get(0).getFooter().getText() + " | Denied by: " + e.getMember().getEffectiveName())
                                             .setTimestamp(Instant.now()).buildEmbed()).queue();
 
-                                        avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).useAsync(true)
-                                            .where("vote_message_id", e.getMessageId())
-                                            .delete();
-
+                                        Collection c = avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME)
+                                            .where("vote_message_id", e.getMessageId()).get();
+                                        if (c.size() > 0) {
+                                            User u = avaire.getShardManager().getUserById(c.get(0).getLong("voter_user_id"));
+                                            if (u != null) {
+                                                u.openPrivateChannel().queue(v -> v.sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel()).setDescription("Sorry, but your vote for ``:Us`` has been rejected. Please vote again (Might have to be with a better reason) if you want to vote for this person.")
+                                                    .set("Us", c.get(0).getString("voted_for")).buildEmbed()).queue());
+                                            }
+                                            avaire.getDatabase().newQueryBuilder(Constants.MOTS_VOTE_TABLE_NAME).useAsync(true)
+                                                .where("vote_message_id", e.getMessageId())
+                                                .delete();
+                                        }
                                     }
                                     message.clearReactions().queue();
                                 } catch (SQLException throwables) {
@@ -239,7 +266,6 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
             }
         });
     }
-
 
     private String getRole(GuildMessageReceivedEvent c) {
         return getString(c.getGuild(), c.getMember());
@@ -367,7 +393,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                                 (rank != null ? "**Rank**: ``:rRank``\n" : "") +
                                                                 "**Information**: \n" + description + "\n\n" +
                                                                 "**Evidence**: \n" + evidence + "\n\n" +
-                                                                (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n": "") +
+                                                                (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
                                                                 "**Denial Reason**: \n" + run.getMessage().getContentRaw())
                                                         .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember())
                                                         .setTimestamp(Instant.now()).set("rRank", rank)
@@ -491,7 +517,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                     if (likes == 26) {
                                         if (finalCtc != null) {
                                             PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
-                                                .setAuthor("Suggestion for: " + e.getGuild().getName()  + " | " + likes + " - " + dislikes, null, e.getGuild().getIconUrl())
+                                                .setAuthor("Suggestion for: " + e.getGuild().getName() + " | " + likes + " - " + dislikes, null, e.getGuild().getIconUrl())
                                                 .setDescription(msg.getEmbeds().get(0).getDescription())
                                                 .setTimestamp(Instant.now());
 
@@ -548,14 +574,15 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                         }
 
                                         msg.editMessage(mb.buildEmbed()).queue();
-                                        msg.clearReactions().queue();qb.delete();
+                                        msg.clearReactions().queue();
+                                        qb.delete();
 
                                     }
                                 }
                                 if (e.getReactionEmote().getName().equals("❌") || e.getReactionEmote().getName().equals("✅") || e.getReactionEmote().getName().equals("\uD83D\uDD04")) {
                                     switch (e.getReactionEmote().getName()) {
                                         case "❌":
-                                            if (!(isValidReportManager(e, 1))) {
+                                            if (!(isValidReportManager(e, 2))) {
                                                 /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to deny this suggestion. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                                     v.delete().queueAfter(30, TimeUnit.SECONDS);
                                                 });*/
@@ -620,7 +647,8 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                 if (e.getReactionEmote().getName().equals("\uD83D\uDCAC")) {
                                     if (!(e.getMember().hasPermission(Permission.MESSAGE_MANAGE) || isValidReportManager(e, 1))) {
                                         /*e.getMember().getUser().openPrivateChannel().queue(v -> v.sendMessage(new EmbedBuilder().setDescription("Sorry, but you need to be an mod or higher to comment on a suggestion!").build()).queue());
-                                        */e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
+                                         */
+                                        e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
                                         return;
                                     }
                                     e.getReaction().removeReaction(e.getUser()).queue();
@@ -712,7 +740,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
     }
 
     private String getImageByName(Guild guild, String username) {
-        List <Member> members = guild.getMembersByEffectiveName(username, true);
+        List<Member> members = guild.getMembersByEffectiveName(username, true);
 
         if (members.size() < 1) return null;
         if (members.size() > 1) return null;
@@ -851,16 +879,6 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         }
     }
 
-    public static void createReactions(Message r) {
-        r.addReaction("\uD83D\uDC4D").queue();   // 👍
-        r.addReaction("\uD83D\uDC4E").queue();  // 👎
-        r.addReaction("✅").queue();
-        r.addReaction("❌").queue();
-        r.addReaction("🚫").queue();
-        r.addReaction("\uD83D\uDD04").queue(); // 🔄
-
-    }
-
     private boolean isValidReportManager(GuildMessageReactionAddEvent e, Integer i) {
         GuildTransformer transformer = GuildController.fetchGuild(avaire, e.getGuild());
         if (i == 1) {
@@ -876,7 +894,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
     }
 
 
-    private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(
+    private CompletableFuture<DatabaseEventHolder> loadDatabasePropertiesIntoMemory(
         final GuildMessageReactionAddEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannel().getType().isGuild()) {

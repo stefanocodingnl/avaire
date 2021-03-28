@@ -2,25 +2,22 @@ package com.avairebot.commands.administration;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
-import com.avairebot.chat.SimplePaginator;
-import com.avairebot.commands.CommandHandler;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
 import com.avairebot.database.query.QueryBuilder;
-import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.NumberUtil;
-import com.avairebot.utilities.RoleUtil;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +46,14 @@ public class RolePersistenceCommand extends Command {
             "`:command l/list <guild_id>` - Shows all persistent roles on the guild you added the argument to. **(PIA Required)**",
             "`:command r/remove <id>` - Remove a persistent role by it's ID (Use `:command list` to check the ID's)"
         );
+    }
+
+    @Override
+    public List<String> getExampleUsage(@Nullable Message message) {
+        return Arrays.asList(
+            "`:command l/list` - Shows all persistent roles in the guild you ran the command in.",
+            "`:command 438142943648415745 251818929226383361` - Force the `PIA` role on `CombatSwift`.",
+            "`:command r/remove 22` - Remove persistent role 22.");
     }
 
     @Override

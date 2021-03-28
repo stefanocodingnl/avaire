@@ -122,7 +122,7 @@ public class MuteRatelimit {
         user.openPrivateChannel().queue(channel -> {
             channel.sendMessage(MessageFactory.createEmbeddedBuilder()
                 .setColor(Color.decode("#A5306B"))
-                .setTitle("Whoa there!", "https://avairebot.com/")
+                .setTitle("Whoa there!", "https://xeus.pinewood-builders.com/")
                 .setFooter("Expires", null)
                 .setTimestamp(expires.getTime().toInstant())
                 .setDescription("Looks like you're triggering my filter a bit too fast, I've muted you "
@@ -146,7 +146,7 @@ public class MuteRatelimit {
     public void sendBlacklissendtMessage(MessageChannel channel, Carbon expires) {
         channel.sendMessage(MessageFactory.createEmbeddedBuilder()
             .setColor(Color.decode("#A5306B"))
-            .setTitle("Whoa there!", "https://avairebot.com/")
+            .setTitle("Whoa there!", "https://xeus.pinewood-builders.com/")
             .setFooter("Expires", null)
             .setTimestamp(expires.getTime().toInstant())
             .setDescription("Looks like people on the server are using commands a bit too fast, "

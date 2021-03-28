@@ -109,11 +109,21 @@ public class ModlogHistoryCommand extends Command {
         }
 
         try {
-            Collection items = avaire.getDatabase().newQueryBuilder(Constants.LOG_TABLE_NAME)
-                .where("guild_id", context.getGuild().getId())
-                .where("target_id", user.getId())
-                .where("pardon", 0)
-                .get();
+            Collection items;
+
+            if (context.getMessage().getContentRaw().endsWith("--show-pardoned") || context.getMessage().getContentRaw().endsWith("-sP")) {
+                items = avaire.getDatabase().newQueryBuilder(Constants.LOG_TABLE_NAME)
+                    .where("guild_id", context.getGuild().getId())
+                    .where("target_id", user.getId())
+                    .where("pardon", 1)
+                    .get();
+            } else {
+                items = avaire.getDatabase().newQueryBuilder(Constants.LOG_TABLE_NAME)
+                    .where("guild_id", context.getGuild().getId())
+                    .where("target_id", user.getId())
+                    .where("pardon", 0)
+                    .get();
+            }
 
             if (items.isEmpty()) {
                 context.makeWarning(context.i18n("noHistory"))

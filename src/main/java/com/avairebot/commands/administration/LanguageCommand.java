@@ -53,7 +53,7 @@ public class LanguageCommand extends Command {
     @Override
     public String getDescription() {
         return "Show a list of available languages or set a language that should be used for the server.\n" +
-            "If you are interested in contributing to the translations of AvaIre, then head on over to [translate.avairebot.com](https://translate.avairebot.com/)!";
+            "If you are interested in contributing to the translations of AvaIre, then head on over to [translate.avairebot.com](https://translate.pinewood-builders.com/)!";
     }
 
     @Override
