@@ -10,7 +10,7 @@ public class CreateReportsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Tue, Nov 1nd, 2020 10:37 PM";
+        return "Tue, Nov 1, 2020 10:37 PM";
     }
 
     @Override

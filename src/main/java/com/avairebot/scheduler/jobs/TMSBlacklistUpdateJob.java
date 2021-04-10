@@ -24,25 +24,23 @@ package com.avairebot.scheduler.jobs;
 import com.avairebot.AvaIre;
 import com.avairebot.cache.CacheType;
 import com.avairebot.contracts.scheduler.Job;
-import com.avairebot.contracts.scheduler.Task;
 import com.avairebot.factories.RequestFactory;
 import com.avairebot.requests.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class TMSBlacklistUpdateJob extends Job {
 
+    private static final Logger log = LoggerFactory.getLogger(TMSBlacklistUpdateJob.class);
     private final String cacheToken = "blacklist.tms.blacklists";
 
     public TMSBlacklistUpdateJob(AvaIre avaire) {
         super(avaire, 90, 90, TimeUnit.MINUTES);
-
-        if (!avaire.getCache().getAdapter(CacheType.FILE).has(cacheToken)) {
-            run();
-        }
+        run();
     }
 
     @Override
@@ -51,6 +49,7 @@ public class TMSBlacklistUpdateJob extends Job {
             RequestFactory.makeGET("https://pb-kronos.dev/tms/blacklist")
                 .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosApiKey"))
                 .send((Consumer<Response>) response -> {
+                    log.info("TMS Blacklist has been requested.");
                     ArrayList service = (ArrayList) response.toService(ArrayList.class);
 
                     avaire.getCache().getAdapter(CacheType.FILE).forever(cacheToken, service);

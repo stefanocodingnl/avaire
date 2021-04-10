@@ -7,10 +7,10 @@ import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.collection.Collection;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,13 +36,13 @@ public class GlobalUnbanCommand extends Command {
     @Override
     public List <String> getUsageInstructions() {
         return Collections.singletonList(
-            "`:command` - Unban a member globally.");
+            "`:command <user id>` - Unban a member globally.");
     }
 
     @Override
     public List <String> getExampleUsage(@Nullable Message message) {
         return Collections.singletonList(
-            "`:command` - Unban a member globally.");
+            "`:command 1829283649274938104` - Unban a member globally (By ID).");
     }
 
     @Override
@@ -107,6 +107,12 @@ public class GlobalUnbanCommand extends Command {
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
         context.makeSuccess("<@" + args[0] + "> has been unbanned from: \n\n" + sb.toString()).queue();
+
+        TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+        if (tc != null) {
+            tc.sendMessage(context.makeInfo("[``:global-unbanned-id`` was unbanned from all discords by :user](:link)").set("global-unbanned-id", args[0]).set("user", context.getMember().getAsMention()).set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
+        }
+
         try {
             handleGlobalPermUnban(context, args);
         } catch (SQLException exception) {

@@ -2,6 +2,7 @@ package com.avairebot.commands.pinewood;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
+import com.avairebot.blacklist.features.FeatureScope;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
@@ -93,10 +94,6 @@ public class ReportUserCommand extends Command {
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
             if (args.length > 0) {
                 switch (args[0]) {
-                    case "debug-permission":
-                        return runBlacklistCheck(context, args);
-                    case "debug-blacklist":
-                        return runKronosBlacklistCheck(context, args);
                     case "sr":
                     case "set-reports":
                         return runSetReportChannel(context, args);
@@ -161,8 +158,8 @@ public class ReportUserCommand extends Command {
 
                                 TextChannel c = avaire.getShardManager().getTextChannelById(d.getString("handbook_report_channel"));
                                 if (c != null) {
-                                    if (avaire.getReportBlacklist().isBlacklisted(context.getAuthor(), c.getGuild().getIdLong())) {
-                                        message.editMessage(context.makeError("You have been blacklisted from creating reports for this guild. Please ask a **PIA** member to remove you from the ``"+c.getGuild().getName()+"`` reports blacklist.").buildEmbed()).queue();
+                                    if (avaire.getFeatureBlacklist().isBlacklisted(context.getAuthor(), c.getGuild().getIdLong(), FeatureScope.REPORTS)) {
+                                        message.editMessage(context.makeError("You have been blacklisted from creating reports for this guild. Please ask a **Level 4** (Or higher) member to remove you from the ``"+c.getGuild().getName()+"`` reports blacklist.").buildEmbed()).queue();
                                         return;
                                     }
                                     message.editMessage(context.makeInfo(d.getString("report_info_message", "A report message for ``:guild`` could not be found. Ask the HR's of ``:guild`` to set one.\n" +
@@ -205,6 +202,17 @@ public class ReportUserCommand extends Command {
         //context.makeInfo(context.getGuildTransformer().getHandbookReportInfoMessage()).set("user", context.getMember().getEffectiveName()).set("guild", ).queue();
 
         return false;
+    }
+
+    private boolean checkIfBlacklisted(Long requestedId, TextChannel c) {
+
+        if (c.getGuild().getId().equalsIgnoreCase("438134543837560832")) {
+            return avaire.getBlacklistManager().getPBSTBlacklist().contains(requestedId);
+        } else if (c.getGuild().getId().equalsIgnoreCase("572104809973415943")) {
+            return avaire.getBlacklistManager().getTMSBlacklist().contains(requestedId);
+        } else {
+            return false;
+        }
     }
 
     private void goToStep2(CommandMessage context, Message message, GuildMessageReceivedEvent content, DataRow d, TextChannel c) {
@@ -263,40 +271,6 @@ public class ReportUserCommand extends Command {
                 );
             }
         }
-    }
-
-    private boolean checkIfBlacklisted(Long requestedId, TextChannel c) {
-
-        if (c.getGuild().getId().equalsIgnoreCase("438134543837560832")) {
-            return avaire.getBlacklistManager().getPBSTBlacklist().contains(requestedId);
-        } else if (c.getGuild().getId().equalsIgnoreCase("572104809973415943")) {
-            return avaire.getBlacklistManager().getTMSBlacklist().contains(requestedId);
-        } else {
-            return false;
-        }
-    }
-
-    private boolean runKronosBlacklistCheck(CommandMessage context, String[] args) {
-        ArrayList<Long> blacklisted = avaire.getBlacklistManager().getTMSBlacklist();
-        if (blacklisted.contains(1153779281L)) {
-            context.makeWarning("The ID ``1153779281`` is is blacklisted from TMS.").queue();
-            return true;
-        } else {
-            context.makeError("This UserID is not blacklisted" + blacklisted.toString()).queue();
-            return false;
-        }
-
-    }
-
-    private boolean runBlacklistCheck(CommandMessage context, String[] args) {
-        if (avaire.getReportBlacklist().isBlacklisted(context.getAuthor(), context.getGuild().getIdLong())) {
-            context.makeSuccess("You are blacklisted here." +
-                "\nList:" + avaire.getReportBlacklist().getBlacklistEntities().toString()).queue();
-        } else {
-            context.makeError("You are not blacklisted here"+
-                "\nList:" + avaire.getReportBlacklist().getBlacklistEntities().toString()).queue();
-        }
-        return false;
     }
 
     private void removeAllUserMessages(List<Message> messagesToRemove) {

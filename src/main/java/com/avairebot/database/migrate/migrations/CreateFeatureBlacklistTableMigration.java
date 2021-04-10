@@ -27,7 +27,7 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class CreateReportBlacklistTableMigration implements Migration {
+public class CreateFeatureBlacklistTableMigration implements Migration {
 
     @Override
     public String created_at() {
@@ -36,7 +36,7 @@ public class CreateReportBlacklistTableMigration implements Migration {
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        return schema.createIfNotExists(Constants.REPORT_BLACKLIST_TABLE_NAME, table -> {
+        return schema.createIfNotExists(Constants.FEATURE_BLACKLIST_TABLE_NAME, table -> {
             table.Increments("id");
             table.Long("user_id").unsigned().nullable();
             table.Long("guild_id").unsigned().nullable();
@@ -48,6 +48,6 @@ public class CreateReportBlacklistTableMigration implements Migration {
 
     @Override
     public boolean down(Schema schema) throws SQLException {
-        return schema.dropIfExists(Constants.REPORT_BLACKLIST_TABLE_NAME);
+        return schema.dropIfExists(Constants.FEATURE_BLACKLIST_TABLE_NAME);
     }
 }

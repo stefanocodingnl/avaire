@@ -56,6 +56,7 @@ public class Constants {
 
     public static final String PB_SUGGESTIONS_TABLE_NAME = "pinewood_suggestions";
     public static final String REPORTS_DATABASE_TABLE_NAME = "pinewood_reports";
+    public static final String REMITTANCE_DATABASE_TABLE_NAME = "pinewood_patrol_remittance";
     public static final String EVENT_SCHEDULE_REQUESTS_TABLE = "pinewood_event_requests";
 
     public static final String ON_WATCH_TABLE_NAME = "on_watch";
@@ -65,7 +66,7 @@ public class Constants {
     public static final String ROLE_PERSISTENCE_TABLE_NAME = "role_persistence";
 
     public static final String ANTI_UNBAN_TABLE_NAME = "pia_antiban";
-    public static final String REPORT_BLACKLIST_TABLE_NAME = "blacklists_reports";
+    public static final String FEATURE_BLACKLIST_TABLE_NAME = "feature_blacklist";
 
     public static final String EVALS_DATABASE_TABLE_NAME = "pinewood_evaluations";
     public static final String EVALS_LOG_DATABASE_TABLE_NAME = "pinewood_evaluations_log";
@@ -92,6 +93,7 @@ public class Constants {
     public static final String SOURCE_URI = "https://gitlab.com/pinewood-builders/discord/xeus/-/blob/master/src/main/java/com/avairebot/commands/%s/%s.java";
 
     public static final String REWARD_REQUESTS_CHANNEL_ID = "722606219319181392";
+    public static final String PIA_LOG_CHANNEL = "788316320747094046";
 
     // Official Pinewood Guilds
     public static final ArrayList <String> guilds = new ArrayList<String>() {{
@@ -112,7 +114,7 @@ public class Constants {
     }};
 
     // BYPASS USERS
-    public static final ArrayList <String> bypass_users = new ArrayList<String>() {{
+    public static final ArrayList <String> piaMembers = new ArrayList<String>() {{
         add("251818929226383361"); // CombatSwift
         add("194517256389132288"); // Coasterteam
         add("131917628800237570"); // Soppo
@@ -128,5 +130,7 @@ public class Constants {
         add("329668217515540482"); // TenX
         add("148420768324124672"); // Diddleshot
         add("314505421870333952"); // AnuCat
+        add("446775463441072130"); // Oak
     }};
+    ;
 }

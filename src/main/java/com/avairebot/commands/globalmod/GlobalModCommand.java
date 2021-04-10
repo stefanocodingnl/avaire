@@ -78,19 +78,20 @@ public class GlobalModCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
         GuildTransformer transformer = context.getGuildTransformer();
 
-        if (args.length == 0) {
-            context.makeInfo("Please select what setting you'd like to modify (0 = Disabled)\n" +
-                " - ``mass-mention`` - " + transformer.getMassMentionSpam() + "\n" +
-                " - ``emoji-spam`` - " + transformer.getEmojiSpam() +"\n" +
-                " - ``link-spam`` - " + transformer.getLinkSpam() +"\n" +
-                " - ``message-spam`` - " + transformer.getMessageSpam() +"\n" +
-                " - ``image-spam`` - " + transformer.getImageSpam() +"\n" +
-                " - ``character-spam`` - " + transformer.getCharacterSpam() +"\n" +
-                " - ``young-warning-channel`` (local) (" + (transformer.getMemberToYoungChannelId()!= null ? transformer.getMemberToYoungChannelId() : "**Empty/Disabled**") + ")").queue();
+        if (transformer == null) {
+            context.makeError("Server settings cannot be loaded. Please run this command in a pinewood server.").queue();
             return false;
         }
-        if (transformer == null) {
-            context.makeError("Server settings cannot be loaded.").queue();
+
+        if (args.length == 0) {
+            context.makeInfo("Please select what setting you'd like to modify (0 = Disabled)\n" +
+                " - ``mass-mention`` - " + (transformer.getMassMentionSpam() != 0  ? transformer.getMassMentionSpam() : "**Empty/Disabled**") + ")" + "\n" +
+                " - ``emoji-spam`` - " + (transformer.getEmojiSpam() != 0  ? transformer.getEmojiSpam() : "**Empty/Disabled**") + ")" +"\n" +
+                " - ``link-spam`` - " + (transformer.getLinkSpam() != 0  ? transformer.getLinkSpam() : "**Empty/Disabled**") + ")" +"\n" +
+                " - ``message-spam`` - " + (transformer.getMessageSpam() != 0  ? transformer.getMessageSpam() : "**Empty/Disabled**") + ")" +"\n" +
+                " - ``image-spam`` - " + (transformer.getImageSpam() != 0  ? transformer.getImageSpam() : "**Empty/Disabled**") + ")" +"\n" +
+                " - ``character-spam`` - " + (transformer.getCharacterSpam() != 0  ? transformer.getCharacterSpam() : "**Empty/Disabled**") + ")" +"\n" +
+                " - ``young-warning-channel`` (local) (" + (transformer.getMemberToYoungChannelId()!= null ? transformer.getMemberToYoungChannelId() : "**Empty/Disabled**") + ")").queue();
             return false;
         }
 

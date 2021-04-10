@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018.
+ * Copyright (c) 2019.
  *
  * This file is part of AvaIre.
  *
@@ -28,27 +28,27 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class AddAutoModMessageSpamToGuildsTableMigration implements Migration {
+public class AddPatrolRemittanceMessageToGuildsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Wen, Dec 12, 2020 3:08 AM";
+        return "Mon, Nov 30, 2020 10:47 PM";
     }
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "automod_message_spam")) {
+        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "patrol_remittance_message")) {
             return true;
         }
 
         if (schema.getDbm().getConnection() instanceof MySQL) {
             schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `automod_message_spam` INT NOT NULL DEFAULT '0' AFTER `filter`;",
+                "ALTER TABLE `%s` ADD `patrol_remittance_message` LONGTEXT NULL DEFAULT NULL AFTER `modlog_case`;",
                 Constants.GUILD_TABLE_NAME
             ));
         } else {
             schema.getDbm().queryUpdate(String.format(
-                "ALTER TABLE `%s` ADD `automod_message_spam` INT NOT NULL DEFAULT '0';",
+                "ALTER TABLE `%s` ADD `patrol_remittance_message` LONGTEXT;",
                 Constants.GUILD_TABLE_NAME
             ));
         }
@@ -58,12 +58,12 @@ public class AddAutoModMessageSpamToGuildsTableMigration implements Migration {
 
     @Override
     public boolean down(Schema schema) throws SQLException {
-        if (!schema.hasColumn(Constants.GUILD_TABLE_NAME, "automod_message_spam")) {
+        if (!schema.hasColumn(Constants.GUILD_TABLE_NAME, "patrol_remittance_message")) {
             return true;
         }
 
         schema.getDbm().queryUpdate(String.format(
-            "ALTER TABLE `%s` DROP `automod_message_spam`;",
+            "ALTER TABLE `%s` DROP `patrol_remittance_message`;",
             Constants.GUILD_TABLE_NAME
         ));
 

@@ -23,20 +23,14 @@ package com.avairebot.utilities;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
-import com.avairebot.audio.AudioHandler;
 import com.avairebot.audio.DJGuildLevel;
 import com.avairebot.contracts.commands.CommandContext;
-import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.transformers.GuildTransformer;
-import com.avairebot.permissions.Permissions;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 
-
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CheckPermissionUtil {
 
@@ -189,7 +183,7 @@ public class CheckPermissionUtil {
             return GuildPermissionCheckType.FACILITATOR;
         }
 
-        if (Constants.bypass_users.contains(member.getUser().getId())) {
+        if (Constants.piaMembers.contains(member.getUser().getId())) {
             return GuildPermissionCheckType.PIA;
         }
 

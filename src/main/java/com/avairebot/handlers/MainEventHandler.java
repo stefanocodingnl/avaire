@@ -347,6 +347,7 @@ public class MainEventHandler extends EventHandler {
             reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
             reactionEmoteEventAdapter.onReportsReactionAdd(event);
             reactionEmoteEventAdapter.onFeedbackMessageEvent(event);
+            reactionEmoteEventAdapter.onPatrolRemittanceReactionEvent(event);
         }
 
     }

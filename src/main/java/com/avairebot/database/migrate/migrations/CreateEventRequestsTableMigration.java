@@ -10,7 +10,7 @@ public class CreateEventRequestsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Tue, Dec 1nd, 2020 7:30 AM";
+        return "Sat, Apr 10, 2021 11:43 AM";
     }
 
     @Override

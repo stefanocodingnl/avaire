@@ -32,8 +32,8 @@ import com.avairebot.audio.GuildMusicManager;
 import com.avairebot.audio.LavalinkManager;
 import com.avairebot.audio.cache.AudioState;
 import com.avairebot.blacklist.bot.Blacklist;
+import com.avairebot.blacklist.features.FeatureBlacklist;
 import com.avairebot.blacklist.kronos.BlacklistManager;
-import com.avairebot.blacklist.reports.ReportBlacklist;
 import com.avairebot.cache.CacheManager;
 import com.avairebot.cache.CacheType;
 import com.avairebot.chat.ConsoleColor;
@@ -151,7 +151,7 @@ public class AvaIre {
     private final EventEmitter eventEmitter;
     private final BotAdmin botAdmins;
     private final WebServlet servlet;
-    private final ReportBlacklist reportBlacklist;
+    private final FeatureBlacklist featureBlacklist;
     private final BlacklistManager blacklistManager;
     private final VoiceWhitelistManager voiceWhitelistManager;
     private GitLabApi gitLabApi;
@@ -394,8 +394,8 @@ public class AvaIre {
         blacklist.syncBlacklistWithDatabase();
 
         log.info("Preparing report blacklist and syncing the list with the database");
-        reportBlacklist = new ReportBlacklist(this);
-        reportBlacklist.syncBlacklistWithDatabase();
+        featureBlacklist = new FeatureBlacklist(this);
+        featureBlacklist.syncBlacklistWithDatabase();
 
         log.info("Preparing user blacklist and syncing the list with the manager");
         blacklistManager = new BlacklistManager(this);
@@ -630,8 +630,8 @@ public class AvaIre {
         return botAdmins;
     }
 
-    public ReportBlacklist getReportBlacklist() {
-        return reportBlacklist;
+    public FeatureBlacklist getFeatureBlacklist() {
+        return featureBlacklist;
     }
 
     public BlacklistManager getBlacklistManager() {

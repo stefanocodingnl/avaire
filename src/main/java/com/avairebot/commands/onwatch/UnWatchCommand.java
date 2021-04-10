@@ -163,7 +163,7 @@ public class UnWatchCommand extends OnWatchableCommand {
             OnWatchlog.notifyUser(user, context.getGuild(), modlogAction, caseId);
 
 
-            context.makeSuccess(context.i18n("userHasBeenUnwatchd"))
+            context.makeSuccess(context.i18n("userHasBeenUnmuted"))
                 .set("target", user.getAsMention())
                 .queue();
 

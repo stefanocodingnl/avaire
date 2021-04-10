@@ -2,6 +2,7 @@ package com.avairebot.commands.pinewood;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
+import com.avairebot.blacklist.features.FeatureScope;
 import com.avairebot.chat.PlaceholderMessage;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
@@ -86,6 +87,11 @@ public class RequestRewardCommand extends Command {
             return true;
         }*/
 
+
+        if (avaire.getFeatureBlacklist().isBlacklisted(context.getAuthor(), 438134543837560832L, FeatureScope.REWARD_REQUESTS)) {
+            context.makeError("You have been blacklisted from creating reward requests for this guild. Please ask a **Level 4** or higher to remove you from the ``"+ "PBST" +"`` Reward request blacklist. (Or global, if you're globally banned from all features)").queue();
+            return false;
+        }
 
         long requesterId = getRobloxId(context.getMember().getEffectiveName());
         if (requesterId == 0L) {

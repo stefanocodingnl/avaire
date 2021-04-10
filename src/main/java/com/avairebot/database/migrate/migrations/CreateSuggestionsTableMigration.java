@@ -10,7 +10,7 @@ public class CreateSuggestionsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Tue, Dec 1nd, 2020 7:30 AM";
+        return "Tue, Dec 1, 2020 7:30 AM";
     }
 
     @Override

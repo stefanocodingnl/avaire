@@ -89,6 +89,7 @@ public class GuildTransformer extends Transformer {
     private DJGuildLevel djGuildLevel = null;
 
     //Pinewood specific
+    private String mainDiscordRole = null;
     private String onWatchRole = null;
     private String onWatch = null;
     private String gamenightRole = null;
@@ -102,6 +103,10 @@ public class GuildTransformer extends Transformer {
     private String handbookReportChannel = null;
     private String reportInfoMessage = null;
     private String voteValidationChannel = null;
+    private String patrolRemittanceChannel = null;
+    private String patrolRemittanceEmoteId = null;
+    private String patrolRemittanceMessage = null;
+
 
     private int modlogCase = 0;
     private int onWatchCase = 0;
@@ -162,6 +167,7 @@ public class GuildTransformer extends Transformer {
             massMentionSpam = data.getInt("automod_mass_mention");
             messageSpam = data.getInt("automod_message_spam");
 
+            mainDiscordRole = data.getString("main_discord_role");
 
             reportCategory = data.getLong("report_discord_category");
             voteValidationChannel = data.getString("vote_validation_channel");
@@ -177,6 +183,10 @@ public class GuildTransformer extends Transformer {
             handbookReportChannel = data.getString("handbook_report_channel");
             reportInfoMessage = data.getString("report_info_message");
             robloxGroupId = data.getInt("roblox_group_id");
+
+            patrolRemittanceChannel = data.getString("patrol_remittance_channel");
+            patrolRemittanceEmoteId = data.getString("patrol_remittance_emote_id");
+            patrolRemittanceMessage = data.getString("patrol_remittance_message");
 
             onWatchCase = data.getInt("on_watch_case");
             onWatchRole = data.getString("on_watch_role");
@@ -806,6 +816,39 @@ public class GuildTransformer extends Transformer {
 
     public String getMemberToYoungChannelId() {
         return memberToYoungChannelId;
+    }
+
+    public String getPatrolRemittanceChannel() {
+        return patrolRemittanceChannel;
+    }
+
+    public void setPatrolRemittanceChannel(String patrolRemittanceChannel) {
+        this.patrolRemittanceChannel = patrolRemittanceChannel;
+    }
+
+    public String getPatrolRemittanceEmoteId() {
+        return patrolRemittanceEmoteId;
+    }
+
+    public void setPatrolRemittanceEmoteId(String patrolRemittanceEmoteId) {
+        this.patrolRemittanceEmoteId = patrolRemittanceEmoteId;
+    }
+
+    public String getPatrolRemittanceMessage() {
+        return patrolRemittanceMessage;
+    }
+
+    public void setPatrolRemittanceMessage(String patrolRemittanceMessage) {
+        this.patrolRemittanceMessage = patrolRemittanceMessage;
+    }
+
+
+    public String getMainDiscordRole() {
+        return mainDiscordRole;
+    }
+
+    public void setMainDiscordRole(String mainDiscordRole) {
+        this.mainDiscordRole = mainDiscordRole;
     }
 
     public void setMemberToYoungChannelId(String memberToYoungChannelId) {

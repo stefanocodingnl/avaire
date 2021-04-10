@@ -301,7 +301,6 @@ public class MessageEventAdapter extends EventAdapter {
             return;
         }
 
-
         if (!guilds.contains(event.getGuild().getId())) {
             return;
         }
@@ -323,7 +322,9 @@ public class MessageEventAdapter extends EventAdapter {
                 }
             }
 
-            String message = event.getContentStripped().replaceAll("[!@#$%^&*()\\[\\]\\-=';/\\\\{}:\"><?|+_`~]", " ");
+            String message = event.getContentStripped().replaceAll("[!@#$%^&*()\\[\\]\\-=';/\\\\{}:\"><?|+_`~]", "");
+
+
             if (checkGlobalExactFilter(message, guild, event)) {
                 System.out.println("Exact Filter removed: " + message);
                 event.delete().queue();
@@ -334,7 +335,7 @@ public class MessageEventAdapter extends EventAdapter {
                 event.delete().queue();
                 MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
                 return;
-            } else if (checkAutomodFilters(message, guild, event)) {
+            } else if (checkAutomodFilters(guild, event)) {
                 event.getTextChannel().retrieveMessageById(event.getId()).queue(l -> {
                     l.delete().reason("Auto-Mod Violation").queue();
                     System.out.println("AutoMod removed in " + event.getGuild().getName() + " (<#" + event.getTextChannel().getId() + ">): " + event.getContentRaw());
@@ -386,12 +387,13 @@ public class MessageEventAdapter extends EventAdapter {
         }
         return fetchRedirect(con.getHeaderField("Location"), redirects);
     }
-    private boolean checkAutomodFilters(String string, GuildTransformer transformer, Message message) {
+    private boolean checkAutomodFilters(GuildTransformer transformer, Message message) {
 
         if (transformer.getMassMentionSpam() > 0) {
             if (message.getMentionedMembers().size() >= transformer.getMassMentionSpam()) {
                 warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Mass Mention``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
-                return true;
+                message.getChannel().sendMessage("Please do not mass mention multiple people. " + message.getMember().getAsMention()).queue();
+                return false;
             }
         }
         if (transformer.getCharacterSpam() > 0) {
@@ -492,19 +494,26 @@ public class MessageEventAdapter extends EventAdapter {
                 return;
             }
 
-            if (messageId.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+            int permissionLevel = CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), event.getGuild(), messageId.getMember()).getLevel();
+            if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
                 return;
             }
 
             String message = messageId.getMessage().getContentStripped().replaceAll("[,.!@#$%^&*()\\[\\]\\-=';/\\\\{}:\"><?|+_`~]", "");
             if (checkExactFilter(message, guild, messageId.getMessage())) {
-                // system.out.println("Exact Filter removed: " + message);
+                System.out.println("[EF] Exact Filter removed: " + message);
                 messageId.getMessage().delete().queue();
 
             } else if (checkWildcardFilter(message, guild, messageId.getMessage())) {
-                // system.out.println("Wildcard Filter removed: " + message);
+                System.out.println("[WCF] Wildcard Filter removed: " + message);
                 messageId.getMessage().delete().queue();
 
+            } else if (checkExactFilter(messageId.getMessage().getContentStripped(), guild, messageId.getMessage())) {
+                System.out.println("[EEF] Exact Filter removed: " + message);
+                messageId.getMessage().delete().queue();
+            } else if (checkWildcardFilter(messageId.getMessage().getContentStripped(), guild, messageId.getMessage())) {
+                System.out.println("[EWCF] Wildcard Filter removed: " + message);
+                messageId.getMessage().delete().queue();
             }
         }
     }

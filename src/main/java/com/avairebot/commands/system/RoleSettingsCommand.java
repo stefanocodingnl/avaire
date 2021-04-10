@@ -28,6 +28,7 @@ import com.avairebot.commands.CommandPriority;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.contracts.commands.SystemCommand;
+import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.ComparatorUtil;
@@ -107,15 +108,94 @@ public class RoleSettingsCommand extends SystemCommand {
             return sendEnabledRoles(context, guildTransformer);
         }
 
-        if (args[0].equals("get-level")) {
-            return getUserLevel(context, guildTransformer);
+        switch (args[0]) {
+            case "get-level":
+                return getUserLevel(context, guildTransformer);
+            case "setup-basic-roles":
+                return handleFirstSetupRoles(context, guildTransformer);
+            case "group-id":
+            case "sgi":
+            case "set-group-id":
+                return runSetGroupId(context, args);
+            case "smr":
+            case "set-main-role":
+                return runSetMainRole(context, args);
+            default:
+                return handleRoleSetupArguments(context, args);
         }
 
-        if (args[0].equals("setup-basic-roles")) {
-            return handleFirstSetupRoles(context, guildTransformer);
+
+    }
+
+    private boolean runSetGroupId(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
         }
 
+        if (NumberUtil.isNumeric(args[1])) {
+            GuildTransformer transformer = context.getGuildTransformer();
+            if (transformer == null) {
+                context.makeError("I can't pull the guilds information, please try again later.").queue();
+                return false;
+            }
+            transformer.setRobloxGroupId(Integer.parseInt(args[1]));
+            return updateGroupId(transformer, context);
+        } else {
+            return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
+        }
 
+    }
+
+    private boolean runSetMainRole(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+
+        if (NumberUtil.isNumeric(args[1])) {
+            GuildTransformer transformer = context.getGuildTransformer();
+            if (transformer == null) {
+                context.makeError("I can't pull the guilds information, please try again later.").queue();
+                return false;
+            }
+            transformer.setMainDiscordRole(args[1]);
+            return updateMainRole(transformer, context);
+        } else {
+            return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
+        }
+
+    }
+
+    private boolean updateMainRole(GuildTransformer transformer, CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("main_discord_role", transformer.getMainDiscordRole());
+            });
+
+            context.makeSuccess("Set the main discord role for ``:guild`` to ``:id``").set("guild", context.getGuild().getName()).set("id", transformer.getRobloxGroupId()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+    }
+
+    private boolean updateGroupId(GuildTransformer transformer, CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("roblox_group_id", transformer.getRobloxGroupId());
+            });
+
+            context.makeSuccess("Set the ID for ``:guild`` to ``:id``").set("guild", context.getGuild().getName()).set("id", transformer.getRobloxGroupId()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+    }
+
+    private boolean handleRoleSetupArguments(CommandMessage context, String[] args) {
         Role role = MentionableUtil.getRole(context.getMessage(), new String[]{args[0]});
         if (role == null) {
             return sendErrorMessage(context, context.i18n("invalidRole", args[0]));
@@ -123,14 +203,18 @@ public class RoleSettingsCommand extends SystemCommand {
 
 
         if (args.length > 1) {
-            if (args[1].equals("mod") || args[1].equals("admin") || args[1].equals("manager") || args[1].equals("no-links")) {
-                if (args.length > 2) {
-                    return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[2]));
-                }
-                return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[1]));
-            } else {
-                context.makeError("Invalid role given to manage.").queue();
-                return false;
+            switch (args[1]) {
+                case "mod":
+                case "admin":
+                case "manager":
+                case "no-links":
+                    if (args.length > 2) {
+                        return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[2]));
+                    }
+                    return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[1]));
+                default:
+                    context.makeError("Invalid role given to manage.").queue();
+                    return false;
             }
 
         }
@@ -261,19 +345,25 @@ public class RoleSettingsCommand extends SystemCommand {
     }
 
     private boolean sendEnabledRoles(CommandMessage context, GuildTransformer transformer) {
-        if (transformer.getAdministratorRoles().isEmpty() && transformer.getModeratorRoles().isEmpty() && transformer.getManagerRoles().isEmpty() && transformer.getNoLinksRoles().isEmpty()) {
-            return sendErrorMessage(context, "Sorry, but there are no manager, admin mod or no-links roles on the discord configured.");
+        if (transformer.getAdministratorRoles().isEmpty() && transformer.getModeratorRoles().isEmpty() && transformer.getManagerRoles().isEmpty() && transformer.getNoLinksRoles().isEmpty()
+            && transformer.getMainDiscordRole() == null && transformer.getRobloxGroupId() == 0) {
+            return sendErrorMessage(context, "Sorry, but there are no manager, admin, mod, main role id, roblox group id or no-links roles on the discord configured.");
         }
 
         Set <Long> mod = transformer.getModeratorRoles();
         Set <Long> manager = transformer.getManagerRoles();
         Set <Long> admins = transformer.getAdministratorRoles();
         Set <Long> nolinks = transformer.getNoLinksRoles();
+        int groupId = transformer.getRobloxGroupId();
+        String mainRoleId = transformer.getMainDiscordRole();
+
         StringBuilder sb = new StringBuilder();
         runAdminRolesCheck(context, admins.size() > 0, sb, admins);
         runManagerRolesCheck(context, manager.size() > 0, sb, manager);
         runModRolesCheck(context, mod.size() > 0, sb, mod);
         runNoLinksRolesCheck(context, nolinks.size() > 0, sb, nolinks);
+        runRobloxGroupIdCheck(context, sb, groupId);
+        runMainRoleIdCheck(context, sb, mainRoleId);
 
         context.makeInfo(context.i18n("listRoles"))
             .set("roles", sb.toString())
@@ -286,6 +376,21 @@ public class RoleSettingsCommand extends SystemCommand {
         return true;
     }
 
+    private void runRobloxGroupIdCheck(CommandMessage context, StringBuilder sb, int groupId) {
+        if (groupId != 0) {
+            sb.append("\n\n**Roblox Group ID**: ``").append(groupId).append("``");
+        } else {
+            sb.append("\n\n**Roblox Group ID**\n``Group ID has not been set!``");
+        }
+    }
+
+    private void runMainRoleIdCheck(CommandMessage context, StringBuilder sb, String roleId) {
+        if (roleId != null) {
+            sb.append("\n\n**Main Role ID**: ``").append(roleId).append("``");
+        } else {
+            sb.append("\n\n**Main Role ID**\n``Main Role ID has not been set!``");
+        }
+    }
 
     @SuppressWarnings("ConstantConditions")
     private boolean handleToggleRole(CommandMessage context, Role role, String rank, ComparatorUtil.ComparatorType value) {

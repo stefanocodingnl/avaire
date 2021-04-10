@@ -2,14 +2,11 @@ package com.avairebot.blacklist.kronos;
 
 import com.avairebot.AvaIre;
 import com.avairebot.cache.CacheType;
-import com.avairebot.chat.PlaceholderMessage;
-import com.avairebot.commands.CommandMessage;
 import com.google.gson.internal.LinkedTreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class BlacklistManager {
@@ -22,11 +19,10 @@ public class BlacklistManager {
         this.avaire = avaire;
     }
 
-    private final String TMSCacheToken = "blacklist.tms.blacklists";
-    private final String PBSTCacheToken = "blacklist.pbst.blacklists";
-
     @SuppressWarnings("unchecked")
     public ArrayList<Long> getTMSBlacklist() {
+        log.info("TMS Blacklist has been requested.");
+        String TMSCacheToken = "blacklist.tms.blacklists";
         if (avaire.getCache().getAdapter(CacheType.FILE).has(TMSCacheToken)) {
             ArrayList<LinkedTreeMap<String, Double>> items = (ArrayList<LinkedTreeMap<String, Double>>) avaire.getCache()
                 .getAdapter(CacheType.FILE).get(TMSCacheToken);
@@ -44,6 +40,8 @@ public class BlacklistManager {
 
     @SuppressWarnings("unchecked")
     public ArrayList<Long> getPBSTBlacklist() {
+        log.info("PBST Blacklist has been requested.");
+        String PBSTCacheToken = "blacklist.pbst.blacklists";
         if (avaire.getCache().getAdapter(CacheType.FILE).has(PBSTCacheToken)) {
             List<LinkedTreeMap<String, Double>> items = (List<LinkedTreeMap<String, Double>>) avaire.getCache()
                 .getAdapter(CacheType.FILE).get(PBSTCacheToken);

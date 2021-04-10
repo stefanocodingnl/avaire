@@ -2,6 +2,7 @@ package com.avairebot.commands.pinewood;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
+import com.avairebot.blacklist.features.FeatureScope;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
@@ -139,6 +140,12 @@ public class PBSTFeedbackCommand extends Command {
 
                 TextChannel c = avaire.getShardManager().getTextChannelById(d.getString("suggestion_channel"));
                 if (c != null) {
+
+                    if (avaire.getFeatureBlacklist().isBlacklisted(context.getAuthor(), c.getGuild().getIdLong(), FeatureScope.SUGGESTIONS)) {
+                        message.editMessage(context.makeError("You have been blacklisted from creating suggestions for this guild. Please ask a **Level 4** or higher to remove you from the ``"+c.getGuild().getName()+"`` suggestion blacklist. (Or global, if you're globally banned from all features)").buildEmbed()).queue();
+                        return;
+                    }
+
                     message.editMessage(context.makeInfo("You've selected a suggestion for: ``:guild``\nPlease tell me, what is your suggestion?").set("guild", d.getString("name")).buildEmbed()).queue();
                     message.clearReactions().queue();
                     waiter.waitForEvent(GuildMessageReceivedEvent.class, l -> l.getMember().equals(context.member) && message.getChannel().equals(l.getChannel()) && antiSpamInfo(context, l), p -> {

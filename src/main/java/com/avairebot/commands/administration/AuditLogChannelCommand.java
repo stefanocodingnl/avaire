@@ -91,7 +91,7 @@ public class AuditLogChannelCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
         GuildTransformer guildTransformer = context.getGuildTransformer();
         if (args.length < 1) {
-            context.makeError("Please choose your argument...\n- ``set-channel``").queue();
+            context.makeError("Please choose your argument...\n- ``set-channel``\n- ``- ``set-join-logs``").queue();
             return false;
         }
 

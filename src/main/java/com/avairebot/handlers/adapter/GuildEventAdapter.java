@@ -69,32 +69,35 @@ public class GuildEventAdapter extends EventAdapter {
             QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", e.getUser().getId());
             Collection unbanCollection = qb.get();
             if (unbanCollection.size() > 0) {
-                List<AuditLogEntry> logs = e.getGuild().retrieveAuditLogs().stream().filter(d -> d.getType().equals(ActionType.UNBAN) && d.getTargetType().equals(TargetType.MEMBER) && d.getTargetId().equals(e.getUser().getId())).collect(Collectors.toList());
-                MessageChannel tc = avaire.getShardManager().getTextChannelById("788316320747094046");
+                e.getGuild().retrieveAuditLogs().queue(items -> {
+                    List<AuditLogEntry> logs = items.stream().filter(d -> d.getType().equals(ActionType.UNBAN) && d.getTargetType().equals(TargetType.MEMBER) && d.getTargetId().equals(e.getUser().getId())).collect(Collectors.toList());
+                    MessageChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
 
-                if (logs.size() < 1) {
-                    if (tc != null) {
-                        tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription(e.getUser().getAsTag() + " has been unbanned from **" + e.getGuild() + "**, however, I could not find the user responsible for the unban. Please check the audit logs in the responsible server for more information. (User has been re-banned)").buildEmbed()).queue();
-                    }
-                    e.getGuild().ban(e.getUser().getId(), 0, "User was unbanned, user has been re-banned due to permban system in Xeus. Original ban reason (Do not unban without PIA permission): " + unbanCollection.get(0).getString("reason")).reason("PIA BAN: " + unbanCollection.get(0).getString("reason")).queue();
-                } else {
-                    if (tc != null) {
-                        if (Constants.bypass_users.contains(logs.get(0).getUser().getId())) {
-                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "**" + " has been unbanned from **" + e.getGuild().getName() + "**\nIssued by PIA Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + "\nWith reason: " + (logs.get(0).getReason() != null ? logs.get(0).getReason() : "No reason given")).buildEmbed()).queue();
-                            logs.get(0).getUser().openPrivateChannel().queue(o -> {
-                                if (o.getUser().isBot()) return;
-                                o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("You have curr").buildEmbed()).queue();
-                            });
-                        } else {
-                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "** has been unbanned from **" + e.getGuild().getName() + "**\nIssued by Guild Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + " (User has been re-banned)").buildEmbed()).queue();
-                            e.getGuild().ban(e.getUser().getId(), 0, "User was unbanned, user has been re-banned due to permban system in Xeus. Original ban reason (Do not unban without PIA permission): " + unbanCollection.get(0).getString("reason")).reason("PIA BAN: " + unbanCollection.get(0).getString("reason")).queue();
-                            logs.get(0).getUser().openPrivateChannel().queue(o -> {
-                                if (o.getUser().isBot()) return;
-                                o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("Sorry, but this user **:bannedUser** was permbanned of PB though the Xeus blacklist feature and may **not** be unbanned. Please ask a PIA agent to handle an unban if deemed necessary.").buildEmbed()).queue();
-                            });
+                    if (logs.size() < 1) {
+                        if (tc != null) {
+                            tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription(e.getUser().getAsTag() + " has been unbanned from **" + e.getGuild() + "**, however, I could not find the user responsible for the unban. Please check the audit logs in the responsible server for more information. (User has been re-banned)").buildEmbed()).queue();
+                        }
+                        e.getGuild().ban(e.getUser().getId(), 0, "User was unbanned, user has been re-banned due to permban system in Xeus. Original ban reason (Do not unban without PIA permission): " + unbanCollection.get(0).getString("reason")).reason("PIA BAN: " + unbanCollection.get(0).getString("reason")).queue();
+                    } else {
+                        if (tc != null) {
+                            if (Constants.piaMembers.contains(logs.get(0).getUser().getId())) {
+                                tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "**" + " has been unbanned from **" + e.getGuild().getName() + "**\nIssued by PIA Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + "\nWith reason: " + (logs.get(0).getReason() != null ? logs.get(0).getReason() : "No reason given")).buildEmbed()).queue();
+                                logs.get(0).getUser().openPrivateChannel().queue(o -> {
+                                    if (o.getUser().isBot()) return;
+                                    o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("You have currently unbanned a PIA Globalbanned person.").buildEmbed()).queue();
+                                });
+                            } else {
+                                tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "** has been unbanned from **" + e.getGuild().getName() + "**\nIssued by Guild Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + " (User has been re-banned)").buildEmbed()).queue();
+                                e.getGuild().ban(e.getUser().getId(), 0, "User was unbanned, user has been re-banned due to permban system in Xeus. Original ban reason (Do not unban without PIA permission): " + unbanCollection.get(0).getString("reason")).reason("PIA BAN: " + unbanCollection.get(0).getString("reason")).queue();
+                                logs.get(0).getUser().openPrivateChannel().queue(o -> {
+                                    if (o.getUser().isBot()) return;
+                                    o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("Sorry, but this user **:bannedUser** was permbanned of PB though the Xeus blacklist feature and may **not** be unbanned. Please ask a PIA agent to handle an unban if deemed necessary.").set("bannedUser", e.getUser().getAsTag() + " / " + e.getUser().getName()).buildEmbed()).queue();
+                                });
+                            }
                         }
                     }
-                }
+                });
+
             }
         } catch (SQLException exception) {
             exception.printStackTrace();

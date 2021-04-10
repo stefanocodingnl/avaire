@@ -19,25 +19,29 @@
  *
  */
 
-package com.avairebot.blacklist.reports;
+package com.avairebot.blacklist.features;
 
 import com.avairebot.utilities.NumberUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public enum Scope {
+public enum FeatureScope {
 
     /**
      * The user scope, used for blacklisting users.
      */
-    USER(0, 'M', "Member");
+    GLOBAL(0, "G", "Global Feature Blacklist"),
+    REPORTS(1, "R", "Reports"),
+    REWARD_REQUESTS(2, "RR", "Reward Requests"),
+    PATROL_REMITTANCE(3, "PR", "Reports"),
+    SUGGESTIONS(4, "S", "Suggestions");
 
     private final int id;
-    private final char prefix;
+    private final String prefix;
     private final String name;
 
-    Scope(int id, char prefix, String name) {
+    FeatureScope(int id, String prefix, String name) {
         this.id = id;
         this.prefix = prefix;
         this.name = name;
@@ -50,10 +54,10 @@ public enum Scope {
      * @param id The ID that the scope should match.
      * @return Possibly-null, the scope matching the given ID.
      */
-    public static Scope fromId(int id) {
-        for (Scope scope : values()) {
-            if (scope.getId() == id) {
-                return scope;
+    public static FeatureScope fromId(int id) {
+        for (FeatureScope featureScope : values()) {
+            if (featureScope.getId() == id) {
+                return featureScope;
             }
         }
         return null;
@@ -68,15 +72,15 @@ public enum Scope {
      * @return Possible-null, the scope matching the given string.
      */
     @Nullable
-    public static Scope parse(@Nonnull String string) {
+    public static FeatureScope parse(@Nonnull String string) {
         int parsedInt = NumberUtil.parseInt(string, -1);
-        for (Scope scope : values()) {
-            if (string.toUpperCase().charAt(0) == scope.getPrefix()) {
-                return scope;
+        for (FeatureScope featureScope : values()) {
+            if (string.equalsIgnoreCase(featureScope.getPrefix())) {
+                return featureScope;
             }
 
-            if (parsedInt == scope.getId()) {
-                return scope;
+            if (parsedInt == featureScope.getId()) {
+                return featureScope;
             }
         }
         return null;
@@ -96,7 +100,7 @@ public enum Scope {
      *
      * @return The prefix of the scope.
      */
-    public char getPrefix() {
+    public String getPrefix() {
         return prefix;
     }
 

@@ -28,7 +28,7 @@ import com.avairebot.database.schema.Schema;
 
 import java.sql.SQLException;
 
-public class ReformatReportBlacklistTableMigration implements Migration {
+public class ReformatFeatureBlacklistTableMigration implements Migration {
 
     @Override
     public String created_at() {
@@ -47,22 +47,22 @@ public class ReformatReportBlacklistTableMigration implements Migration {
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` DROP `id`;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` DROP `user_id`;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` ADD `id` VARCHAR(128) NULL;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` ADD `type` INT(2) NOT NULL DEFAULT '0';",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         return true;
@@ -80,28 +80,28 @@ public class ReformatReportBlacklistTableMigration implements Migration {
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` DROP `id`;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` DROP `type`;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` ADD `id` INT NOT NULL AUTO_INCREMENT;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         schema.getDbm().queryUpdate(String.format(
             "ALTER TABLE `%s` ADD `user_id` BIGINT UNSIGNED NOT NULL;",
-            Constants.REPORT_BLACKLIST_TABLE_NAME
+            Constants.FEATURE_BLACKLIST_TABLE_NAME
         ));
 
         return false;
     }
 
     private boolean hasColumn(Schema schema, String name) throws SQLException {
-        return schema.hasColumn(Constants.REPORT_BLACKLIST_TABLE_NAME, name);
+        return schema.hasColumn(Constants.FEATURE_BLACKLIST_TABLE_NAME, name);
     }
 }

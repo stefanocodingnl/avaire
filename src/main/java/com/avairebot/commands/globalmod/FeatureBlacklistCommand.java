@@ -22,7 +22,7 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
-import com.avairebot.blacklist.reports.Scope;
+import com.avairebot.blacklist.features.FeatureScope;
 import com.avairebot.chat.SimplePaginator;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.commands.CommandPriority;
@@ -33,31 +33,30 @@ import net.dv8tion.jda.api.entities.User;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-public class ReportBlacklistCommand extends Command {
+public class FeatureBlacklistCommand extends Command {
 
-    public ReportBlacklistCommand(AvaIre avaire) {
+    public FeatureBlacklistCommand(AvaIre avaire) {
         super(avaire);
     }
 
     @Override
     public String getName() {
-        return "Report Blacklist Command";
+        return "Feature Blacklist Command";
     }
 
     @Override
     public String getDescription() {
-        return "Add, Remove, and list users and servers on the Report blacklist.";
+        return "Add, Remove, and list users and servers on the feature blacklist.";
     }
 
     @Override
     public List <String> getUsageInstructions() {
         return Arrays.asList(
-            "`:command list` - Lists users and servers on the Report blacklist",
-            "`:command remove <id>` - Removes the entry with the given ID from the Report blacklist",
-            "`:command add <type> <id> <reason>` - Add the type with the given ID to the Report blacklist"
+            "`:command list` - Lists users and servers on the feature blacklist",
+            "`:command remove <id>` - Removes the entry with the given ID from the feature blacklist",
+            "`:command add <type> <id> <reason>` - Add the type with the given ID to the feature blacklist"
         );
     }
 
@@ -72,13 +71,13 @@ public class ReportBlacklistCommand extends Command {
     @Override
     public List <String> getExampleUsage() {
         return Arrays.asList(
-            "`:command add U 321 Doing stuff` - Blacklists the user with an ID of 321 for \"Doing stuff\""
+            "`:command add M 321920293939203910 Doing stuff` - Blacklists the user with an ID of 321 for \"Doing stuff\" from reports in the guild you ran the command in."
         );
     }
 
     @Override
     public List <String> getTriggers() {
-        return Collections.singletonList("report-blacklist");
+        return Arrays.asList("feature-blacklist", "fb");
     }
 
     @Override
@@ -100,7 +99,7 @@ public class ReportBlacklistCommand extends Command {
                 return addEntryToBlacklist(context, Arrays.copyOfRange(args, 1, args.length));
 
             case "remove":
-                return removeEntryFromBlacklist(context, Arrays.copyOfRange(args, 1, args.length));
+                return removeEntryFromBlacklist(context,Arrays.copyOfRange(args, 1, args.length));
 
             default:
                 return sendErrorMessage(context, "Invalid `action` given, a valid `action` must be given!");
@@ -110,7 +109,7 @@ public class ReportBlacklistCommand extends Command {
     private boolean listBlacklist(CommandMessage context, String[] args) {
         List<String> records = new ArrayList<>();
 
-        avaire.getReportBlacklist().getBlacklistEntities().forEach(entity -> {
+        avaire.getFeatureBlacklist().getBlacklistEntities().forEach(entity -> {
             records.add(I18n.format("{0} **{1}** `{2}` - `{3}`\n ► _\"{4}\"_",
                 entity.getScope().getId() == 0 ? "\uD83E\uDD26" : "\uD83C\uDFEC",
                 entity.getScope().getName(),
@@ -161,13 +160,21 @@ public class ReportBlacklistCommand extends Command {
             return sendErrorMessage(context, "Invalid ID given, the ID must be a valid number value!");
         }
 
-        if (!avaire.getReportBlacklist().isBlacklisted(user, guildId)) {
+        if (args.length == 1) {
+            return sendErrorMessage(context, "Missing parameter, a valid `scope` must be given!");
+        }
+        FeatureScope s = FeatureScope.parse(args[1]);
+        if (s == null) {
+            return sendErrorMessage(context, "Invalid `scope` given. Possible scopes are:\n - G (Global Feature Blacklist)\n - R (Reports)\n - RR (Request Reward)\n - S (Suggestions)\n - PR (Patrol Remittance)");
+        }
+
+        if (!avaire.getFeatureBlacklist().isBlacklisted(user, guildId, s)) {
             return sendErrorMessage(context, "There are no records in the blacklist with an ID of `{0}`", "" + id);
         }
 
-        avaire.getReportBlacklist().remove(id, guildId);
+        avaire.getFeatureBlacklist().remove(id, guildId, s);
 
-        context.makeSuccess("The Blacklist record with an ID of **:id** has been removed from the blacklist")
+        context.makeSuccess("The feature blacklist record with an ID of **:id** has been removed from the blacklist")
             .set("id", id)
             .queue();
 
@@ -179,9 +186,9 @@ public class ReportBlacklistCommand extends Command {
             return sendErrorMessage(context, "Missing arguments, `type` and `id` argument required!");
         }
 
-        Scope scope = Scope.parse(args[0]);
-        if (scope == null) {
-            return sendErrorMessage(context, "Invalid type given, the type must be a valid blacklist scope!\nValid types are `M` for users.");
+        FeatureScope featureScope = FeatureScope.parse(args[0]);
+        if (featureScope == null) {
+            return sendErrorMessage(context, "Invalid type given, the type must be a valid blacklist scope!\nValid types are:\n - G (Global Feature Blacklist)\n - R (Reports)\n - RR (Request Reward)\n - S (Suggestions)\n - PR (Patrol Remittance)");
         }
 
         long id;
@@ -197,10 +204,10 @@ public class ReportBlacklistCommand extends Command {
             reason = String.join(" ", args);
         }
 
-        avaire.getReportBlacklist().addIdToBlacklist(scope, id, reason, context.guild.getIdLong());
+        avaire.getFeatureBlacklist().addIdToBlacklist(featureScope, id, reason, context.guild.getIdLong());
 
         context.makeSuccess("The **:type** with an ID of **:id** has been added to the report blacklist of :guild!")
-            .set("type", scope.name().toLowerCase())
+            .set("type", featureScope.getName())
             .set("id", id)
             .set("guild", context.getGuild().getName())
             .queue();

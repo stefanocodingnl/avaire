@@ -19,7 +19,7 @@
  *
  */
 
-package com.avairebot.blacklist.reports;
+package com.avairebot.blacklist.features;
 
 import com.avairebot.contracts.debug.Evalable;
 import com.avairebot.time.Carbon;
@@ -27,9 +27,9 @@ import com.avairebot.time.Carbon;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("WeakerAccess")
-public class ReportBlacklistEntity extends Evalable {
+public class FeatureBlacklistEntity extends Evalable {
 
-    private final Scope scope;
+    private final FeatureScope featureScope;
     private final long id;
     private final Carbon expiresIn;
     private final String reason;
@@ -38,13 +38,13 @@ public class ReportBlacklistEntity extends Evalable {
     /**
      * Create a new blacklist entity with the given scope, id, and expires time.
      *
-     * @param scope     The scope for the blacklist entity.
+     * @param featureScope     The scope for the blacklist entity.
      * @param id        The ID that the blacklist entity should be linked to.
      * @param reason    The reason the entity was blacklisted.
      * @param expiresIn The carbon time instance for when the blacklist entity should expire.
      */
-    ReportBlacklistEntity(Scope scope, long id, @Nullable String reason, @Nullable Carbon expiresIn, long guildId) {
-        this.scope = scope;
+    FeatureBlacklistEntity(FeatureScope featureScope, long id, @Nullable String reason, @Nullable Carbon expiresIn, long guildId) {
+        this.featureScope = featureScope;
         this.id = id;
         this.reason = reason;
         this.expiresIn = expiresIn;
@@ -56,12 +56,12 @@ public class ReportBlacklistEntity extends Evalable {
      * entity will be created with a <code>null</code> expire time, making
      * the blacklist entity last forever.
      *
-     * @param scope  The scope for the blacklist entity.
+     * @param featureScope  The scope for the blacklist entity.
      * @param id     The ID that the blacklist entity should be linked to.
      * @param reason The reason the entity was blacklisted.
      */
-    public ReportBlacklistEntity(Scope scope, long id, @Nullable String reason, long guildId) {
-        this(scope, id, reason, null, guildId);
+    public FeatureBlacklistEntity(FeatureScope featureScope, long id, @Nullable String reason, long guildId) {
+        this(featureScope, id, reason, null, guildId);
     }
 
     /**
@@ -69,8 +69,8 @@ public class ReportBlacklistEntity extends Evalable {
      *
      * @return The scope for the blacklist entity.
      */
-    public Scope getScope() {
-        return scope;
+    public FeatureScope getScope() {
+        return featureScope;
     }
 
     /**

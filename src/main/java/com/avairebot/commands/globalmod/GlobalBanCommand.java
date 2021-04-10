@@ -12,6 +12,7 @@ import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -127,6 +128,12 @@ public class GlobalBanCommand extends Command {
                 p.sendMessage(context.makeInfo("*You have been **global-banned** from all the Pinewood Builders discords by an PIA Agent. For the reason: *```" + reason + "```\n\n" +
                     "If you feel that your ban was unjustified please appeal at the Pinewood Builders Appeal Center; https://discord.gg/mWnQm25").setColor(Color.BLACK).buildEmbed()).queue();
             });
+        }
+
+        TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+        if (tc != null) {
+            tc.sendMessage(context.makeInfo("[``:global-unbanned-id`` was global-banned from all discords by :user for](:link):\n" +
+                "```:reason```").set("global-unbanned-id", args[0]).set("reason", reason).set("user", context.getMember().getAsMention()).set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
         }
 
         StringBuilder sb = new StringBuilder();
