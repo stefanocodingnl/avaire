@@ -499,8 +499,8 @@ public class ReportUserCommand extends Command {
         if (l.getMessage().getContentRaw().equalsIgnoreCase("cancel")) return true;
 
         int length = l.getMessage().getContentRaw().length();
-        if (length < 50 || length > 700) {
-            context.getChannel().sendMessage(context.makeError("Sorry, but reports have to have a minimal of 50 characters and a maximum of 700 characters.\n" +
+        if (length <= 25 || length >= 700) {
+            context.getChannel().sendMessage(context.makeError("Sorry, but reports have to have a minimal of 25 characters and a maximum of 700 characters.\n" +
                 "Your report currently has **``" + length + "``** characters").buildEmbed()).queue();
             return false;
 

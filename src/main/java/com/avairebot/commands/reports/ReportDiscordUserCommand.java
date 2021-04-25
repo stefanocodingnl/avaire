@@ -15,7 +15,10 @@ import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 
 public class ReportDiscordUserCommand extends Command {
 

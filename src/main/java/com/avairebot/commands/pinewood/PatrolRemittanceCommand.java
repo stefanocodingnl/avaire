@@ -17,6 +17,8 @@ import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.NumberUtil;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -34,6 +36,11 @@ import java.util.function.Consumer;
 import static com.avairebot.utils.JsonReader.readJsonFromUrl;
 
 public class PatrolRemittanceCommand extends Command {
+
+    public static final Cache<Long, Guild> cache = CacheBuilder.newBuilder()
+        .recordStats()
+        .expireAfterWrite(24, TimeUnit.HOURS)
+        .build();
 
     public PatrolRemittanceCommand(AvaIre avaire) {
         super(avaire);
@@ -98,7 +105,7 @@ public class PatrolRemittanceCommand extends Command {
                 switch (args[0]) {
                     case "sc":
                     case "set-channel": {
-                        return runSetReportChannel(context, args);
+                        return runSetRemittanceChannel(context, args);
                     }
                     case "clear":
                     case "reset": {
@@ -160,15 +167,12 @@ public class PatrolRemittanceCommand extends Command {
                                             return;
                                         }
                                         message.editMessage(context.makeInfo(d.getString("patrol_remittance_message", "A remittance message for ``:guild`` could not be found. Ask the HR's of ``:guild`` to set one.\n" +
-                                            "If you'd like to request remittance, please enter evidence of this in right now." +"``` ```\n\nPlease enter a **LINK** to evidence.\n\n" +
+                                            "If you'd like to request remittance, please enter evidence of this in right now." +"``` ```\n\nPlease enter a **LINK** to evidence. " +
+                                            "\n**Remember, you may only post once per 24 hours. The video may *only be 2 hours* and has to have a *minimum of 30 minutes* in duration**\n\n" +
                                             "**We're accepting**:\n" +
                                             "- [YouTube Links](https://www.youtube.com/upload)\n" +
-                                            "- [Imgur Links](https://imgur.com/upload)\n" +
-                                            "- [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png)\n" +
-                                            "- [Gyazo Links](https://gyazo.com)\n" +
-                                            "- [LightShot Links](https://app.prntscr.com/)\n" +
                                             "- [Streamable](https://streamable.com)\n" +
-                                            "If you want a link/video/image service added, please ask ``Stefano#7366``")).set("guild", d.getString("name")).set(":user", context.member.getEffectiveName()).buildEmbed()).queue(
+                                            "If you want a link/video service added, please ask ``Stefano#7366``")).set("guild", d.getString("name")).set(":user", context.member.getEffectiveName()).buildEmbed()).queue(
                                             nameMessage -> {
                                                 avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, m -> m.getMember().equals(context.member) && message.getChannel().equals(l.getChannel()) && checkEvidenceAcceptance(context, m),
                                                     content -> {
@@ -239,6 +243,15 @@ public class PatrolRemittanceCommand extends Command {
                 return;
             }
 
+            boolean hasNotExpired = cache.getIfPresent(requestedId) == c.getGuild();
+            if (hasNotExpired) {
+                context.makeError("You've already submitted a remittance request for `:guildName`, please wait 24 hours after the last time you've submitted a remittance request.")
+                    .set("guildName", c.getGuild().getName()).queue();
+                message.editMessage("ERROR. PLEASE CHECK BELOW").embed(null).queue();
+                removeAllUserMessages(messagesToRemove);
+                return;
+            }
+
             if (d.getInt("roblox_group_id") != 0) {
                 Request requestedRequest = RequestFactory.makeGET("https://groups.roblox.com/v1/users/" + requestedId + "/groups/roles");
                 requestedRequest.send((Consumer<Response>) response -> {
@@ -250,7 +263,7 @@ public class PatrolRemittanceCommand extends Command {
                             startConfirmationWaiter(context, message, b, d, content, messagesToRemove);
                         } else {
                             //context.makeInfo(String.valueOf(response.getResponse().code())).queue();
-                            context.makeError("The user who you've requested a reward for isn't in ``:guild``, please check if this is correct or not.").set("guild", d.getString("name")).queue();
+                            context.makeError("You're not in ``:guild``, please check if this is correct or not.").set("guild", d.getString("name")).queue();
                             removeAllUserMessages(messagesToRemove);
                         }
                     }
@@ -309,6 +322,7 @@ public class PatrolRemittanceCommand extends Command {
                 .buildEmbed())
                 .queue(
                     finalMessage -> {
+
                         message.editMessage(context.makeSuccess("[Your remittance has been created in the correct channel.](:link).").set("link", finalMessage.getJumpUrl())
                             .buildEmbed())
                             .queue();
@@ -324,6 +338,8 @@ public class PatrolRemittanceCommand extends Command {
                                 data.set("requester_evidence", evidence, true);
                                 data.set("requester_roblox_rank", groupInfo.map(value -> value.getRole().getName()).orElse(null));
                             });
+
+                            cache.put(getRobloxId(username), context.getGuild());
                         } catch (SQLException throwables) {
                             throwables.printStackTrace();
                         }
@@ -364,11 +380,8 @@ public class PatrolRemittanceCommand extends Command {
             message.startsWith("http://youtube.com/") ||
             message.startsWith("https://streamable.com/") ||
             message.contains("cdn.discordapp.com") ||
-            message.contains("media.discordapp.com") ||
-            message.contains("gyazo.com") ||
-            message.contains("prntscr.com") ||
-            message.contains("prnt.sc") || message.contains("imgur.com"))) {
-            pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload), [Gyazo Links](https://gyazo.com), [LightShot Links](https://app.prntscr.com/), [Discord Image Links](https://cdn.discordapp.com/attachments/689520756891189371/733599719351123998/unknown.png) or [Imgur links](https://imgur.com/upload) as evidence. Try again").buildEmbed()).queue();
+            message.contains("media.discordapp.com"))) {
+            pm.getChannel().sendMessage(context.makeError("Sorry, but we are only accepting [YouTube links](https://www.youtube.com/upload) or [Streamable](https://streamable.com/) as evidence. Try again").buildEmbed()).queue();
             return false;
         }
         return true;
@@ -391,7 +404,7 @@ public class PatrolRemittanceCommand extends Command {
 
     }
 
-    private boolean runSetReportChannel(CommandMessage context, String[] args) {
+    private boolean runSetRemittanceChannel(CommandMessage context, String[] args) {
         if (args.length < 3) {
             return sendErrorMessage(context, "Incorrect arguments");
         }

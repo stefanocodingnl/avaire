@@ -268,6 +268,9 @@ public class MainEventHandler extends EventHandler {
         }
         messageEvent.onMessageUpdate(event);
 
+        if (AvaIre.getEnvironment().getName().equals(Environment.DEVELOPMENT.getName())) {
+            return;
+        }
         if (event.isFromGuild()) {
             if (Constants.guilds.contains(event.getGuild().getId())) {
                 messageEvent.onGuildMessageUpdate(event);

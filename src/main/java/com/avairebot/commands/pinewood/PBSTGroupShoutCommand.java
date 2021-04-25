@@ -72,12 +72,13 @@ public class PBSTGroupShoutCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-            context.makeWarning("PLEASE BE WARNED, THIS WILL SEND A GROUP SHOUT AS **PB_XBot** (is the account is authorised) TO THE GROUP CONNECTED TO THE GUILD.").queue();
-
         if (context.getGuildTransformer() == null) {
             context.makeError("Transformer could not be loaded!").queue();
             return false;
         }
+
+        context.makeWarning("PLEASE BE WARNED, THIS WILL SEND A GROUP SHOUT AS **PB_XBot** (If PB_XBot has permission to shout on ``"+context.getGuildTransformer().getRobloxGroupId()+"``) TO THE GROUP CONNECTED TO THE GUILD.").queue();
+
         if (context.getGuildTransformer().getRobloxGroupId() == 0) {
             context.makeError("No group ID has been set for this guild!").queue();
             return false;

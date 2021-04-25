@@ -373,11 +373,13 @@ public class Modlog {
                 ))
                 //.addField("Type", action.getType().getEmote() + action.getType().getName(guild), true)
                 .addField("Reason", action.getMessage(), true)
-                .addField("Note on the side", "Filter violations do NOT count against your warning total. These are not logged. **However**, we still recieve notifications about filter violations.", false)
                 .setTimestamp(Instant.now());
 
             if (caseId != null) {
                 message.setFooter("Case ID #" + caseId, null);
+                if (caseId.equals("FILTER")) {
+                    message.addField("Note on the side", "Filter violations do NOT count against your warning total. These are not logged. **However**, we still recieve notifications about filter violations.", false);
+                }
             }
 
             channel.sendMessage(message.build()).queue(null, RestActionUtil.ignore);

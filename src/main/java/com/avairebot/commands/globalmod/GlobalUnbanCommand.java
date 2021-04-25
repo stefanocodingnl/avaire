@@ -113,11 +113,13 @@ public class GlobalUnbanCommand extends Command {
             tc.sendMessage(context.makeInfo("[``:global-unbanned-id`` was unbanned from all discords by :user](:link)").set("global-unbanned-id", args[0]).set("user", context.getMember().getAsMention()).set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
         }
 
+
+
         try {
             handleGlobalPermUnban(context, args);
         } catch (SQLException exception) {
             exception.printStackTrace();
-            context.makeError("Something went adding this user to the global perm ban database.").queue();
+            context.makeError("Something went wrong adding this user to the global perm ban database.").queue();
         }
 
         return true;

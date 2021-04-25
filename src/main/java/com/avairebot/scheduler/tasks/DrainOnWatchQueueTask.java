@@ -67,7 +67,7 @@ public class DrainOnWatchQueueTask implements Task {
                         differenceInSeconds = 1;
                     }
 
-                    log.debug("Unmute task started for guildId:{}, userId:{}, time:{}",
+                    log.debug("Unwatch task started for guildId:{}, userId:{}, time:{}",
                         container.getGuildId(), container.getUserId(), differenceInSeconds
                     );
 

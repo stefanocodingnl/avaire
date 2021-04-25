@@ -22,6 +22,7 @@
 package com.avairebot.mute.automute;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.contracts.blacklist.PunishmentLevel;
 import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.transformers.GuildTransformer;
@@ -43,10 +44,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class MuteRatelimit {
@@ -56,7 +55,7 @@ public class MuteRatelimit {
      * be hit within the {@link #hitTime ratelimit timeframe}
      * before the user is auto muted.
      */
-    static final int hitLimit = 10;
+    static final int hitLimit = 5;
 
     /**
      * This represents the amount of time in milliseconds that each
@@ -65,7 +64,7 @@ public class MuteRatelimit {
      * limit, the rate limit won't count it as exceeding
      * the rate limit.
      */
-    static final long hitTime = 300 * 1000;
+    static final long hitTime = 480 * 1000;
 
     /**
      * The cache loader for holding all the ratelimiter rates.
@@ -118,7 +117,9 @@ public class MuteRatelimit {
      * @param user    The user that was blacklisted.
      * @param expires The carbon time instance for when the blacklist expires.
      */
-    public static void sendMuteMessage(User user, Carbon expires) {
+    public static void sendMuteMessage(User user, Carbon expires, Guild g) {
+        String guildName = g != null ? g.getName() : "``GUILD NOT AVAILABLE``";
+
         user.openPrivateChannel().queue(channel -> {
             channel.sendMessage(MessageFactory.createEmbeddedBuilder()
                 .setColor(Color.decode("#A5306B"))
@@ -126,7 +127,7 @@ public class MuteRatelimit {
                 .setFooter("Expires", null)
                 .setTimestamp(expires.getTime().toInstant())
                 .setDescription("Looks like you're triggering my filter a bit too fast, I've muted you "
-                    + "on the discord that you have done this.\n"
+                    + "on " + guildName + ".\n"
                     + "Your mute expires in ``" + expires.addSecond().diffForHumans(true) + "``, "
                     + "keep in mind repeating the behavior will get you muted for longer "
                     + "periods of time, eventually if you keep it up you will be permanently"
@@ -208,56 +209,80 @@ public class MuteRatelimit {
 
         Carbon punishment = getPunishment(id);
 
-        log.info("{}:{} has been added to the mutelits for excessive filter triggers, the mute expires {}.",
+        log.info("{}:{} has been detected to be added to the mute list for excessive filter triggers, it shall expire on {}.",
             type.getName(), id, punishment.toDayDateTimeString()
         );
 
-        muteUser(g, punishment, e);
+        globalMuteUser(punishment, e);
 
         return punishment;
     }
 
-    private static void muteUser(Guild g, Carbon punishment, Message context) {
-
-
-        GuildTransformer transformer = GuildController.fetchGuild(AvaIre.getInstance(), g);
-        if (transformer == null) {
-            return;
-        }
-        if (transformer.getModlog() == null) {
-            return;
-        }
-        if (transformer.getMuteRole() == null) {
-            return;
-        }
-
-        Role muteRole = g.getRoleById(transformer.getMuteRole());
-        if (muteRole == null) {
-            return;
-        }
-
-        ModlogType type = punishment.getTime() == null ? ModlogType.MUTE : ModlogType.TEMP_MUTE;
-
-        final Carbon finalExpiresAt = punishment;
-        context.getGuild().addRoleToMember(
-            context.getMember(), muteRole
-        ).reason("You have triggered the automod way to fast").queue(aVoid -> {
-            ModlogAction modlogAction = new ModlogAction(
-                type, context.getAuthor(), context.getAuthor(),
-                finalExpiresAt != null
-                    ? finalExpiresAt.toDayDateTimeString() + " (" + finalExpiresAt.diffForHumans(true) + ")" + "\n" + "You have triggered the automod way to fast"
-                    : "\n" + "You have triggered the automod way to fast"
-            );
-
-            String caseId = Modlog.log(AvaIre.getInstance(), context, modlogAction);
-            MuteRatelimit.sendMuteMessage(context.getAuthor(), punishment);
-
-            try {
-                AvaIre.getInstance().getMuteManger().registerMute(caseId, context.getGuild().getIdLong(), context.getAuthor().getIdLong(), finalExpiresAt);
-            } catch (SQLException e) {
-                AvaIre.getLogger().error(e.getMessage(), e);
+    private static void globalMuteUser(Carbon punishment, Message context) {
+        List<Guild> gs = new ArrayList<>();
+        for (String s : Constants.guilds) {
+            Guild guild = AvaIre.getInstance().getShardManager().getGuildById(s);
+            if (guild != null) {
+                gs.add(guild);
             }
-        });
+        }
+
+        for (Guild g : gs) {
+            GuildTransformer transformer = GuildController.fetchGuild(AvaIre.getInstance(), g);
+            if (transformer == null) {
+                continue;
+            }
+
+            if (transformer.getMuteRole() == null) {
+                continue;
+            }
+
+            Role muteRole = g.getRoleById(transformer.getMuteRole());
+            if (muteRole == null) {
+                continue;
+            }
+
+            Member m = g.getMember(context.getAuthor());
+            if (m == null) {
+                continue;
+            }
+
+            ModlogType type = punishment.getTime() == null ? ModlogType.MUTE : ModlogType.TEMP_MUTE;
+            final Carbon finalExpiresAt = punishment;
+            g.addRoleToMember(
+                m, muteRole
+            ).reason("You have triggered the auto mod way to fast").queue(aVoid -> {
+                ModlogAction modlogAction = new ModlogAction(
+                    type, context.getAuthor(), context.getAuthor(),
+                    finalExpiresAt.toDayDateTimeString() + " (" + finalExpiresAt.diffForHumans(true) + ")" + "\n" + "You have triggered the filter way to fast"
+                );
+
+                String caseId = Modlog.log(AvaIre.getInstance(), context, modlogAction);
+                MuteRatelimit.sendMuteMessage(context.getAuthor(), punishment, g);
+
+                try {
+                    AvaIre.getInstance().getMuteManger().registerMute(caseId, g.getIdLong(), context.getAuthor().getIdLong(), finalExpiresAt);
+                } catch (SQLException e) {
+                    AvaIre.getLogger().error(e.getMessage(), e);
+                }
+            }, fail -> {
+                ModlogAction modlogAction = new ModlogAction(
+                    type, context.getAuthor(), context.getAuthor(),
+                    finalExpiresAt.toDayDateTimeString() + " (" + finalExpiresAt.diffForHumans(true) + ")" + "\n" + "You have triggered the filter way to fast"
+                );
+
+                String caseId = Modlog.log(AvaIre.getInstance(), context, modlogAction);
+                MuteRatelimit.sendMuteMessage(context.getAuthor(), punishment, g);
+
+                try {
+                    AvaIre.getInstance().getMuteManger().registerMute(caseId, g.getIdLong(), context.getAuthor().getIdLong(), finalExpiresAt);
+                } catch (SQLException e) {
+                    AvaIre.getLogger().error(e.getMessage(), e);
+                }
+            });
+        }
+
+
     }
 
     /**

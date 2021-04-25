@@ -118,7 +118,7 @@ public class GlobalPruneCommand extends Command {
             Iterator <Map.Entry <Guild, Role>> it = role.entrySet().iterator();
             while (it.hasNext()) {
                 it.forEachRemaining(p -> {
-                    sb.append("Pruned ").append(" members from ").append(p.getKey().getName());
+                    sb.append("Pruned ``").append("`` members from ").append(p.getKey().getName());
                     p.getKey().prune(30, true, p.getValue()).queue();
                     guild.remove(p.getKey());
                 });
@@ -126,7 +126,7 @@ public class GlobalPruneCommand extends Command {
             }
         }
         for (Guild g : guild) {
-            sb.append("Pruned ").append(" members from ").append(g.getName());
+            sb.append("Pruned ").append(" members from ").append(g.getName()).append("\n");
             g.prune(30, true).reason("Global prune, executed by: " + context.getMember().getEffectiveName()).queue();
         }
         context.makeSuccess(sb.toString()).queue();

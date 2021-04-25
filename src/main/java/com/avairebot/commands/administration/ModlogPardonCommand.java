@@ -33,6 +33,7 @@ import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.modlog.Modlog;
 import com.avairebot.modlog.ModlogAction;
 import com.avairebot.modlog.ModlogType;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.Permission;
 
@@ -140,8 +141,8 @@ public class ModlogPardonCommand extends Command {
             }
 
             DataRow row = collection.first();
-
-            if (!canEditModlogCase(context, row)) {
+            int permissionLevel = CheckPermissionUtil.getPermissionLevel(context).getLevel();
+            if (!canEditModlogCase(context, row, permissionLevel)) {
                 return sendErrorMessage(context, context.i18n("couldntFindCaseWithId", caseId));
             }
 
@@ -178,8 +179,8 @@ public class ModlogPardonCommand extends Command {
         return true;
     }
 
-    private boolean canEditModlogCase(CommandMessage context, DataRow collection) {
+    private boolean canEditModlogCase(CommandMessage context, DataRow collection, int permissionLevel) {
         return context.getMember().hasPermission(Permission.ADMINISTRATOR)
-            || collection.getString("user_id", "").equals(context.getAuthor().getId());
+            || collection.getString("user_id", "").equals(context.getAuthor().getId()) || permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel();
     }
 }

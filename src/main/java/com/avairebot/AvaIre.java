@@ -771,7 +771,7 @@ public class AvaIre {
             .setBulkDeleteSplittingEnabled(false)
             .setMemberCachePolicy(MemberCachePolicy.ALL)
             .setChunkingFilter(ChunkingFilter.NONE)
-            .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS)
+            .disableCache(CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS, CacheFlag.CLIENT_STATUS)
             .setEnableShutdownHook(true)
             .setAutoReconnect(true)
             .setContextEnabled(true)

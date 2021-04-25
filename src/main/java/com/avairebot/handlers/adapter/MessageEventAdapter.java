@@ -211,7 +211,7 @@ public class MessageEventAdapter extends EventAdapter {
 
         for (String word : badWordsList) {
             if (words.contains(word)) {
-                warnUserColor(messageId, guild, "**GLOBAL AUTOMOD**: Global Filter was activated!\n**Type**: " + "``WILDCARD``\n**Sentance Filtered**: " + contentStripped, new Color(0, 0, 0));
+                warnUserColor(messageId, guild, "**GLOBAL AUTOMOD**: Global Filter was activated!\n**Type**: " + "``WILDCARD``\n**Sentance Filtered**: " + contentStripped, new Color(0, 0, 0), messageId.getTextChannel());
                 return true;
             }
         }
@@ -228,7 +228,7 @@ public class MessageEventAdapter extends EventAdapter {
 
         boolean b = words.stream().anyMatch(badWordsList::contains);
         if (b) {
-            warnUserColor(messageId, databaseEventHolder, "**GLOBAL AUTOMOD**: Global Filter was activated!\n**Type**: " + "``EXACT``\n**Sentence Filtered**: \n" + contentRaw, new Color(0, 0, 0));
+            warnUserColor(messageId, databaseEventHolder, "**GLOBAL AUTOMOD**: Global Filter was activated!\n**Type**: " + "``EXACT``\n**Sentence Filtered**: \n" + contentRaw, new Color(0, 0, 0), messageId.getTextChannel());
         }
         return b;
     }
@@ -324,7 +324,6 @@ public class MessageEventAdapter extends EventAdapter {
 
             String message = event.getContentStripped().replaceAll("[!@#$%^&*()\\[\\]\\-=';/\\\\{}:\"><?|+_`~]", "");
 
-
             if (checkGlobalExactFilter(message, guild, event)) {
                 System.out.println("Exact Filter removed: " + message);
                 event.delete().queue();
@@ -391,7 +390,7 @@ public class MessageEventAdapter extends EventAdapter {
 
         if (transformer.getMassMentionSpam() > 0) {
             if (message.getMentionedMembers().size() >= transformer.getMassMentionSpam()) {
-                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Mass Mention``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Mass Mention``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0), message.getTextChannel());
                 message.getChannel().sendMessage("Please do not mass mention multiple people. " + message.getMember().getAsMention()).queue();
                 return false;
             }
@@ -400,7 +399,7 @@ public class MessageEventAdapter extends EventAdapter {
             Pattern pattern = Pattern.compile("(.)\\1{" + (transformer.getCharacterSpam() - 1) + ",}", Pattern.CASE_INSENSITIVE);
             Matcher m = pattern.matcher(message.getContentRaw());
             if (m.find()) {
-                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Character Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Character Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0), message.getTextChannel());
                 return true;
             }
         }
@@ -414,7 +413,7 @@ public class MessageEventAdapter extends EventAdapter {
             }
 
             if (count >= transformer.getEmojiSpam()) {
-                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Emoji Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Emoji Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0), message.getTextChannel());
                 message.delete().queue();
                 return true;
             }
@@ -424,7 +423,7 @@ public class MessageEventAdapter extends EventAdapter {
             int spam = (int) history.stream().filter(m -> m.getAuthor().equals(message.getAuthor()) && !message.getAuthor().isBot()).filter(msg -> (message.getTimeCreated().toEpochSecond() - msg.getTimeCreated().toEpochSecond()) < 10).count();
 
             if (spam >= transformer.getMessageSpam() && !message.getGuild().getOwner().equals(message.getMember())) {
-                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Message Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Message Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0), message.getTextChannel());
                 for (Message m : history) {
                     message.getTextChannel().retrieveMessageById(m.getId()).queue(l -> {
                         l.delete().reason("Auto-Mod Violation").queue();
@@ -439,7 +438,7 @@ public class MessageEventAdapter extends EventAdapter {
             List <Message> history = message.getTextChannel().getIterableHistory().stream().limit(10).filter(msg -> !msg.equals(message)).collect(Collectors.toList());
             int spam = (int) history.stream().filter(m -> m.getAuthor().equals(message.getAuthor()) && !message.getAuthor().isBot()).filter(msg -> (message.getTimeCreated().toEpochSecond() - msg.getTimeCreated().toEpochSecond()) < 10 && (msg.getAttachments().size() > 0 && message.getAttachments().size() > 0)).count();
             if (spam >= transformer.getImageSpam() && !message.getGuild().getOwner().equals(message.getMember())) {
-                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Image Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0));
+                warnUserColor(message, transformer, "**GLOBAL AUTOMOD**: Global Automod was triggered!\n**Type**: " + "``Image Spam``\n**Sentence Filtered**: \n" + message.getContentRaw(), new Color(0, 0, 0),message.getTextChannel());
                 for (Message m : history) {
                     message.getTextChannel().retrieveMessageById(m.getId()).queue(l -> {
                         l.delete().reason("Auto-Mod Violation").queue();
@@ -526,7 +525,7 @@ public class MessageEventAdapter extends EventAdapter {
                     warnUserColor(message, databaseEventHolder.getGuild(), "**AUTOMOD**: Filter was activated!\n**Type**: " + "``INVITE``\n" +
                         "**Guild**: " + v.getGuild().getName() + "\n" +
                         "**Invite**: [Click here!](" + v.getUrl() + ")\n" +
-                        "**Inviter**:" + v.getInviter(), new Color(0, 0, 0));
+                        "**Inviter**:" + v.getInviter(), new Color(0, 0, 0), message.getTextChannel());
                     MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), message);
                 }
             });
@@ -554,12 +553,10 @@ public class MessageEventAdapter extends EventAdapter {
         Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER");
     }
 
-    private void warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color) {
-
+    private void warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color, TextChannel c) {
         /*if (databaseEventHolder.getFilterLog() == null) {
             return;
         }*/
-
 
         ModlogAction modlogAction = new ModlogAction(
             ModlogType.WARN,
@@ -578,12 +575,16 @@ public class MessageEventAdapter extends EventAdapter {
             .setTimestamp(Instant.now())
             .addField("User", m.getMember().getEffectiveName(), true)
             .addField("Moderator", "Xeus", true)
+            .addField("Channel", c.getAsMention() + " (`#" + c.getName() + "`)", true)
             .addField("Reason", reason, false)
             .addField("Note on the side", "Filter violations do NOT count against your warning total. These are not logged. **However**, we still recieve notifications about filter violations.", false);
 
-        m.getGuild().getTextChannelById(databaseEventHolder.getFilterLog()).sendMessage(builder.build()).queue();
-
         Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER", color);
+        TextChannel tc = m.getGuild().getTextChannelById(databaseEventHolder.getFilterLog());
+        if (tc != null) {
+            tc.sendMessage(builder.build()).queue();
+        }
+
     }
 
     private void invokeMiddlewareStack(MiddlewareStack stack) {

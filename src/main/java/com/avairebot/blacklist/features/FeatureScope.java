@@ -34,7 +34,7 @@ public enum FeatureScope {
     GLOBAL(0, "G", "Global Feature Blacklist"),
     REPORTS(1, "R", "Reports"),
     REWARD_REQUESTS(2, "RR", "Reward Requests"),
-    PATROL_REMITTANCE(3, "PR", "Reports"),
+    PATROL_REMITTANCE(3, "PR", "Patrol Remittance"),
     SUGGESTIONS(4, "S", "Suggestions");
 
     private final int id;

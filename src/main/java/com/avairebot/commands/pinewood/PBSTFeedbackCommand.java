@@ -187,8 +187,8 @@ public class PBSTFeedbackCommand extends Command {
     private boolean antiSpamInfo(CommandMessage context, GuildMessageReceivedEvent l) {
         if (l.getMessage().getContentRaw().equalsIgnoreCase("cancel")) return true;
 
-        if (l.getMessage().getContentRaw().length() < 51) {
-            context.makeError("Please make sure your suggestion has more then 50 characters before submitting it. If you want to cancel. Say \"cancel\"").queue();
+        if (l.getMessage().getContentRaw().length() <= 25) {
+            context.makeError("Please make sure your suggestion has more then 25 characters before submitting it. If you want to cancel. Say \"cancel\"").queue();
             return false;
         } else {
             return true;

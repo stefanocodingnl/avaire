@@ -150,7 +150,7 @@ public class GlobalBanCommand extends Command {
             handleGlobalPermBan(context, args, reason);
         } catch (SQLException exception) {
             exception.printStackTrace();
-            context.makeError("Something went adding this user to the global perm ban database.").queue();
+            context.makeError("Something went wrong adding this user to the global perm ban database.").queue();
         }
 
         return true;
