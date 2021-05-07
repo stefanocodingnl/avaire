@@ -28,6 +28,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.commands.CommandPriority;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.language.I18n;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.entities.User;
 
@@ -142,10 +143,22 @@ public class FeatureBlacklistCommand extends Command {
             return sendErrorMessage(context, "Missing arguments, the `id` argument is required!");
         }
 
+        FeatureScope s = FeatureScope.parse(args[0]);
+        if (s == null) {
+            StringBuilder sb = new StringBuilder();
+            for (FeatureScope fs : FeatureScope.values()) {
+                sb.append("\n - ``").append(fs.getPrefix()).append("`` (").append(fs.getName()).append(")");
+            }
+            return sendErrorMessage(context, "Invalid `scope` given. Possible scopes are:" + sb);
+        }
+
+        if (args.length == 1) {
+            return sendErrorMessage(context, "Missing parameter, a valid `scope` must be given!");
+        }
+
         long id;
-        long guildId = context.guild.getIdLong();
         try {
-            id = Long.parseLong(args[0]);
+            id = Long.parseLong(args[1]);
         } catch (NumberFormatException e) {
             return sendErrorMessage(context, "Invalid ID given, the ID must be a valid number value!");
         }
@@ -160,12 +173,14 @@ public class FeatureBlacklistCommand extends Command {
             return sendErrorMessage(context, "Invalid ID given, the ID must be a valid number value!");
         }
 
-        if (args.length == 1) {
-            return sendErrorMessage(context, "Missing parameter, a valid `scope` must be given!");
-        }
-        FeatureScope s = FeatureScope.parse(args[1]);
-        if (s == null) {
-            return sendErrorMessage(context, "Invalid `scope` given. Possible scopes are:\n - G (Global Feature Blacklist)\n - R (Reports)\n - RR (Request Reward)\n - S (Suggestions)\n - PR (Patrol Remittance)");
+        long guildId;
+        if (s.getId() != 0) {
+            guildId = context.guild.getIdLong();
+        } else {
+            if (!(CheckPermissionUtil.getPermissionLevel(context).getLevel() > CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel())) {
+                return sendErrorMessage(context, "You're required to be level " + CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel() + " (``"+CheckPermissionUtil.GuildPermissionCheckType.PIA.getRankName()+"``) or higher to *globally* blacklist someone on all guilds!");
+            }
+            guildId = 1L;
         }
 
         if (!avaire.getFeatureBlacklist().isBlacklisted(user, guildId, s)) {
@@ -174,8 +189,10 @@ public class FeatureBlacklistCommand extends Command {
 
         avaire.getFeatureBlacklist().remove(id, guildId, s);
 
-        context.makeSuccess("The feature blacklist record with an ID of **:id** has been removed from the blacklist")
+        context.makeSuccess("The feature blacklist record with an ID of **:id** has been removed from the **:scope** blacklist in ``:guild``!")
             .set("id", id)
+            .set("guild", s.getId() != 0 ? context.getGuild().getName() : "All **official** Pinewood Discords!")
+            .set("scope", s.getName())
             .queue();
 
         return true;
@@ -188,7 +205,11 @@ public class FeatureBlacklistCommand extends Command {
 
         FeatureScope featureScope = FeatureScope.parse(args[0]);
         if (featureScope == null) {
-            return sendErrorMessage(context, "Invalid type given, the type must be a valid blacklist scope!\nValid types are:\n - G (Global Feature Blacklist)\n - R (Reports)\n - RR (Request Reward)\n - S (Suggestions)\n - PR (Patrol Remittance)");
+            StringBuilder sb = new StringBuilder();
+            for (FeatureScope fs : FeatureScope.values()) {
+                sb.append("\n - ``").append(fs.getPrefix()).append("`` (").append(fs.getName()).append(")");
+            }
+            return sendErrorMessage(context, "Invalid `scope` given. Possible scopes are:" + sb);
         }
 
         long id;
@@ -204,12 +225,24 @@ public class FeatureBlacklistCommand extends Command {
             reason = String.join(" ", args);
         }
 
-        avaire.getFeatureBlacklist().addIdToBlacklist(featureScope, id, reason, context.guild.getIdLong());
+        long guildId;
+        if (featureScope.getId() == 0) {
+            if (!(CheckPermissionUtil.getPermissionLevel(context).getLevel() > CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel())) {
+                return sendErrorMessage(context, "You're required to be level " + CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel() + " (``"+CheckPermissionUtil.GuildPermissionCheckType.PIA.getRankName()+"``) or higher to *globally* blacklist someone on all guilds!");
+            }
+            guildId = 1L;
+        } else {
+            guildId = context.guild.getIdLong();
+        }
 
-        context.makeSuccess("The **:type** with an ID of **:id** has been added to the report blacklist of :guild!")
+
+
+        avaire.getFeatureBlacklist().addIdToBlacklist(featureScope, id, reason, guildId);
+
+        context.makeSuccess("The **:type** with an ID of **:id** has been added to the report blacklist of ``:guild``!")
             .set("type", featureScope.getName())
             .set("id", id)
-            .set("guild", context.getGuild().getName())
+            .set("guild", featureScope.getId() != 0 ? context.getGuild().getName() : "All **official** Pinewood Discords!")
             .queue();
 
         return true;

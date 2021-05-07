@@ -1,18 +1,14 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
-import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class IsValidPIAMemberMiddleware extends Middleware {
@@ -29,10 +25,6 @@ public class IsValidPIAMemberMiddleware extends Middleware {
 
     @Override
     public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
-        if (message.getAuthor().getId().equals("173839105615069184")) {
-            return stack.next();
-        }
-
         int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();

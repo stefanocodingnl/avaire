@@ -183,7 +183,7 @@ public class RequestRewardCommand extends Command {
 
         context.makeWarning("The user you requested has the rank: " + requestedUser.getRole().getName() + "\n" +
             "You have the rank: " + requesterUser.getRole().getName() + "\n\n" +
-            "You can " + (requestedUser.getRole().getRank() < requesterUser.getRole().getRank() ? "NOT" : "ACTUALLY")).queue();
+            "You can " + (requestedUser.getRole().getRank() < requesterUser.getRole().getRank() ? "ACTUALLY" : "NOT") + "request a reward for this person.").queue();
 
         if (requesterUser.getRole().getRank() < requestedUser.getRole().getRank() || requestedUser.getRole().getRank() == requesterUser.getRole().getRank()) {
             context.makeError("Sorry, but you're not allowed to request a reward for this rank.").queue();

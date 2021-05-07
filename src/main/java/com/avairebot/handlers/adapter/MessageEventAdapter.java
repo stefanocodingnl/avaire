@@ -228,7 +228,7 @@ public class MessageEventAdapter extends EventAdapter {
 
         boolean b = words.stream().anyMatch(badWordsList::contains);
         if (b) {
-            warnUserColor(messageId, databaseEventHolder, "**GLOBAL AUTOMOD**: Global Filter was activated!\n**Type**: " + "``EXACT``\n**Sentence Filtered**: \n" + contentRaw, new Color(0, 0, 0), messageId.getTextChannel());
+            return warnUserColor(messageId, databaseEventHolder, "**GLOBAL AUTOMOD**: Global Filter was activated!\n**Type**: " + "``EXACT``\n**Sentence Filtered**: \n" + contentRaw, new Color(0, 0, 0), messageId.getTextChannel());
         }
         return b;
     }
@@ -528,6 +528,12 @@ public class MessageEventAdapter extends EventAdapter {
                         "**Inviter**:" + v.getInviter(), new Color(0, 0, 0), message.getTextChannel());
                     MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), message);
                 }
+            }, f -> {
+                message.delete().queue();
+                warnUserColor(message, databaseEventHolder.getGuild(), "**AUTOMOD**: Filter was activated!\n**Type**: " + "``INVITE``\n" +
+                    "**Guild**: " + "INVALID (Xeus is banned from the guild)" + "\n" +
+                    "**Violator**:" + message.getMember().getEffectiveName(), new Color(0, 0, 0), message.getTextChannel());
+                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), message);
             });
         }
     }
@@ -549,11 +555,10 @@ public class MessageEventAdapter extends EventAdapter {
             reason
         );
 
-
         Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER");
     }
 
-    private void warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color, TextChannel c) {
+    private boolean warnUserColor(Message m, GuildTransformer databaseEventHolder, String reason, Color color, TextChannel c) {
         /*if (databaseEventHolder.getFilterLog() == null) {
             return;
         }*/
@@ -564,6 +569,8 @@ public class MessageEventAdapter extends EventAdapter {
             m.getAuthor(),
             reason
         );
+
+        Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER", color);
 
         EmbedBuilder builder = MessageFactory.createEmbeddedBuilder()
             .setTitle(I18n.format("{0} {1} | Case #{2}",
@@ -579,12 +586,15 @@ public class MessageEventAdapter extends EventAdapter {
             .addField("Reason", reason, false)
             .addField("Note on the side", "Filter violations do NOT count against your warning total. These are not logged. **However**, we still recieve notifications about filter violations.", false);
 
-        Modlog.notifyUser(m.getAuthor(), m.getGuild(), modlogAction, "FILTER", color);
-        TextChannel tc = m.getGuild().getTextChannelById(databaseEventHolder.getFilterLog());
-        if (tc != null) {
-            tc.sendMessage(builder.build()).queue();
+        if (databaseEventHolder.getFilterLog() != null) {
+            TextChannel tc = m.getGuild().getTextChannelById(databaseEventHolder.getFilterLog());
+            if (tc != null) {
+                tc.sendMessage(builder.build()).queue();
+                return true;
+            }
+            return true;
         }
-
+        return true;
     }
 
     private void invokeMiddlewareStack(MiddlewareStack stack) {

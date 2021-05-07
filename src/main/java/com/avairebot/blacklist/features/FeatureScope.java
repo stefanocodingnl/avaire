@@ -31,11 +31,12 @@ public enum FeatureScope {
     /**
      * The user scope, used for blacklisting users.
      */
-    GLOBAL(0, "G", "Global Feature Blacklist"),
-    REPORTS(1, "R", "Reports"),
-    REWARD_REQUESTS(2, "RR", "Reward Requests"),
-    PATROL_REMITTANCE(3, "PR", "Patrol Remittance"),
-    SUGGESTIONS(4, "S", "Suggestions");
+    PIA_GLOBAL(0, "G", "Global Feature Blacklist (Global - PIA Only)"),
+    GLOBAL(1, "A", "All Features Blacklist (Local)"),
+    REPORTS(2, "R", "Reports"),
+    REWARD_REQUESTS(3, "RR", "Reward Requests"),
+    PATROL_REMITTANCE(4, "PR", "Patrol Remittance"),
+    SUGGESTIONS(5, "S", "Suggestions");
 
     private final int id;
     private final String prefix;

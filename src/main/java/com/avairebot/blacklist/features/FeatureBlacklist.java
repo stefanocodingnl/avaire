@@ -139,8 +139,10 @@ public class FeatureBlacklist {
     @Nullable
     public FeatureBlacklistEntity getEntity(long id, @Nullable FeatureScope featureScope, Long guild) {
         for (FeatureBlacklistEntity entity : blacklist) {
-            if (entity.getId() == id && entity.getGuildId() == guild) {
-                if (featureScope != null && featureScope != entity.getScope() && entity.getScope().getId() != 0) {
+            if (entity.getGuildId() == 1 && entity.getScope().getId() == 0) {
+                return entity;
+            } else if (entity.getId() == id && entity.getGuildId() == guild) {
+                if (featureScope != null && featureScope != entity.getScope() && entity.getScope().getId() != 1) {
                     continue;
                 }
                 return entity;

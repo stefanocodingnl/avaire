@@ -74,6 +74,7 @@ public class EvalStatusCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
 
         String name = context.member.getEffectiveName();
+
         try {
         if (!(isValidRobloxUser(name))){
             context.makeError("Your discord name is not a valid roblox name and/or is not in the PBST Group...\nPlease do ``!verify`` to re-verify yourself. (``v!verify`` if the prefix isn't changed").queue();
@@ -83,7 +84,6 @@ public class EvalStatusCommand extends Command {
             Collection collection = avaire.getDatabase().newQueryBuilder(Constants.EVALS_DATABASE_TABLE_NAME).where("roblox_id", getRobloxId(name)).get();
 
             if (args.length < 2) {
-
                 if (collection.size() < 1) {
                     context.makeEmbeddedMessage(new Color(255, 0, 0)).setDescription("You have not yet passed anything:\n\n" +
                         "**Passed Quiz**: <:no:694270050257076304>\n" +
@@ -123,7 +123,6 @@ public class EvalStatusCommand extends Command {
             e.printStackTrace();
         }
             return false;
-
     }
 
     public int getRobloxId(String un) {
