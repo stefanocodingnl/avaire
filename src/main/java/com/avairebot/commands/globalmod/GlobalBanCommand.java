@@ -23,6 +23,9 @@ import java.util.*;
 
 public class GlobalBanCommand extends Command {
 
+    private final static HashSet<String> fuzzyTrue = new HashSet<>(Arrays.asList("yes", "y", "on", "enable", "true", "confirm", "1"));
+    private final static HashSet<String> fuzzyFalse = new HashSet<>(Arrays.asList("no", "n", "off", "disable", "false", "reset", "0"));
+
     public final ArrayList<String> guilds = new ArrayList<String>() {{
         add("495673170565791754"); // Aerospace
         add("438134543837560832"); // PBST
@@ -117,6 +120,13 @@ public class GlobalBanCommand extends Command {
             context.makeError("Please supply a reason for the global ban!").queue();
             return true;
         }
+
+
+        if (!(fuzzyFalse.contains(args[1]) || !fuzzyTrue.contains(args[1]))) {
+            context.makeError("Please use either true or false as the second argument.").queue();
+            return false;
+        }
+
         boolean soft = ComparatorUtil.isFuzzyFalse(args[1]);
 
         if (!soft && args.length < 3) {
