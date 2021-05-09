@@ -106,7 +106,7 @@ public class GlobalUnbanCommand extends Command {
             g.unban(args[0]).reason("Global unban, executed by: " + context.member.getEffectiveName()).queue();
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
-        context.makeSuccess("<@" + args[0] + "> has been unbanned from: \n\n" + sb.toString()).queue();
+        context.makeSuccess("<@" + args[0] + "> has been unbanned from: \n\n" + sb).queue();
 
         TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
         if (tc != null) {

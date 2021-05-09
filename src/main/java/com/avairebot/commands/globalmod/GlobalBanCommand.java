@@ -20,7 +20,6 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class GlobalBanCommand extends Command {
 
@@ -89,12 +88,29 @@ public class GlobalBanCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
 
         if (args.length < 1) {
-            context.makeError("Sorry, but you didn't give any member id to globbaly ban, or argument to use!").queue();
-            return true;
+            context.makeError("Sorry, but you didn't give any member id to globbaly ban, or argument to use!\n\n" +
+                "``Valid arguments``: \n" +
+                " - **sync/s** - Sync all global-bans with a server.\n" +
+                " - **v/view/see** - View the reason why someone is global-banned.\n\n*In the **RARE** cases someone has to be banned from the PBAC, you can ban them ").queue();
+            return false;
         }
 
-        if (args[0].equalsIgnoreCase("sync")) {
-            return syncGlobalPermBansWithGuild(context);
+        switch (args[0]) {
+            case "s":
+            case "sync": {
+                return syncGlobalPermBansWithGuild(context);
+            }
+            case "view":
+            case "see":
+            case "v": {
+                return showGlobalBanWithReason(context, args);
+            }
+            case "mod-bans":
+            case "ban-logs":
+            case "bl":
+            case "mb": {
+                return showWhoBannedWho(context, args);
+            }
         }
 
         if (args.length == 1) {
@@ -121,12 +137,24 @@ public class GlobalBanCommand extends Command {
         int time = soft ? 0 : 7;
 
 
-        final String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+        String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+        boolean pbacBan = false;
+        if (reason.endsWith("--pbac-ban")) {
+            reason = reason.replace("--pbac-ban", "");
+            guild.add(avaire.getShardManager().getGuildById("750471488095780966"));
+            pbacBan = true;
+        }
 
         if (avaire.getShardManager().getUserById(args[0]) != null) {
+            String finalReason = reason;
+            boolean finalPbacBan = pbacBan;
             avaire.getShardManager().getUserById(args[0]).openPrivateChannel().queue(p -> {
-                p.sendMessage(context.makeInfo("*You have been **global-banned** from all the Pinewood Builders discords by an PIA Agent. For the reason: *```" + reason + "```\n\n" +
-                    "If you feel that your ban was unjustified please appeal at the Pinewood Builders Appeal Center; https://discord.gg/mWnQm25").setColor(Color.BLACK).buildEmbed()).queue();
+                p.sendMessage(context.makeInfo(
+                    "*You have been **global-banned** from all the Pinewood Builders discords by an PIA Agent. " +
+                        "For the reason: *```" + finalReason + "```\n\n" +
+                        (finalPbacBan ? "If you feel that your ban was unjustified please appeal at the Pinewood Builders Appeal Center; " +
+                            "https://discord.gg/mWnQm25" : "This ban has also banned you from the [PBAC (Pinewood Builders Appeal Center)](https://discord.gg/mWnQm25). " +
+                            "If you feel like this was still unjustified, contact ``Stefano#7366``")).setColor(Color.BLACK).buildEmbed()).queue();
             });
         }
 
@@ -144,7 +172,7 @@ public class GlobalBanCommand extends Command {
             sb.append("``").append(g.getName()).append("`` - :white_check_mark:\n");
         }
 
-        context.makeSuccess("<@" + args[0] + "> has been banned from: \n\n" + sb.toString()).queue();
+        context.makeSuccess("<@" + args[0] + "> has been banned from: \n\n" + sb).queue();
 
         try {
             handleGlobalPermBan(context, args, reason);
@@ -152,19 +180,71 @@ public class GlobalBanCommand extends Command {
             exception.printStackTrace();
             context.makeError("Something went wrong adding this user to the global perm ban database.").queue();
         }
-
         return true;
     }
 
+    private boolean showWhoBannedWho(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            context.makeError("I don't know what moderator's id you'd like to view.").queue();
+            return false;
+        }
+
+        String id = args[1];
+        try {
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("punisherId", id).get();
+            int i = c.size();
+            if (i < 1) {
+                context.makeInfo("This person has not banned anyone.").queue();
+                return false;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (DataRow d : c) {
+                sb.append("``userId`` was banned by <@punisherId> **(``punisherId``)** for:\n```reason```\n\n"
+                    .replace("userId", d.getString("userId"))
+                        .replaceAll("punisherId", d.getString("punisherId"))
+                        .replace("reason", d.getString("reason")));
+            }
+
+            return buildAndSendEmbed(sb, context);
+        } catch (SQLException throwables) {
+            context.makeError("The database coudn't return anything, please check with the developer").queue();
+            return false;
+        }
+    }
+    private boolean showGlobalBanWithReason(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            context.makeError("I don't know what user id you'd like to view.").queue();
+            return false;
+        }
+
+        String id = args[1];
+        try {
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", id).get();
+            if (c.size() < 1) {
+                context.makeInfo("``:userId`` was not found/is not banned.").set("userId", id).requestedBy(context).queue();
+                return false;
+            } else if (c.size() == 1) {
+                context.makeSuccess("``:userId`` was banned by <@:punisherId> **(``:punisherId``)** for:\n```:reason```")
+                    .set("userId", c.get(0).getString("userId")).set("punisherId", c.get(0).getString("punisherId")).set("reason", c.get(0).getString("reason")).queue();
+                return true;
+            } else {
+                context.makeError("Something went wrong, there are more then 1 of the same punishment in the database. Ask Stefano to check this.").queue();
+                return false;
+            }
+        } catch (SQLException throwables) {
+            context.makeError("The database coudn't return anything, please check with the developer").queue();
+            return false;
+        }
+    }
     private boolean syncGlobalPermBansWithGuild(CommandMessage context) {
         try {
             Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).get();
+            context.makeInfo("Syncing **``" + c.size() + "``** global bans to this guild...").queue();
             for (DataRow dr : c) {
                 context.guild.ban(dr.getString("userId"), 0, "THIS BAN MAY ONLY BE REVERTED BY A PIA MEMBER. ORIGINAL BAN REASON: " + dr.getString("reason")).reason("Ban sync").queue();
-                context.makeInfo("Banned ``" + dr.getString("userId") + "`` (<@" + dr.getString("userId") + ">) from the guild.").setFooter("This message deletes after 10 seconds.").queue(v -> {
-                    v.delete().queueAfter(10, TimeUnit.SECONDS);
-                });
             }
+            context.makeSuccess("**``" + c.size() + "``** global bans where synced to this guild...").queue();
+
         } catch (SQLException exception) {
             exception.printStackTrace();
             context.makeError("Something went wrong when syncing.").queue();
@@ -172,7 +252,6 @@ public class GlobalBanCommand extends Command {
         }
         return true;
     }
-
     private void handleGlobalPermBan(CommandMessage context, String[] args, String reason) throws SQLException {
         Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", args[0]).get();
         if (c.size() < 1) {
@@ -186,5 +265,30 @@ public class GlobalBanCommand extends Command {
             context.makeError("This user already has a permban in the database!").queue();
         }
     }
+    private boolean buildAndSendEmbed(StringBuilder sb, CommandMessage context) {
+        if (sb.length() > 1900) {
+            for (String s : splitStringEvery(sb.toString(), 2000)) {
+                context.makeWarning(s).queue();
+            }
+        } else {
+            context.makeSuccess(sb.toString()).queue();
+        }
+        return true;
+    }
+    public String[] splitStringEvery(String s, int interval) {
+        int arrayLength = (int) Math.ceil(((s.length() / (double) interval)));
+        String[] result = new String[arrayLength];
+
+        int j = 0;
+        int lastIndex = result.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            result[i] = s.substring(j, j + interval);
+            j += interval;
+        } //Add the last bit
+        result[lastIndex] = s.substring(j);
+
+        return result;
+    }
+
 }
 

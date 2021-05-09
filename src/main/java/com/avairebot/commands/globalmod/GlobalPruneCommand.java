@@ -1,6 +1,7 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
@@ -8,6 +9,7 @@ import com.avairebot.contracts.commands.CommandGroups;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -119,7 +121,7 @@ public class GlobalPruneCommand extends Command {
             while (it.hasNext()) {
                 it.forEachRemaining(p -> {
                     sb.append("Pruned members from ``").append(p.getKey().getName()).append("``");
-                    p.getKey().prune(30, true, p.getValue()).queue();
+                    p.getKey().prune(7, true, p.getValue()).queue();
                     guild.remove(p.getKey());
                 });
                 //it.remove(); // avoids a ConcurrentModificationException
@@ -127,9 +129,17 @@ public class GlobalPruneCommand extends Command {
         }
         for (Guild g : guild) {
             sb.append("Pruned ").append(" members from ``").append(g.getName()).append("``\n");
-            g.prune(30, true).reason("Global prune, executed by: " + context.getMember().getEffectiveName()).queue();
+            g.prune(7, true).reason("Global prune, executed by: " + context.getMember().getEffectiveName()).queue();
         }
         context.makeSuccess(sb.toString()).queue();
+
+        TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+        if (tc != null) {
+            tc.sendMessage(context.makeInfo("[``:guildName`` was pruned by :mention](:link)")
+                .set("guildName", context.getGuild().getName())
+                .set("mention", context.getMember().getAsMention())
+                .set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
+        }
         return true;
     }
 

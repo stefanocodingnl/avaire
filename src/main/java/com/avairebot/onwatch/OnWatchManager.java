@@ -92,7 +92,7 @@ public class OnWatchManager {
                 statement.set("expires_in", expiresAt);
             });
 
-        OnWatchs.get(guildId).add(new OnWatchContainer(guildId, userId, expiresAt));
+        OnWatchs.get(guildId).add(new OnWatchContainer(guildId, userId, expiresAt, caseId));
     }
 
     /**
@@ -194,7 +194,8 @@ public class OnWatchManager {
                 OnWatchs.get(guildId).add(new OnWatchContainer(
                     row.getLong("guild_id"),
                     row.getLong("target_id"),
-                    row.getTimestamp("expires_in")
+                    row.getTimestamp("expires_in"),
+                    row.getString("modlog_id")
                 ));
             }
 

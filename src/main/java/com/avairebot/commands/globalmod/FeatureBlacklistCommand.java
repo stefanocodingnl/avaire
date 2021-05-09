@@ -22,6 +22,7 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.blacklist.features.FeatureScope;
 import com.avairebot.chat.SimplePaginator;
 import com.avairebot.commands.CommandMessage;
@@ -30,6 +31,7 @@ import com.avairebot.contracts.commands.Command;
 import com.avairebot.language.I18n;
 import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.NumberUtil;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.ArrayList;
@@ -245,6 +247,16 @@ public class FeatureBlacklistCommand extends Command {
             .set("guild", featureScope.getId() != 0 ? context.getGuild().getName() : "All **official** Pinewood Discords!")
             .queue();
 
+
+        TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+        if (tc != null) {
+            tc.sendMessage(context.makeInfo("[<@:id> **(``:id``)** was feature blacklisted for ``:type`` in ``:guild`` by :punisher](:link)")
+                .set("type", featureScope.getName())
+                .set("id", id)
+                .set("punisher", context.getMember().getAsMention())
+                .set("guild", featureScope.getId() != 0 ? context.getGuild().getName() : "GLOBAL")
+                .set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
+        }
         return true;
     }
 }
