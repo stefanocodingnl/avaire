@@ -115,19 +115,17 @@ public class GlobalBanCommand extends Command {
                 return showWhoBannedWho(context, args);
             }
         }
-
         if (args.length == 1) {
-            context.makeError("Please supply a reason for the global ban!").queue();
+            context.makeError("Please supply an actual reason for the global ban!").queue();
             return true;
         }
 
-
-        if (!(fuzzyFalse.contains(args[1]) || !fuzzyTrue.contains(args[1]))) {
+        if (!(fuzzyFalse.contains(args[1]) || fuzzyTrue.contains(args[1]))) {
             context.makeError("Please use either true or false as the second argument.").queue();
             return false;
         }
 
-        boolean soft = ComparatorUtil.isFuzzyFalse(args[1]);
+        boolean soft = ComparatorUtil.getFuzzyType(args[1]) == ComparatorUtil.ComparatorType.FALSE;
 
         if (!soft && args.length < 3) {
             context.makeError("Please supply a reason for the global ban!").queue();
