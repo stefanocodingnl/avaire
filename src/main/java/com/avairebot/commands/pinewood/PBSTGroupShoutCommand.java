@@ -72,6 +72,17 @@ public class PBSTGroupShoutCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
+
+        if (avaire.getConfig().getString("apiKeys.nobloxServerAPIKey") == null | avaire.getConfig().getString("apiKeys.nobloxServerAPIKey").length() < 1) {
+            context.makeError("An noblox api key could not be found. Please enter it in the config.yml").queue();
+            return false;
+        }
+
+        if (avaire.getConfig().getString("URL.noblox") == null | avaire.getConfig().getString("URL.noblox").length() < 1) {
+            context.makeError("An noblox webserver could not be found. Please enter it in the config.yml").queue();
+            return false;
+        }
+
         if (context.getGuildTransformer() == null) {
             context.makeError("Transformer could not be loaded!").queue();
             return false;

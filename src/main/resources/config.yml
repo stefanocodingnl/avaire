@@ -704,8 +704,13 @@ apiKeys:
   # Gitlabs API Key for the gitlab API
   gitlabKey: ''
 
-  # Kronos API Key for connecting to the Kronos API
+  # Kronos API Key for connecting to the Kronos API (Blacklist and Database)
   kronosApiKey: ''
-apiUrl:
-  kronosUrl: "https://pb-kronos.dev/"
-  kronosBlacklist: "pbst/blacklist/checkusers"
+  kronosDatabaseApiKey: ''
+
+  # API key for connecting to an selfhosted noblox.js server
+  nobloxServerAPIKey: ''
+
+URL:
+  # Link to noblox.js server
+  noblox: ''

@@ -484,7 +484,7 @@ public class PatrolRemittanceCommand extends Command {
 
     private static Long getRobloxId(String un) {
         try {
-            JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
+            JSONObject json = readJsonFromUrl("https://api.roblox.com/users/get-by-username?username=" + un);
             return Double.valueOf(json.getDouble("Id")).longValue();
         } catch (Exception e) {
             return 0L;
