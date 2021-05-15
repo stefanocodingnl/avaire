@@ -94,7 +94,7 @@ public class GlobalBanCommand extends Command {
             context.makeError("Sorry, but you didn't give any member id to globbaly ban, or argument to use!\n\n" +
                 "``Valid arguments``: \n" +
                 " - **sync/s** - Sync all global-bans with a server.\n" +
-                " - **v/view/see** - View the reason why someone is global-banned.\n\n*In the **RARE** cases someone has to be banned from the PBAC, you can ban them ").queue();
+                " - **v/view/see** - View the reason why someone is global-banned.\n\n*In the **RARE** cases someone has to be banned from the PBAC, you can ban them with ``--pbac-ban``*").queue();
             return false;
         }
 
@@ -115,19 +115,20 @@ public class GlobalBanCommand extends Command {
                 return showWhoBannedWho(context, args);
             }
         }
+
         if (args.length == 1) {
-            context.makeError("Please supply an actual reason for the global ban!").queue();
+            context.makeError("Please supply an true or false argument!").queue();
             return true;
         }
 
         if (!(fuzzyFalse.contains(args[1]) || fuzzyTrue.contains(args[1]))) {
-            context.makeError("Please use either true or false as the second argument.").queue();
+            context.makeError("Please use either ``true`` or ``false`` as the second argument. (And yes, watch the capitalisation)").queue();
             return false;
         }
 
-        boolean soft = ComparatorUtil.getFuzzyType(args[1]) == ComparatorUtil.ComparatorType.FALSE;
+        ComparatorUtil.ComparatorType soft = ComparatorUtil.getFuzzyType(args[1]);
 
-        if (!soft && args.length < 3) {
+        if (args.length < 3) {
             context.makeError("Please supply a reason for the global ban!").queue();
             return true;
         }
@@ -142,9 +143,7 @@ public class GlobalBanCommand extends Command {
             }
         }
 
-        int time = soft ? 0 : 7;
-
-
+        int time = soft.getValue() ? 0 : 7;
         String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
         boolean pbacBan = false;
         if (reason.endsWith("--pbac-ban")) {
