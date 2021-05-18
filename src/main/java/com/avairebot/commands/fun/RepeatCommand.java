@@ -72,7 +72,11 @@ public class RepeatCommand extends Command {
             return sendErrorMessage(context, "errors.cantMentionEveryone");
         }
 
-        context.getMessageChannel().sendMessage(MessageFactory.makeEmbeddedMessage(context.channel).setDescription(String.join(" ", args)).buildEmbed()).queue();
+        if (mentionsEntities(context) && !canMentionEveryone(context)) {
+            return sendErrorMessage(context, "errors.cantMentionUsersOrRoles");
+        }
+
+        context.getMessageChannel().sendMessage(context.getContentRaw()).queue();
 
         return true;
     }
@@ -82,5 +86,10 @@ public class RepeatCommand extends Command {
             || context.getMember().hasPermission(
             context.getChannel(), Permission.MESSAGE_MENTION_EVERYONE
         );
+    }
+
+    private boolean mentionsEntities(CommandMessage context) {
+        return !context.getMessage().getMentionedUsers().isEmpty()
+            || !context.getMessage().getMentionedRoles().isEmpty();
     }
 }
