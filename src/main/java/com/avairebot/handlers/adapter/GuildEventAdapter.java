@@ -89,13 +89,14 @@ public class GuildEventAdapter extends EventAdapter {
                             } else {
                                 tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("**" + e.getUser().getName() + e.getUser().getDiscriminator() + "** has been unbanned from **" + e.getGuild().getName() + "**\nIssued by Guild Member: " + logs.get(0).getUser().getName() + "#" + logs.get(0).getUser().getDiscriminator() + " (User has been re-banned)").buildEmbed()).queue();
 
-                                e.getGuild().ban(e.getUser().getId(), 0, "Banned by: " + avaire.getShardManager().getUserById(unbanCollection.get(0).getLong("punishedId")).getName() + "\n" +
-                                    "For: " + unbanCollection.get(0).getString("reason") + "\n*THIS IS A PIA GLOBAL BAN, DO NOT REVOKE THIS BAN WITHOUT CONSULTING THE PIA MEMBER WHO INITIATED THE GLOBAL BAN, REVOKING THIS BAN WITHOUT PIA APPROVAL WILL RESULT IN DISCIPlINARY ACTION!*").reason("Global Ban, executed by " + avaire.getShardManager().getUserById(unbanCollection.get(0).getLong("punishedId")).getName() + ". For: \n" + unbanCollection.get(0).getString("reason")).queue();
-
                                 logs.get(0).getUser().openPrivateChannel().queue(o -> {
                                     if (o.getUser().isBot()) return;
                                     o.sendMessage(MessageFactory.makeEmbeddedMessage(tc).setDescription("Sorry, but this user **:bannedUser** was permbanned of PB though the Xeus blacklist feature and may **not** be unbanned. Please ask a PIA agent to handle an unban if deemed necessary.").set("bannedUser", e.getUser().getAsTag() + " / " + e.getUser().getName()).buildEmbed()).queue();
                                 });
+
+                                String agent = avaire.getShardManager().getUserById(unbanCollection.get(0).getLong("punishedId")) != null ? avaire.getShardManager().getUserById(unbanCollection.get(0).getLong("punishedId")).getName() : "No PIA Member found";
+                                e.getGuild().ban(e.getUser().getId(), 0, "Banned by: " + agent + "\n" +
+                                    "For: " + unbanCollection.get(0).getString("reason") + "\n*THIS IS A PIA GLOBAL BAN, DO NOT REVOKE THIS BAN WITHOUT CONSULTING THE PIA MEMBER WHO INITIATED THE GLOBAL BAN, REVOKING THIS BAN WITHOUT PIA APPROVAL WILL RESULT IN DISCIPlINARY ACTION!*").reason("Global Ban, executed by " + agent + ". For: \n" + unbanCollection.get(0).getString("reason")).queue();
                             }
                         }
                     }
