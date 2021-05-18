@@ -125,13 +125,13 @@ public class EvalStatusCommand extends Command {
             return false;
     }
 
-    public int getRobloxId(String un) {
+    public Long getRobloxId(String un) {
 
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
-            return json.getInt("Id");
+            return json.getLong("Id");
         } catch (Exception e) {
-            return 0;
+            return null;
         }
     }
 

@@ -8,9 +8,11 @@ import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.transformers.GuildTransformer;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -102,6 +104,13 @@ public class AddAutoModWildcardCommand extends Command {
 
                 context.makeSuccess("Successfully added: ``" + words + "``")
                     .queue();
+
+                TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+                if (tc != null) {
+                    tc.sendMessage(context.makeInfo("[The following words have been added to the **LOCAL** wildcard filter by :user in ``:guild``](:link):\n" +
+                        "```:words```").set("guild", context.getGuild().getName()).setColor(new Color(255, 128, 0)).set("words", words).set("user", context.getMember().getAsMention()).set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
+                }
+
                 return true;
             } catch (SQLException e) {
                 e.printStackTrace();

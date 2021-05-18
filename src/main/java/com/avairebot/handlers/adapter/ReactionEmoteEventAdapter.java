@@ -21,6 +21,7 @@
 
 package com.avairebot.handlers.adapter;
 
+import com.avairebot.AppInfo;
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
 import com.avairebot.chat.PlaceholderMessage;
@@ -33,10 +34,14 @@ import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.database.transformers.ReactionTransformer;
 import com.avairebot.factories.MessageFactory;
+import com.avairebot.factories.RequestFactory;
 import com.avairebot.handlers.DatabaseEventHolder;
+import com.avairebot.requests.Response;
 import com.avairebot.scheduler.tasks.DrainReactionRoleQueueTask;
 import com.avairebot.utilities.CheckPermissionUtil;
+import com.avairebot.utilities.NumberUtil;
 import com.avairebot.utilities.RoleUtil;
+import com.google.gson.internal.LinkedTreeMap;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
@@ -45,18 +50,31 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+
+import static com.avairebot.utils.JsonReader.readJsonFromUrl;
 
 public class ReactionEmoteEventAdapter extends EventAdapter {
+
+    private static final MediaType json = MediaType.parse("application/json; charset=utf-8");
+    private final OkHttpClient client = new OkHttpClient();
 
     public ReactionEmoteEventAdapter(AvaIre avaire) {
         super(avaire);
@@ -300,6 +318,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                             String warningEvidence = c.getString("report_evidence_warning");
                             long reporter = c.getLong("reporter_discord_id");
                             String rank = c.getString("reported_roblox_rank");
+                            long reportedRobloxId = c.getLong("reported_roblox_id");
                             User memberAsReporter = avaire.getShardManager().getUserById(reporter);
 
 
@@ -330,43 +349,108 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                 case "✅":
                                     if (permissionLevel >=
                                         CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
+                                        if (e.getGuild().getId().equals("438134543837560832")) {
+                                            RequestFactory.makeGET("https://www.pb-kronos.dev/api/v2/database/pbst")
+                                                .addParameter("userids", reportedRobloxId)
+                                                .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
+                                                .send((Consumer<Response>) response -> {
+                                                    List<LinkedTreeMap<String, Double>> service = (List<LinkedTreeMap<String, Double>>) response.toService(List.class);
+                                                    for (LinkedTreeMap<String, Double> list : service) {
+                                                        Long userId = list.get("UserId").longValue();
+                                                        Long points = list.get("Points").longValue();
 
+                                                        if (userId.equals(reportedRobloxId)) {
+                                                            tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
+                                                                if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0)))
+                                                                    return;
 
-                                        tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
-                                            if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0))) return;
+                                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200),
+                                                                    "You've chosen to approve this report, may I know the amount of points I have to remove? (This user currently has ``:points`` points)")
+                                                                    .set("points", points).buildEmbed()).queue(z -> {
+                                                                    avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class,
+                                                                        p -> p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel()) && NumberUtil.isNumeric(p.getMessage().getContentStripped()), run -> {
+                                                                        v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
+                                                                            .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
+                                                                            .setDescription(
+                                                                                "**Violator**: " + username + "\n" +
+                                                                                    (rank != null ? "**Rank**: ``:rRank``\n" : "") +
+                                                                                    "**Information**: \n" + description + "\n\n" +
+                                                                                    "**Evidence**: \n" + evidence + "\n\n" +
+                                                                                    (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
+                                                                                    "**Punishment**: \n``" + run.getMessage().getContentRaw() + "`` points pending removal.")
+                                                                            .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
+                                                                            .setTimestamp(Instant.now()).set("rRank", rank)
+                                                                            .buildEmbed())
+                                                                            .queue();
+                                                                        try {
+                                                                            qb.useAsync(true).update(statement -> {
+                                                                                statement.set("report_punishment", run.getMessage().getContentRaw(), true);
+                                                                            });
+                                                                        } catch (SQLException throwables) {
+                                                                            e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
+                                                                                n.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                                            });
+                                                                        }
+                                                                        z.delete().queue();
+                                                                        v.clearReactions().queue();
+                                                                        run.getMessage().delete().queue();
 
-                                            e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to approve a report, may I know the punishment you're giving to the user?").buildEmbed()).queue(z -> {
-                                                avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
-                                                    return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
-                                                }, run -> {
-                                                    v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
-                                                        .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
-                                                        .setDescription(
-                                                            "**Violator**: " + username + "\n" +
-                                                                (rank != null ? "**Rank**: ``:rRank``\n" : "") +
-                                                                "**Information**: \n" + description + "\n\n" +
-                                                                "**Evidence**: \n" + evidence + "\n\n" +
-                                                                (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
-                                                                "**Punishment**: \n" + run.getMessage().getContentRaw())
-                                                        .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
-                                                        .setTimestamp(Instant.now()).set("rRank", rank)
-                                                        .buildEmbed())
-                                                        .queue();
-                                                    try {
-                                                        qb.useAsync(true).update(statement -> {
-                                                            statement.set("report_punishment", run.getMessage().getContentRaw(), true);
-                                                        });
-                                                    } catch (SQLException throwables) {
-                                                        e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
-                                                            n.delete().queueAfter(30, TimeUnit.SECONDS);
-                                                        });
+                                                                            Request.Builder request = new Request.Builder()
+                                                                                .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                                                                                .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
+                                                                                .url("https://www.pb-kronos.dev/api/v2/smartlog/pbst/single")
+                                                                                .post(RequestBody.create(json, buildPayload(username, userId, -points)));
+
+                                                                            try (okhttp3.Response exportResponse = client.newCall(request.build()).execute()) {
+                                                                                e.getChannel().sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel())
+                                                                                    .setDescription("Sent point export to the database, please use ``;smartlogs`` in a bot commands channel to update the smartlog that was just sent to Kronos. Debugging info: \n```json\n" +
+                                                                                        ":info```").set("info", exportResponse.body() != null ? exportResponse.body().string() : "Empty Body").setFooter("This message self-destructs after 25 seconds").buildEmbed()).queue(b -> {b.delete().queueAfter(25, TimeUnit.SECONDS);});
+                                                                            } catch (IOException error) {
+                                                                                AvaIre.getLogger().error("Failed sending sync with beacon request: " + error.getMessage());
+                                                                            }
+                                                                    });
+                                                                });
+                                                            });
+                                                        }
                                                     }
-                                                    z.delete().queue();
-                                                    v.clearReactions().queue();
-                                                    run.getMessage().delete().queue();
+                                                });
+                                        } else {
+                                            tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
+                                                if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0))) return;
+
+                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to approve a report, may I know the punishment you're giving to the user?").buildEmbed()).queue(z -> {
+                                                    avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
+                                                        return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
+                                                    }, run -> {
+                                                        v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
+                                                            .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
+                                                            .setDescription(
+                                                                "**Violator**: " + username + "\n" +
+                                                                    (rank != null ? "**Rank**: ``:rRank``\n" : "") +
+                                                                    "**Information**: \n" + description + "\n\n" +
+                                                                    "**Evidence**: \n" + evidence + "\n\n" +
+                                                                    (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
+                                                                    "**Punishment**: \n" + run.getMessage().getContentRaw())
+                                                            .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
+                                                            .setTimestamp(Instant.now()).set("rRank", rank)
+                                                            .buildEmbed())
+                                                            .queue();
+                                                        try {
+                                                            qb.useAsync(true).update(statement -> {
+                                                                statement.set("report_punishment", run.getMessage().getContentRaw(), true);
+                                                            });
+                                                        } catch (SQLException throwables) {
+                                                            e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
+                                                                n.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                            });
+                                                        }
+                                                        z.delete().queue();
+                                                        v.clearReactions().queue();
+                                                        run.getMessage().delete().queue();
+                                                    });
                                                 });
                                             });
-                                        });
+                                        }
                                     } else {
                                         /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                             v.delete().queueAfter(30, TimeUnit.SECONDS);
@@ -464,6 +548,22 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                 }
             }
         });
+    }
+
+    private String buildPayload(String username, Long userId, Long points) {
+        JSONObject main = new JSONObject();
+        JSONArray pointExports = new JSONArray();
+
+        JSONObject data = new JSONObject();
+        data.put("Name", username);
+        data.put("UserId", userId);
+        data.put("Points", points);
+
+        pointExports.put(data);
+        main.put("Data", pointExports);
+
+
+        return main.toString();
     }
 
     public void onFeedbackMessageEvent(GuildMessageReactionAddEvent e) {
@@ -810,6 +910,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                             .setFooter(m.getEmbeds().get(0).getFooter().getText(), m.getEmbeds().get(0).getFooter().getIconUrl())
                             .setColor(new Color(0, 255, 0))
                             .build()).queue();
+
                         v.delete().queue();
                         c.getMessage().delete().queue();
                         m.clearReactions().queue();
@@ -960,40 +1061,90 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                     if (permissionLevel >=
                                         CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
 
+                                        if (e.getGuild().getId().equals("438134543837560832")) {
+                                            tc.retrieveMessageById(c.getLong("request_message_id")).queue(v -> {
+                                                if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0))) return;
 
-                                        tc.retrieveMessageById(c.getLong("request_message_id")).queue(v -> {
-                                            if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0))) return;
+                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to approve a remittance, how many points you want to give to the user?").buildEmbed()).queue(z -> {
+                                                    avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
+                                                        return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel()) && NumberUtil.isNumeric(p.getMessage().getContentRaw());
+                                                    }, run -> {
+                                                        v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
+                                                            .setAuthor("Remittance created for: " + username, null, getImageByName(tc.getGuild(), username))
+                                                            .setDescription(
+                                                                "**Username**: " + username + "\n" +
+                                                                    (rank != null ? "**Rank**: ``:rRank``\n" : "") +
+                                                                    "**Evidence**: \n" + evidence +
+                                                                    "\n**Points awarded**: \n" + run.getMessage().getContentRaw())
+                                                            .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
+                                                            .setTimestamp(Instant.now()).set("rRank", rank)
+                                                            .buildEmbed())
+                                                            .queue();
 
-                                            e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to approve a report, may I know the punishment you're giving to the user?").buildEmbed()).queue(z -> {
-                                                avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
-                                                    return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
-                                                }, run -> {
-                                                    v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
-                                                        .setAuthor("Remittance created for: " + username, null, getImageByName(tc.getGuild(), username))
-                                                        .setDescription(
-                                                            "**Username**: " + username + "\n" +
-                                                                (rank != null ? "**Rank**: ``:rRank``\n" : "") +
-                                                                "**Evidence**: \n" + evidence +
-                                                                "\n**Reward/Acceptal Reason**: \n" + run.getMessage().getContentRaw())
-                                                        .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
-                                                        .setTimestamp(Instant.now()).set("rRank", rank)
-                                                        .buildEmbed())
-                                                        .queue();
-                                                    try {
-                                                        qb.useAsync(true).update(statement -> {
-                                                            statement.set("action", run.getMessage().getContentRaw(), true);
-                                                        });
-                                                    } catch (SQLException throwables) {
-                                                        e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
-                                                            n.delete().queueAfter(30, TimeUnit.SECONDS);
-                                                        });
-                                                    }
-                                                    z.delete().queue();
-                                                    v.clearReactions().queue();
-                                                    run.getMessage().delete().queue();
+                                                        Request.Builder request = new Request.Builder()
+                                                            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                                                            .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
+                                                            .url("https://www.pb-kronos.dev/api/v2/smartlog/pbst/single")
+                                                            .post(RequestBody.create(json, buildPayload(username, getRobloxId(username), Long.valueOf(run.getMessage().getContentRaw()))));
+
+                                                        try (okhttp3.Response exportResponse = client.newCall(request.build()).execute()) {
+                                                            e.getChannel().sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel())
+                                                                .setDescription("Sent point export to the database, please use ``;smartlogs`` in a bot commands channel to update the smartlog that was just sent to Kronos. Debugging info: \n```json\n" +
+                                                                    ":info```").set("info", exportResponse.body() != null ? exportResponse.body().string() : "Empty Body").setFooter("This message self-destructs after 25 seconds").buildEmbed()).queue(b -> {b.delete().queueAfter(25, TimeUnit.SECONDS);});
+                                                        } catch (IOException error) {
+                                                            AvaIre.getLogger().error("Failed sending sync with beacon request: " + error.getMessage());
+                                                        }
+
+                                                        try {
+                                                            qb.useAsync(true).update(statement -> {
+                                                                statement.set("action", run.getMessage().getContentRaw(), true);
+                                                            });
+                                                        } catch (SQLException throwables) {
+                                                            e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
+                                                                n.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                            });
+                                                        }
+                                                        z.delete().queue();
+                                                        v.clearReactions().queue();
+                                                        run.getMessage().delete().queue();
+                                                    });
                                                 });
                                             });
-                                        });
+                                        } else {
+                                            tc.retrieveMessageById(c.getLong("request_message_id")).queue(v -> {
+                                                if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0))) return;
+
+                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to approve a report, may I know the punishment you're giving to the user?").buildEmbed()).queue(z -> {
+                                                    avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
+                                                        return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
+                                                    }, run -> {
+                                                        v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
+                                                            .setAuthor("Remittance created for: " + username, null, getImageByName(tc.getGuild(), username))
+                                                            .setDescription(
+                                                                "**Username**: " + username + "\n" +
+                                                                    (rank != null ? "**Rank**: ``:rRank``\n" : "") +
+                                                                    "**Evidence**: \n" + evidence +
+                                                                    "\n**Reward/Acceptal Reason**: \n" + run.getMessage().getContentRaw())
+                                                            .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
+                                                            .setTimestamp(Instant.now()).set("rRank", rank)
+                                                            .buildEmbed())
+                                                            .queue();
+                                                        try {
+                                                            qb.useAsync(true).update(statement -> {
+                                                                statement.set("action", run.getMessage().getContentRaw(), true);
+                                                            });
+                                                        } catch (SQLException throwables) {
+                                                            e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
+                                                                n.delete().queueAfter(30, TimeUnit.SECONDS);
+                                                            });
+                                                        }
+                                                        z.delete().queue();
+                                                        v.clearReactions().queue();
+                                                        run.getMessage().delete().queue();
+                                                    });
+                                                });
+                                            });
+                                        }
                                     } else {
                                         /*e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Sorry, but you're not allowed to approve this report. You have to be at least a **Manager** to do this.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(v -> {
                                             v.delete().queueAfter(30, TimeUnit.SECONDS);
@@ -1090,4 +1241,15 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
             }
         });
     }
+
+    public Long getRobloxId(String un) {
+        try {
+            JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
+            return json.getLong("Id");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }
+
