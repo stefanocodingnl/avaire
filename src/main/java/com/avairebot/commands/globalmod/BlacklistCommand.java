@@ -22,6 +22,7 @@
 package com.avairebot.commands.globalmod;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.blacklist.bot.Scope;
 import com.avairebot.chat.SimplePaginator;
 import com.avairebot.commands.CommandMessage;
@@ -29,6 +30,7 @@ import com.avairebot.commands.CommandPriority;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.language.I18n;
 import com.avairebot.utilities.NumberUtil;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -191,6 +193,14 @@ public class BlacklistCommand extends Command {
             .set("type", scope.name().toLowerCase())
             .set("id", id)
             .queue();
+
+        TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+        if (tc != null) {
+            tc.sendMessage(context.makeInfo("[<@:id> **(``:id``)** was blacklisted from Xeus everywhere in ``:guild`` by :punisher](:link)")
+                .set("id", id)
+                .set("punisher", context.getMember().getAsMention())
+                .set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
+        }
 
         return true;
     }
