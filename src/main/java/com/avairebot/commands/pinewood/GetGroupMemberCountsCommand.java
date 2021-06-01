@@ -76,10 +76,10 @@ public class GetGroupMemberCountsCommand extends Command {
                     e.printStackTrace();
                 }
                 pbst.editMessage("<:PB:757736074641408022> (PB): " + PB + "\n" +
-                    "<:PBSTHandbook:690133745805819917> (PBST): " + PBST + "\n" +
+                    "<:PBST:790431720297857024> (PBST): " + PBST + "\n" +
                     "<:TMS:572920815595683841> (TMS): " + TMS + "\n" +
                     "<:PET:694389856071319593> (PET): " + PET + "\n" +
-                    "<:PBM:751218795078746254> (PBM): " + PBM).queue();
+                    "<:pbm:819232629340766219> (PBM): " + PBM).queue();
             });
 
             return false;

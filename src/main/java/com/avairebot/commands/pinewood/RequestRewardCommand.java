@@ -82,14 +82,14 @@ public class RequestRewardCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-        /*if (!context.getAuthor().getId().equals("173839105615069184")) {
-            context.makeError("[This command is temporarly disabled due changed in the recent way rewards are done.](https://discordapp.com/channels/438134543837560832/459764670782504961/775451307150147605)").queue();
+        if (!context.getAuthor().getId().equals("173839105615069184")) {
+            context.makeError("[This command is temporarly disabled due changed in the recent way rewards are done.](https://discord.com/channels/438134543837560832/459764670782504961/848609525586067457)").queue();
             return true;
-        }*/
+        }
 
 
         if (avaire.getFeatureBlacklist().isBlacklisted(context.getAuthor(), 438134543837560832L, FeatureScope.REWARD_REQUESTS)) {
-            context.makeError("You have been blacklisted from creating reward requests for this guild. Please ask a **Level 4** or higher to remove you from the ``"+ "PBST" +"`` Reward request blacklist. (Or global, if you're globally banned from all features)").queue();
+            context.makeError("You have been blacklisted from creating reward requests for this guild. Please ask a **Level 4** or higher to remove you from the ``"+ context.getGuild().getName()   +"`` Reward request blacklist. (Or global, if you're globally banned from all features)").queue();
             return false;
         }
 
@@ -133,7 +133,7 @@ public class RequestRewardCommand extends Command {
 
                             } else {
                                 context.makeInfo(String.valueOf(response2.getResponse().code())).queue();
-                                makeErrorMessage(context, "The user who you've requested a ested for isn't in PBST, please check if this is correct or not.");
+                                makeErrorMessage(context, "The user who you've requested a reward for isn't in that group, please check if this is correct or not.");
                             }
                         }
                     });
@@ -190,9 +190,6 @@ public class RequestRewardCommand extends Command {
             return;
         }
 
-        if (checkBypass(requesterUser.getRole().getRank())) {
-            context.makeError("As an elite tier, you're allowed to give anyone a reward (Except your own rank, or SD+)").queue();
-        }
 
         context.makeInfo("You're able to request a reward for this rank. How many points do you think this person should earn?").queue(
             message -> {

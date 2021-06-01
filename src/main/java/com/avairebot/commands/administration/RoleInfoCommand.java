@@ -132,11 +132,12 @@ public class RoleInfoCommand extends Command {
             + LINESTART + "Permissions: \n"
         );
 
-        if (role.getPermissions().isEmpty())
+        if (role.getPermissions().isEmpty()) {
             description.append("No permissions set");
-        else
+        } else {
             description.append(role.getPermissions().stream().map(p -> "`, `" + p.getName()).reduce("", String::concat)
                 .substring(3)).append("`");
+        }
 
         PlaceholderMessage eb = context.makeEmbeddedMessage()
             .setColor(color)

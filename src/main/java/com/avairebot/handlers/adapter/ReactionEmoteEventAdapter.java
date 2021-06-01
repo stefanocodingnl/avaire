@@ -399,7 +399,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                                                 .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
                                                                                 .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
                                                                                 .url("https://www.pb-kronos.dev/api/v2/smartlog/pbst/single")
-                                                                                .post(RequestBody.create(json, buildPayload(username, userId, -points)));
+                                                                                .post(RequestBody.create(json, buildPayload(username, userId, -Long.parseLong(run.getMessage().getContentRaw()))));
 
                                                                             try (okhttp3.Response exportResponse = client.newCall(request.build()).execute()) {
                                                                                 e.getChannel().sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel())

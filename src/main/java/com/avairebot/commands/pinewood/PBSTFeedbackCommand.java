@@ -34,12 +34,12 @@ public class PBSTFeedbackCommand extends Command {
 
     @Override
     public String getName() {
-        return "PBST Feedback Command";
+        return "Global Feedback Command";
     }
 
     @Override
     public String getDescription() {
-        return "Feedback about something in PBST.";
+        return "Feedback about something in an guild.";
     }
 
     @Override
@@ -80,7 +80,9 @@ public class PBSTFeedbackCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-
+        if (context.member == null) {
+            return false;
+        }
 
         int permissionLevel = CheckPermissionUtil.getPermissionLevel(context).getLevel();
         if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
@@ -92,6 +94,10 @@ public class PBSTFeedbackCommand extends Command {
                     case "sc":
                     case "set-community":
                         return runSetCommunityVotesChannel(context, args);
+                    case "cch":
+                    case "change-community-threshold":
+                        return runChangeCommunityThreshold(context, args);
+
                     case "ca":
                     case "clear-all":
                         return runClearAllChannelsFromDatabase(context);
@@ -133,6 +139,10 @@ public class PBSTFeedbackCommand extends Command {
         return true;
     }
 
+    private boolean runChangeCommunityThreshold(CommandMessage context, String[] args) {
+        return false;
+    }
+
     private void startEmojiWaiter(CommandMessage context, Message message, EventWaiter waiter, QueryBuilder qb) {
         waiter.waitForEvent(GuildMessageReactionAddEvent.class, l -> l.getMember().equals(context.member) && message.getId().equals(l.getMessageId()), emote -> {
             try {
@@ -148,11 +158,17 @@ public class PBSTFeedbackCommand extends Command {
 
                     message.editMessage(context.makeInfo("You've selected a suggestion for: ``:guild``\nPlease tell me, what is your suggestion?").set("guild", d.getString("name")).buildEmbed()).queue();
                     message.clearReactions().queue();
-                    waiter.waitForEvent(GuildMessageReceivedEvent.class, l -> l.getMember().equals(context.member) && message.getChannel().equals(l.getChannel()) && antiSpamInfo(context, l), p -> {
+
+
+                    waiter.waitForEvent(GuildMessageReceivedEvent.class, l -> {
+                        Member m = l.getMember();
+                        return m != null && m.equals(context.member) && message.getChannel().equals(l.getChannel()) && antiSpamInfo(context, l);
+                    }, p -> {
                         if (p.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
                             context.makeInfo("Cancelled suggestion.").queue();
                             return;
                         }
+
 
                         c.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
                             .setAuthor("Suggestion for: " + c.getGuild().getName(), null, c.getGuild().getIconUrl())

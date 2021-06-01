@@ -6,7 +6,6 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import com.avairebot.utilities.ComparatorUtil;
 import net.dv8tion.jda.api.entities.*;
 
 import javax.annotation.Nonnull;
@@ -91,9 +90,8 @@ public class GlobalKickCommand extends Command {
             context.makeError("Please supply a reason for the global kick!").queue();
             return true;
         }
-        boolean soft = ComparatorUtil.isFuzzyFalse(args[1]);
 
-        if (!soft && args.length < 3) {
+        if (args.length < 3) {
             context.makeError("Please supply a reason for the global kick!").queue();
             return true;
         }
@@ -115,14 +113,15 @@ public class GlobalKickCommand extends Command {
             guild.add(avaire.getShardManager().getGuildById("750471488095780966"));
         }
 
-        if (avaire.getShardManager().getUserById(args[0]) != null) {
+
+        User u = avaire.getShardManager().getUserById(args[0]);
+        if (u != null) {
             String finalReason = reason;
-            avaire.getShardManager().getUserById(args[0]).openPrivateChannel().queue(p -> {
+            u.openPrivateChannel().queue(p -> {
                 p.sendMessage(context.makeInfo("*You have been **global-kicked** from all the Pinewood Builders discords by an PIA Agent. For the reason: *```" + finalReason + "```\n\n" +
                     "You may rejoin the guilds you where kicked from, unless you where banned in one.").setColor(Color.BLACK).buildEmbed()).queue();
             });
         }
-
         TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
         if (tc != null) {
             tc.sendMessage(context.makeInfo("[``:global-unbanned-id`` was global-kicked from all discords by :user for](:link):\n" +
