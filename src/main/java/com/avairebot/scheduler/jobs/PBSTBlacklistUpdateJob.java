@@ -53,7 +53,6 @@ public class PBSTBlacklistUpdateJob extends Job {
                 .send((Consumer<Response>) response -> {
                     log.info("PBST Blacklist has been requested.");
                     List service = (List) response.toService(List.class);
-
                     avaire.getCache().getAdapter(CacheType.FILE).forever(cacheToken, service);
                 });
         });
