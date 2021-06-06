@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PBSTFeedbackCommand extends Command {
 
@@ -97,7 +98,9 @@ public class PBSTFeedbackCommand extends Command {
                     case "cch":
                     case "change-community-threshold":
                         return runChangeCommunityThreshold(context, args);
-
+                    case "sasc":
+                    case "set-approved-suggestions-channel":
+                        return runChangeCommunityThreshold(context, args);
                     case "ca":
                     case "clear-all":
                         return runClearAllChannelsFromDatabase(context);
@@ -197,6 +200,8 @@ public class PBSTFeedbackCommand extends Command {
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
+        }, 5, TimeUnit.MINUTES, () -> {
+            message.editMessage(context.makeEmbeddedMessage().setColor(Color.BLACK).setDescription("Stopped the suggestion system. Timeout of 5 minutes reached .").buildEmbed()).queue();
         });
     }
 
