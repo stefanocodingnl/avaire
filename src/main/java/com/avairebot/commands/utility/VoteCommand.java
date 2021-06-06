@@ -70,7 +70,7 @@ public class VoteCommand extends Command {
 
     @Override
     public List<String> getTriggers() {
-        return Collections.singletonList("vote");
+        return Collections.singletonList("bot-vote");
     }
 
     @Nonnull

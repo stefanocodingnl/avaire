@@ -33,8 +33,8 @@ import com.avairebot.utilities.MentionableUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.Role;
 
@@ -104,7 +104,7 @@ public class MuteRoleCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "require:user,general.manage_server,general.manage_roles",
+            "isManagerOrHigher",
             "throttle:guild,1,5"
         );
     }

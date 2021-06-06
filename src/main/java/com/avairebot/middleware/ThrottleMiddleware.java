@@ -22,7 +22,6 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
-import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.CacheFingerprint;
 import com.avairebot.contracts.middleware.Middleware;
@@ -31,6 +30,7 @@ import com.avairebot.factories.MessageFactory;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.time.Carbon;
 import com.avairebot.utilities.CacheUtil;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.NumberUtil;
 import com.avairebot.utilities.RestActionUtil;
 import com.google.common.cache.Cache;
@@ -66,14 +66,13 @@ public class ThrottleMiddleware extends Middleware {
             ));
             return stack.next();
         }
-
-        if (message.getMember().getUser().getId().equals("173839105615069184")) {
-            return stack.next();
+        if (message.getChannelType().isGuild()) {
+            int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+            if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
+                return stack.next();
+            }
         }
 
-        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
-            return stack.next();
-        }
 
         ThrottleType type = ThrottleType.fromName(args[0]);
 
@@ -179,7 +178,7 @@ public class ThrottleMiddleware extends Middleware {
         }
 
         public String generateCacheString(Message message, MiddlewareStack stack) {
-            if (!this.equals(ThrottleType.USER) && message.getGuild() == null) {
+            if (!this.equals(ThrottleType.USER) && !message.isFromGuild()) {
                 return USER.generateCacheString(message, stack);
             }
 
@@ -188,7 +187,7 @@ public class ThrottleMiddleware extends Middleware {
             switch (this) {
                 case USER:
                     return String.format(cache,
-                        message.getGuild() == null ? "private" : message.getGuild().getId(),
+                        message.isFromGuild() ? message.getGuild().getId() : "private",
                         message.getAuthor().getId(),
                         cacheFingerprint);
 
@@ -226,7 +225,7 @@ public class ThrottleMiddleware extends Middleware {
         private int hit;
 
         ThrottleEntity(int maxAttempts, int decaySeconds) {
-            this.time = System.currentTimeMillis() + (decaySeconds * 1000);
+            this.time = System.currentTimeMillis() + (decaySeconds * 1000L);
             this.maxAttempts = maxAttempts;
             this.hit = 0;
         }

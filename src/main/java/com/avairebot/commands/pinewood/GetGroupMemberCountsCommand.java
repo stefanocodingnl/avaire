@@ -69,17 +69,17 @@ public class GetGroupMemberCountsCommand extends Command {
         int PBM = getMemberCount(4032816);
 
         if (tc != null) {
-            tc.sendMessage("Retrieving PBST member count <a:loading:742658561414266890>").queue(pbst -> {
+            tc.sendMessage("<a:loading:742658561414266890> Retrieving all group member counts <a:loading:742658561414266890>").queue(pbst -> {
                 try {
-                    Thread.sleep(4000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                pbst.editMessage("<:PB:543160237805535284>: " + PB + "\n" +
-                    "<:pbst:452100887025025038>: " + PBST + "\n" +
-                    "<:TMS:572920815595683841>: " + TMS + "\n" +
-                    "<:PET:694389856071319593>: " + PET + "\n" +
-                    "<:PridePBM:720733180016984066>: " + PBM + "").queue();
+                pbst.editMessage("<:PB:757736074641408022> (PB): " + PB + "\n" +
+                    "<:PBST:790431720297857024> (PBST): " + PBST + "\n" +
+                    "<:TMS:572920815595683841> (TMS): " + TMS + "\n" +
+                    "<:PET:694389856071319593> (PET): " + PET + "\n" +
+                    "<:pbm:819232629340766219> (PBM): " + PBM).queue();
             });
 
             return false;
@@ -97,7 +97,7 @@ public class GetGroupMemberCountsCommand extends Command {
     @Override
     public List <String> getMiddleware() {
         return Collections.singletonList(
-            "throttle:user,1,200"
+            "throttle:user,1,60"
         );
     }
 

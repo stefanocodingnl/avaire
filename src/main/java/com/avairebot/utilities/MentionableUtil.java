@@ -21,6 +21,7 @@
 
 package com.avairebot.utilities;
 
+import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.utilities.MentionChannelFinder;
 import net.dv8tion.jda.api.entities.*;
@@ -127,8 +128,7 @@ public class MentionableUtil {
 
         if (NumberUtil.isNumeric(part)) {
             try {
-                Member member = context.getGuild().getMemberById(part);
-                return member == null ? null : member.getUser();
+                return AvaIre.getInstance().getShardManager().getUserById(part);
             } catch (NumberFormatException e) {
                 return null;
             }

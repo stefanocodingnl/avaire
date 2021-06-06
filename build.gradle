@@ -7,9 +7,9 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'idea'
 
-version = '0.9.186'
+version = '0.12.5.1'
 group = 'com.avairebot'
-description = 'AvaIre Discord Bot'
+description = 'Xeus Discord Bot'
 mainClassName = 'com.avairebot.Main'
 
 sourceCompatibility = 1.8
@@ -68,14 +68,17 @@ repositories {
     mavenLocal()                       // Useful for developing
     maven { url "https://jitpack.io" } // Build projects directly from github
 
-    // Used for pulling down Lavaplayer plugins/extensions
-    maven { url 'https://dl.bintray.com/sedmelluq/com.sedmelluq' }
+    // Used for pulling down JDA and LavaPlayer
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
 }
 
 dependencies {
     compile group: 'com.avairebot', name: 'Shared', version: '80809049d2'
-    compile group: 'net.dv8tion', name: 'JDA', version: '4.2.0_168'
-    compile group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.50'
+    compile group: 'net.dv8tion', name: 'JDA', version: '4.2.1_262'
+    compile group: 'com.sedmelluq', name: 'lavaplayer', version: '1.3.75'
     compile group: 'com.sedmelluq', name: 'lavaplayer-ext-youtube-rotator', version: '0.2.3'
     compile group: 'com.sedmelluq', name: 'jda-nas', version: '1.1.0'
     compile group: 'com.github.FredBoat', name: 'Lavalink-Client', version: '4.0'
@@ -104,17 +107,32 @@ dependencies {
     compile group: 'io.sentry', name: 'sentry-logback', version: '1.7.10'
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
 
-    //JDA Utils
+    // JDA Utils
     compile 'com.jagrosh:jda-utilities:3.0.4'
 
-    //Gitlab API
+    // Gitlab API
     compile group: 'org.gitlab4j', name: 'gitlab4j-api', version: '4.12.3'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12'
+
+    // Emoji API
+    compile group: 'com.vdurmont', name: 'emoji-java', version: '5.1.1'
+
+    // Expiring Map API
+    // https://mvnrepository.com/artifact/net.jodah/expiringmap
+    compile group: 'net.jodah', name: 'expiringmap', version: '0.5.9'
+
+    // Java Link Scanner
+    implementation 'org.nibor.autolink:autolink:0.10.0'
+
+    // Guava
+    compile group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
+
 
     // Tests
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
-    compile("org.junit.platform:junit-platform-launcher:1.1.0")
-    compile("org.junit.jupiter:junit-jupiter-engine:5.1.0")
-    compile("org.junit.vintage:junit-vintage-engine:5.1.0")
+    compile("org.junit.platform:junit-platform-launcher:1.6.2")
+    compile("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+    compile("org.junit.vintage:junit-vintage-engine:5.6.2")
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens

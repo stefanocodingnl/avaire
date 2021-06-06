@@ -8,6 +8,7 @@ import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
 import com.avairebot.database.transformers.GuildTransformer;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -103,6 +104,28 @@ public class AddPIAModWildcardCommand extends Command {
 
                 context.makeSuccess("Successfully added: ``" + words + "``")
                     .queue();
+
+                TextChannel tc = avaire.getShardManager().getTextChannelById(Constants.PIA_LOG_CHANNEL);
+                if (tc != null) {
+                    tc.sendMessage(context.makeInfo("[The following words have been added to the **GLOBAL** wildcard filter by :user](:link):\n" +
+                        "```:words```").set("words", words).set("user", context.getMember().getAsMention()).set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
+                }
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        if (args[0].equalsIgnoreCase("add-comma")) {
+            if (args.length == 1) {
+                return sendErrorMessage(context, "You didn't give any words to add to the global filter.");
+            }
+            transformer.getPIAWordsWildcard().add(words);
+            try {
+                updateGuildAutoModExact(context, transformer);
+
+                context.makeSuccess("Successfully added: ``" + words + "``")
+                    .queue();
                 return true;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -119,7 +142,6 @@ public class AddPIAModWildcardCommand extends Command {
         }
 
         transformer.getPIAWordsWildcard().remove(args);
-
         try {
             updateGuildAutoModExact(context, transformer);
 

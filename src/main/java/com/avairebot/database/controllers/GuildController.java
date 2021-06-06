@@ -27,10 +27,7 @@ import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.utilities.CacheUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +55,15 @@ public class GuildController {
         "guilds.autorole", "guilds.level_channel", "guilds.level_alerts", "guilds.levels", "guilds.hierarchy",
         "guilds.default_volume", "guilds.dj_level", "guilds.dj_role", "guilds.gamenight_role", "guilds.on_watch_role",
         "guilds.on_watch_case", "guilds.on_watch", "guilds.filter_wildcard", "guilds.filter_exact",
-        "guilds.filter", "guilds.piaf_wildcard", "guilds.piaf_exact"
+        "guilds.filter", "guilds.piaf_wildcard", "guilds.piaf_exact", "guilds.report_discord", "guilds.report_discord_category",
+        "guilds.filter_log", "guilds.lockable_channels_roles", "guilds.lockable_channels", "guilds.moderator_roles",
+        "guilds.admin_roles", "guilds.manager_roles", "guilds.vote_validation_channel", "guilds.no_links_roles",
+        "guilds.suggestion_channel", "guilds.suggestion_emote_id", "guilds.suggestion_community_channel",
+        "guilds.report_info_message", "guilds.report_emote_id", "guilds.handbook_report_channel",
+        "guilds.automod_character_spam", "guilds.automod_emoji_spam", "guilds.automod_image_spam", "guilds.automod_link_spam",
+        "guilds.automod_mass_mention", "guilds.automod_message_spam", "guilds.audit_log", "guilds.roblox_group_id",
+        "guilds.member_to_young_channel_id", "guilds.join_logs", "guilds.event_request_channel", "guilds.patrol_remittance_channel",
+        "guilds.patrol_remittance_message", "guilds.patrol_remittance_emote_id", "guilds.main_discord_role", "guilds.approved_suggestion_channel"
     };
 
     /**
@@ -143,22 +148,11 @@ public class GuildController {
                 .get().first());
 
             if (!transformer.hasData()) {
-                try {
-                    avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
-                        .insert(statement -> {
-                            statement.set("id", guild.getId())
-                                .set("owner", guild.retrieveOwner().submit().getNow(null).getUser().getId())
-                                .set("name", guild.getName(), true)
-                                .set("roles_data", buildRoleData(guild.getRoles()), true)
-                                .set("channels_data", buildChannelData(guild.getTextChannels()), true);
+                guild.retrieveOwner().queue(
+                    member -> updateGuildEntry(avaire, guild, member),
+                    throwable -> updateGuildEntry(avaire, guild, null)
+                );
 
-                            if (guild.getIconId() != null) {
-                                statement.set("icon", guild.getIconId());
-                            }
-                        });
-                } catch (Exception ex) {
-                    AvaIre.getLogger().error(ex.getMessage(), ex);
-                }
                 return new GuildTransformer(guild);
             }
 
@@ -167,6 +161,26 @@ public class GuildController {
             log.error("Failed to fetch guild transformer from the database, error: {}", ex.getMessage(), ex);
 
             return null;
+        }
+    }
+
+    private static void updateGuildEntry(AvaIre avaire, Guild guild, Member owner) {
+        try {
+            avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
+                .insert(statement -> {
+                    statement
+                        .set("id", guild.getId())
+                        .set("owner", owner == null ? 0 : owner.getIdLong())
+                        .set("name", guild.getName(), true)
+                        .set("roles_data", buildRoleData(guild.getRoles()), true)
+                        .set("channels_data", buildChannelData(guild.getTextChannels()), true);
+
+                    if (guild.getIconId() != null) {
+                        statement.set("icon", guild.getIconId());
+                    }
+                });
+        } catch (Exception ex) {
+            AvaIre.getLogger().error(ex.getMessage(), ex);
         }
     }
 }

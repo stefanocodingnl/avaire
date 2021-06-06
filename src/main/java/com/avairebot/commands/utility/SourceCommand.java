@@ -38,7 +38,7 @@ import java.util.List;
 
 public class SourceCommand extends Command {
 
-    private final String rootUrl = "https://github.com/avaire/avaire";
+    private final String rootUrl = "https://gitlab.com/pinewood-builders/discord/xeus";
 
     public SourceCommand(AvaIre avaire) {
         super(avaire);

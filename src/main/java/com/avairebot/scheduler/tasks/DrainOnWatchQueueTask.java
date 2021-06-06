@@ -22,6 +22,7 @@
 package com.avairebot.scheduler.tasks;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.contracts.scheduler.Task;
 import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.transformers.GuildTransformer;
@@ -35,6 +36,7 @@ import com.avairebot.time.Carbon;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +62,28 @@ public class DrainOnWatchQueueTask implements Task {
                 }
 
                 Carbon expires = container.getExpiresAt();
+                Guild g = avaire.getShardManager().getGuildById(container.getGuildId());
+                if (expires != null) {
+                    if (g != null) {
+                        User u = avaire.getShardManager().getUserById(container.getUserId());
+                        if (u != null) {
+                            Member m = g.getMember(u);
+                            if (m == null) {
+                                try {
+                                    avaire.getDatabase().newQueryBuilder(Constants.ON_WATCH_TABLE_NAME)
+                                        .where("guild_id", container.getGuildId())
+                                        .where("modlog_id", container.getCaseId())
+                                        .update(statement -> {
+                                            statement.set("expires_in", expires.addMinute());
+                                        });
+                                } catch (SQLException throwables) {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 //noinspection ConstantConditions
                 if (expires.copy().subMinutes(5).isPast()) {
                     long differenceInSeconds = expires.getTimestamp() - getCurrentTimestamp();
@@ -67,7 +91,7 @@ public class DrainOnWatchQueueTask implements Task {
                         differenceInSeconds = 1;
                     }
 
-                    log.debug("Unmute task started for guildId:{}, userId:{}, time:{}",
+                    log.debug("Unwatch task started for guildId:{}, userId:{}, time:{}",
                         container.getGuildId(), container.getUserId(), differenceInSeconds
                     );
 
@@ -108,7 +132,6 @@ public class DrainOnWatchQueueTask implements Task {
             if (transformer == null || transformer.getOnWatchRole() == null) {
                 return;
             }
-
 
 
             Role muteRole = guild.getRoleById(transformer.getOnWatchRole());

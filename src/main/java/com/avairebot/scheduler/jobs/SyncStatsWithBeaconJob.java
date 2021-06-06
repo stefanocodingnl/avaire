@@ -54,7 +54,7 @@ public class SyncStatsWithBeaconJob extends Job {
         }
 
         Request.Builder request = new Request.Builder()
-            .addHeader("User-Agent", "AvaIre v" + AppInfo.getAppInfo().version)
+            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
             .url("https://beacon.avairebot.com/v1/bot/" + selfUser.getId())
             .post(RequestBody.create(json, buildPayload(selfUser)));
 

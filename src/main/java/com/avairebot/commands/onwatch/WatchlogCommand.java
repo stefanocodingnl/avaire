@@ -92,7 +92,7 @@ public class WatchlogCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "require:user,general.manage_server",
+            "isManagerOrHigher",
             "throttle:user,1,5"
         );
     }

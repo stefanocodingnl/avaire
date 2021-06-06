@@ -1,15 +1,14 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
-import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class IsValidPIAMemberMiddleware extends Middleware {
@@ -17,7 +16,7 @@ public class IsValidPIAMemberMiddleware extends Middleware {
     public IsValidPIAMemberMiddleware(AvaIre avaire) {
         super(avaire);
     }
-    ArrayList<String> guilds = Constants.guilds;
+    String rankName = CheckPermissionUtil.GuildPermissionCheckType.PIA.getRankName();
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
@@ -26,11 +25,8 @@ public class IsValidPIAMemberMiddleware extends Middleware {
 
     @Override
     public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
-        if (message.getAuthor().getId().equals("173839105615069184")) {
-            return stack.next();
-        }
-
-        if (Constants.bypass_users.contains(message.getAuthor().getId())) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 
@@ -41,6 +37,7 @@ public class IsValidPIAMemberMiddleware extends Middleware {
         if (!avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong()).isAdmin()) {
             return sendMustBeOfficialPIAMemberMessage(message);
         }
+
 
         return stack.next();
     }

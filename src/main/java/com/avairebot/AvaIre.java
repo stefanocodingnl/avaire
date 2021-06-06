@@ -31,10 +31,13 @@ import com.avairebot.audio.AudioHandler;
 import com.avairebot.audio.GuildMusicManager;
 import com.avairebot.audio.LavalinkManager;
 import com.avairebot.audio.cache.AudioState;
-import com.avairebot.blacklist.Blacklist;
+import com.avairebot.blacklist.bot.Blacklist;
+import com.avairebot.blacklist.features.FeatureBlacklist;
+import com.avairebot.blacklist.kronos.BlacklistManager;
 import com.avairebot.cache.CacheManager;
 import com.avairebot.cache.CacheType;
 import com.avairebot.chat.ConsoleColor;
+import com.avairebot.commands.Category;
 import com.avairebot.commands.CategoryDataContext;
 import com.avairebot.commands.CategoryHandler;
 import com.avairebot.commands.CommandHandler;
@@ -62,8 +65,10 @@ import com.avairebot.language.I18n;
 import com.avairebot.level.LevelManager;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.middleware.*;
+import com.avairebot.middleware.global.IsCategoryEnabled;
 import com.avairebot.mute.MuteManager;
 import com.avairebot.onwatch.OnWatchManager;
+import com.avairebot.pinewood.VoiceWhitelistManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
 import com.avairebot.scheduler.ScheduleHandler;
@@ -75,10 +80,11 @@ import com.avairebot.shared.ExitCodes;
 import com.avairebot.shared.SentryConstants;
 import com.avairebot.time.Carbon;
 import com.avairebot.utilities.AutoloaderUtil;
+import com.avairebot.utilities.EventWaiter;
 import com.avairebot.vote.VoteManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import com.google.gson.internal.LinkedTreeMap;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
@@ -87,14 +93,15 @@ import io.sentry.SentryClient;
 import io.sentry.logback.SentryAppender;
 import lavalink.client.io.Link;
 import lavalink.client.player.LavalinkPlayer;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
-import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+import net.dv8tion.jda.api.sharding.ShardManager;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.SessionControllerAdapter;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -114,21 +121,20 @@ import java.util.concurrent.ScheduledFuture;
 public class AvaIre {
 
     public static final Gson gson = new GsonBuilder()
-        .registerTypeAdapter(
-            PlaylistTransformer.PlaylistSong.class,
-            new PlaylistSongSerializer()
-        )
-        .disableHtmlEscaping()
-        .serializeNulls()
-        .create();
+            .registerTypeAdapter(
+                    PlaylistTransformer.PlaylistSong.class,
+                    new PlaylistSongSerializer()
+            )
+            .disableHtmlEscaping()
+            .serializeNulls()
+            .create();
 
-    private static final Logger log = LoggerFactory.getLogger(AvaIre.class);
+    private static final Logger log = LoggerFactory.getLogger("Xeus");
 
     protected static AvaIre avaire;
 
-
-    private final EventWaiter waiter;
     private static Environment applicationEnvironment;
+    private final EventWaiter waiter;
     private final Settings settings;
     private final Configuration config;
     private final ConstantsConfiguration constants;
@@ -145,10 +151,14 @@ public class AvaIre {
     private final EventEmitter eventEmitter;
     private final BotAdmin botAdmins;
     private final WebServlet servlet;
+    private final FeatureBlacklist featureBlacklist;
+    private final BlacklistManager blacklistManager;
+    private final VoiceWhitelistManager voiceWhitelistManager;
     private GitLabApi gitLabApi;
     private Carbon shutdownTime = null;
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
     private ShardManager shardManager = null;
+
 
     public AvaIre(Settings settings) throws IOException, SQLException, InvalidApplicationEnvironmentException {
         this.settings = settings;
@@ -174,8 +184,8 @@ public class AvaIre {
         if (!config.exists() || !constants.exists()) {
             getLogger().info("The {} or {} configuration files is missing!", "config.yml", "constants.yml");
             getLogger().info(settings.isGenerateJsonFileMode()
-                ? "Creating files and skipping terminating process due to command generation flag. "
-                : "Creating files and terminating program..."
+                    ? "Creating files and skipping terminating process due to command generation flag. "
+                    : "Creating files and terminating program..."
             );
 
             config.saveDefaultConfig();
@@ -238,8 +248,12 @@ public class AvaIre {
         MiddlewareHandler.register("throttle", new ThrottleMiddleware(this));
         MiddlewareHandler.register("musicChannel", new IsMusicChannelMiddleware(this));
         MiddlewareHandler.register("isDMMessage", new IsDMMessageMiddleware(this));
+
         MiddlewareHandler.register("isOfficialPinewoodGuild", new IsOfficialPinewoodGuildMiddleware(this));
         MiddlewareHandler.register("isValidPIAMember", new IsValidPIAMemberMiddleware(this));
+        MiddlewareHandler.register("isAdminOrHigher", new IsAdminOrHigherMiddleware(this));
+        MiddlewareHandler.register("isManagerOrHigher", new IsManagerOrHigherMiddleware(this));
+        MiddlewareHandler.register("isModOrHigher", new IsModOrHigherMiddleware(this));
 
         String defaultPrefix = getConfig().getString("default-prefix", DiscordConstants.DEFAULT_COMMAND_PREFIX);
         if (getConfig().getString("system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX).equals(defaultPrefix)) {
@@ -255,17 +269,19 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Help", defaultPrefix);
         CategoryHandler.addCategory(this, "Fun", defaultPrefix);
         CategoryHandler.addCategory(this, "Music", defaultPrefix);
-        CategoryHandler.addCategory(this, "Interaction", defaultPrefix);
         CategoryHandler.addCategory(this, "GlobalMod", defaultPrefix);
         CategoryHandler.addCategory(this, "Search", defaultPrefix);
         CategoryHandler.addCategory(this, "Utility", defaultPrefix);
         CategoryHandler.addCategory(this, "Pinewood", defaultPrefix);
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
+        CategoryHandler.addCategory(this, "Reports", defaultPrefix);
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
 
         log.info("Registering commands...");
+        boolean useMusicCommands = config.getBoolean("use-music", true);
+
         if (settings.isMusicOnlyMode()) {
             CommandHandler.register(new StatsCommand(this));
             CommandHandler.register(new UptimeCommand(this));
@@ -275,9 +291,27 @@ public class AvaIre {
             AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH + ".music", command -> CommandHandler.register((Command) command));
             AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH + ".system", command -> CommandHandler.register((Command) command));
         } else {
-            AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH, command -> CommandHandler.register((Command) command));
+            AutoloaderUtil.load(Constants.PACKAGE_COMMAND_PATH, command -> {
+                if (!useMusicCommands && command.getClass().getPackage().getName().endsWith(".music")) {
+                    return;
+                }
+                CommandHandler.register((Command) command);
+            });
         }
         log.info(String.format("\tRegistered %s commands successfully!", CommandHandler.getCommands().size()));
+
+        log.info("Loading command category states");
+        Object commandCategoryStates = cache.getAdapter(CacheType.FILE).get("command-category.toggle");
+        if (commandCategoryStates != null) {
+            //noinspection SingleStatementInBlock,unchecked,unchecked
+            ((LinkedTreeMap<String, String>) commandCategoryStates).forEach((key, value) -> {
+                Category category = CategoryHandler.fromLazyName(key);
+                if (category != null) {
+                    IsCategoryEnabled.disableCategory(category, value);
+                    log.debug("{} has been disabled for \"{}\"", key, value);
+                }
+            });
+        }
 
         log.info("Registering jobs...");
         AutoloaderUtil.load(Constants.PACKAGE_JOB_PATH, job -> ScheduleHandler.registerJob((Job) job));
@@ -359,6 +393,13 @@ public class AvaIre {
         blacklist = new Blacklist(this);
         blacklist.syncBlacklistWithDatabase();
 
+        log.info("Preparing report blacklist and syncing the list with the database");
+        featureBlacklist = new FeatureBlacklist(this);
+        featureBlacklist.syncBlacklistWithDatabase();
+
+        log.info("Preparing user blacklist and syncing the list with the manager");
+        blacklistManager = new BlacklistManager(this);
+
         log.info("Preparing and setting up web servlet");
         servlet = new WebServlet(config.getInt("web-servlet.port",
             config.getInt("metrics.port", WebServlet.defaultPort)
@@ -424,6 +465,9 @@ public class AvaIre {
 
         log.info("Preparing on watch manager");
         onWatchManger = new OnWatchManager(this);
+
+        log.info("Preparing voice whitelist manager.");
+        voiceWhitelistManager = new VoiceWhitelistManager(this);
 
         log.info("Preparing Lavalink");
         AudioHandler.setAvaire(this);
@@ -586,6 +630,14 @@ public class AvaIre {
         return botAdmins;
     }
 
+    public FeatureBlacklist getFeatureBlacklist() {
+        return featureBlacklist;
+    }
+
+    public BlacklistManager getBlacklistManager() {
+        return blacklistManager;
+    }
+
     public void shutdown() {
         shutdown(ExitCodes.EXIT_CODE_RESTART);
     }
@@ -702,18 +754,37 @@ public class AvaIre {
     }
 
     private ShardManager buildShardManager() throws LoginException {
-        DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.create(getConfig().getString("discord.token"), EnumSet.allOf(GatewayIntent.class))
+        DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.create(EnumSet.of(
+            GatewayIntent.GUILD_MEMBERS,
+            GatewayIntent.GUILD_BANS,
+            GatewayIntent.GUILD_EMOJIS,
+            GatewayIntent.GUILD_INVITES,
+            GatewayIntent.GUILD_MESSAGES,
+            GatewayIntent.GUILD_MESSAGE_REACTIONS,
+            GatewayIntent.GUILD_VOICE_STATES,
+            GatewayIntent.DIRECT_MESSAGES,
+            GatewayIntent.DIRECT_MESSAGE_REACTIONS
+        ))
+            .setToken(getConfig().getString("discord.token"))
             .setSessionController(new SessionControllerAdapter())
             .setActivity(Activity.watching("my code start up..."))
             .setBulkDeleteSplittingEnabled(false)
             .setMemberCachePolicy(MemberCachePolicy.ALL)
-            .setEnableShutdownHook(false)
-            .disableCache(CacheFlag.ACTIVITY)
-            .addEventListeners(waiter)
+            .setChunkingFilter(ChunkingFilter.NONE)
+            .disableCache(CacheFlag.ACTIVITY, CacheFlag.ONLINE_STATUS, CacheFlag.CLIENT_STATUS)
+            .setEnableShutdownHook(true)
             .setAutoReconnect(true)
             .setContextEnabled(true)
-            .setDisabledIntents(GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.GUILD_MESSAGE_TYPING) // Changed to intent in favor of the cache deprecation.
             .setShardsTotal(settings.getShardCount());
+
+
+        if (!getConfig().getBoolean("use-music", true)) {
+            log.info("Disabling voice events and voice caches due to music being disabled globally!");
+
+            builder
+                .disableIntents(GatewayIntent.GUILD_VOICE_STATES)
+                .disableCache(CacheFlag.VOICE_STATE);
+        }
 
         if (settings.getShards() != null) {
             builder.setShards(settings.getShards());
@@ -725,8 +796,8 @@ public class AvaIre {
 
         builder
             .addEventListeners(new MainEventHandler(this))
-            .addEventListeners(new PluginEventHandler(this));
-
+            .addEventListeners(new PluginEventHandler(this))
+            .addEventListeners(waiter);
         if (LavalinkManager.LavalinkManagerHolder.lavalink.isEnabled()) {
             builder.addEventListeners(LavalinkManager.LavalinkManagerHolder.lavalink.getLavalink());
         }
@@ -757,5 +828,9 @@ public class AvaIre {
             root.addAppender(sentryAppender);
         }
         return sentryAppender;
+    }
+
+    public VoiceWhitelistManager getVoiceWhitelistManager() {
+        return voiceWhitelistManager;
     }
 }

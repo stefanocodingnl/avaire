@@ -31,7 +31,7 @@ public class CreateOnWatchTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Sat, Jul 13, 2019 1:41 PM";
+        return "Wed, Jan 1, 2020 1:41 PM";
     }
 
     @Override

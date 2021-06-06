@@ -74,7 +74,7 @@ public class ProcessCommand extends Middleware {
             }
 
             return runMessageCheck(message, () -> {
-                message.getTextChannel().sendMessage("I don't have the `Embed Links` permission, the permission is required for all of my commands to work.\nhttps://avairebot.com/missing-embed-permissions.png\nThis error can sometimes occur when the `everyone` role has it disabled and no other roles enables it.\nThis message will be automatically deleted in 30 seconds.")
+                message.getTextChannel().sendMessage("I don't have the `Embed Links` permission, the permission is required for all of my commands to work.\nhttps://xeus.pinewood-builders.com/missing-embed-permissions.png\nThis error can sometimes occur when the `everyone` role has it disabled and no other roles enables it.\nThis message will be automatically deleted in 30 seconds.")
                     .queue(newMessage -> newMessage.delete().queueAfter(30, TimeUnit.SECONDS, null, RestActionUtil.ignore));
 
                 return false;
@@ -105,13 +105,14 @@ public class ProcessCommand extends Middleware {
                     stack.isMentionableCommand(),
                     container.getAliasArguments()
                 ),
-                combineArguments(container.getAliasArguments(), commandArguments)
+                container.getAliasArguments()
             );
         }
 
         Metrics.commandsExecuted.labels(stack.getCommand().getClass().getSimpleName()).inc();
 
-        return runCommand(stack, new CommandMessage(
+        return runCommand(stack,
+            new CommandMessage(
                 stack.getCommandContainer(),
                 stack.getDatabaseEventHolder(),
                 message,
@@ -194,6 +195,6 @@ public class ProcessCommand extends Middleware {
         System.arraycopy(aliasArguments, 0, result, 0, aliasArguments.length);
         System.arraycopy(userArguments, 0, result, aliasArguments.length, userArguments.length);
 
-        return result;
+        return aliasArguments;
     }
 }

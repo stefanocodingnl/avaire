@@ -25,7 +25,7 @@ public class ToggleAutoModCommand extends Command {
 
     @Override
     public String getName() {
-        return "Alias Command";
+        return "Toggle AutoMod Command";
     }
 
     @Override
@@ -41,32 +41,32 @@ public class ToggleAutoModCommand extends Command {
     }
 
     @Override
-    public List<String> getExampleUsage(@Nullable Message message) {
+    public List <String> getExampleUsage(@Nullable Message message) {
         return Collections.singletonList("`:command true` - Enable the filter in the current server");
     }
 
     @Override
-    public List<Class<? extends Command>> getRelations() {
+    public List <Class <? extends Command>> getRelations() {
         return Collections.singletonList(ListAliasesCommand.class);
     }
 
     @Override
-    public List<String> getTriggers() {
-        return Arrays.asList("toggleautomod", "filter", "tam");
+    public List <String> getTriggers() {
+        return Arrays.asList("filter", "toggleautomod", "tam");
     }
 
     @Override
-    public List<String> getMiddleware() {
+    public List <String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
             "throttle:user,2,5",
-            "require:user,general.manage_server"
+            "isManagerOrHigher"
         );
     }
 
     @Nonnull
     @Override
-    public List<CommandGroup> getGroups() {
+    public List <CommandGroup> getGroups() {
         return Collections.singletonList(CommandGroups.COMMAND_CUSTOMIZATION);
     }
 
@@ -82,6 +82,22 @@ public class ToggleAutoModCommand extends Command {
         }
 
 
+        if (args[0].equals("set-channel")) {
+            if (!(context.getMentionedChannels().size() > 0)) {
+                context.makeError("You need to mention a channel to add it as a filter log channel.").queue();
+                return false;
+            }
+            context.getGuildTransformer().setFilterLog(context.getMentionedChannels().get(0).getId());
+            try {
+                avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId()).update(statement -> {
+                    statement.set("filter_log", context.getGuildTransformer().getFilterLog());
+                });
+            } catch (SQLException throwables) {
+                context.makeError("Something went wrong when setting the log channel.").queue();
+            }
+            context.makeSuccess("The filter log channel has successfully been set to: " + context.getMentionedChannels().get(0).getAsMention()).queue();
+            return true;
+        }
         switch (ComparatorUtil.getFuzzyType(args[0])) {
             case FALSE:
                 setStatus(false, context);

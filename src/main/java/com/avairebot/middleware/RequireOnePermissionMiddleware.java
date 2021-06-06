@@ -30,6 +30,7 @@ import com.avairebot.middleware.permission.PermissionCheck;
 import com.avairebot.middleware.permission.PermissionCommon;
 import com.avairebot.middleware.permission.PermissionType;
 import com.avairebot.permissions.Permissions;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
@@ -76,11 +77,8 @@ public class RequireOnePermissionMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (message.getMember().getUser().getId().equals("173839105615069184")) {
-            return stack.next();
-        }
-
-        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 

@@ -27,6 +27,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.permissions.Permissions;
+import com.avairebot.utilities.CheckPermissionUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 
@@ -57,11 +58,8 @@ public class HasRoleMiddleware extends Middleware {
             return stack.next();
         }
 
-        if (message.getMember().getUser().getId().equals("173839105615069184")) {
-            return stack.next();
-        }
-
-        if (Constants.bypass_users.contains(message.getMember().getUser().getId())) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 

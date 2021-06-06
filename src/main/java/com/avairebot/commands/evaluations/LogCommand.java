@@ -69,7 +69,7 @@ public class LogCommand extends Command {
     public List <String> getMiddleware() {
         return Arrays.asList(
             "isOfficialPinewoodGuild",
-            "hasAnyRole:Evaluation Host,Evaluators,Trainer",
+            "isModOrHigher",
             "throttle:user,1,1"
         );
     }
@@ -109,7 +109,7 @@ public class LogCommand extends Command {
                 if (log_collection.size() < 1) {
                     context.makeEmbeddedMessage(new Color(21, 34, 255)).setDescription("There aren't any logs about this user.\n" +
                         "Log him/her with:\n" +
-                        " ``c!log " + args[0] + " good/neutral/bad description``").queue();
+                        " ``!log " + args[0] + " good/neutral/bad description``").queue();
                     return true;
                 }
 
@@ -138,7 +138,7 @@ public class LogCommand extends Command {
             }
             if (args.length == 2 && isValidNote(args[1])) {
                 context.makeError("What do you want to log this user for?\n" +
-                    "**Log a " + args[1] + " user**:\n ``c!log " + args[0] + " log " + args[1] + " Information about the log``").queue();
+                    "**Log a " + args[1] + " user**:\n ``!log " + args[0] + " log " + args[1] + " Information about the log``").queue();
                 return true;
             }
             if (args.length > 2 && isValidNote(args[1])) {
@@ -186,13 +186,13 @@ public class LogCommand extends Command {
         }
     }
 
-    public int getRobloxId(String un) {
+    public Long getRobloxId(String un) {
 
         try {
             JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
-            return json.getInt("Id");
+            return json.getLong("Id");
         } catch (Exception e) {
-            return 0;
+            return null;
         }
     }
 

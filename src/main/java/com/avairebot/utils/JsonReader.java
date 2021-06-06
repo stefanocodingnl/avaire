@@ -35,5 +35,13 @@ public class JsonReader {
         }
     }
 
+    public static JSONArray readArrayFromPostURL(String url) throws IOException, JSONException {
+        try (InputStream is = new URL(url).openStream()) {
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+            String jsonText = readAll(rd);
+            return new JSONArray(jsonText);
+        }
+    }
+
 
 }

@@ -30,6 +30,7 @@ import com.avairebot.database.transformers.ChannelTransformer;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.middleware.MiddlewareStack;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -56,6 +57,10 @@ public class IsCategoryEnabled extends Middleware {
 
     public static void disableCategory(Category category, @Nullable String reason) {
         disabledCategories.put(category.getName(), reason);
+    }
+
+    public static HashMap<String, String> getDisabledCategories() {
+        return disabledCategories;
     }
 
     @Override
@@ -99,7 +104,7 @@ public class IsCategoryEnabled extends Middleware {
             return stack.next();
         }
 
-        if (!channel.isCategoryEnabled(stack.getCommandContainer().getCategory())) {
+        if (!channel.isCategoryEnabled(stack.getCommandContainer().getCategory()) && !isModOrHigher(stack, message)) {
             if (isHelpCommand(stack) && stack.isMentionableCommand()) {
                 MessageFactory.makeError(message, "The help command is disabled in this channel, you can enable it by using the `:category` command.")
                     .set("category", CommandHandler.getCommand(ToggleCategoryCommand.class).getCommand().generateCommandTrigger(message))
@@ -110,6 +115,11 @@ public class IsCategoryEnabled extends Middleware {
         }
 
         return stack.next();
+    }
+
+    private boolean isModOrHigher(MiddlewareStack stack, Message message) {
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        return permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel();
     }
 
     private boolean isCategoryCommands(MiddlewareStack stack) {

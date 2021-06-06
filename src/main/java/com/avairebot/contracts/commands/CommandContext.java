@@ -135,7 +135,7 @@ public interface CommandContext {
      *
      * @param avaire The main AvaIre instance used to communicate with the rest of the application.
      * @return Possibly-null, the {@link PlayerTransformer player transformer} for the author of
-     *         command context for the current guild, or {@code NULL} if something went wrong.
+     * command context for the current guild, or {@code NULL} if something went wrong.
      */
     @Nullable
     default PlayerTransformer getPlayerTransformerWithForce(@Nonnull AvaIre avaire) {
@@ -246,7 +246,7 @@ public interface CommandContext {
      * utility:
      *   PingCommand:
      *     rating:
-     *       10: 'faster than Sonic! :smiley_cat:'
+     *       10: 'faster than Soni! :smiley_cat:'
      * </code></pre>
      *
      * @param key The key of the {@link com.avairebot.language.I18n I18n} message.
@@ -302,7 +302,7 @@ public interface CommandContext {
      * utility:
      *   PingCommand:
      *     rating:
-     *       10: 'faster than Sonic! :smiley_cat:'
+     *       10: 'faster than Soni! :smiley_cat:'
      * </code></pre>
      *
      * @param key The key of the {@link com.avairebot.language.I18n I18n} message.

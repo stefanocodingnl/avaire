@@ -25,6 +25,7 @@ import com.avairebot.AvaIre;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.language.I18n;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -57,6 +58,11 @@ public class IsMusicChannelMiddleware extends Middleware {
         }
 
         if (message.getChannel().getIdLong() == textChannelById.getIdLong()) {
+            return stack.next();
+        }
+
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
             return stack.next();
         }
 

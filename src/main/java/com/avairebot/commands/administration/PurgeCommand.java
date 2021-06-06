@@ -37,7 +37,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.TimeUtil;
 
 import javax.annotation.Nonnull;
@@ -86,7 +85,7 @@ public class PurgeCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "require:user,text.manage_messages",
+            "isModOrHigher",
             "require:bot,text.manage_messages,text.read_message_history",
             "throttle:channel,1,5"
         );

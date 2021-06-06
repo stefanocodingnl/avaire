@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledFuture;
 @SuppressWarnings("WeakerAccess")
 public class OnWatchContainer {
 
+    private final String caseId;
     private final long guildId;
     private final long userId;
     private final Carbon expiresAt;
@@ -43,10 +44,11 @@ public class OnWatchContainer {
      * @param expiresAt The date and time the OnWatch should expire,
      *                  or {@code NULL} for permanent OnWatchs.
      */
-    public OnWatchContainer(long guildId, long userId, @Nullable Carbon expiresAt) {
+    public OnWatchContainer(long guildId, long userId, @Nullable Carbon expiresAt, String caseId) {
         this.guildId = guildId;
         this.userId = userId;
         this.expiresAt = expiresAt;
+        this.caseId = caseId;
         this.schedule = null;
     }
 
@@ -66,6 +68,10 @@ public class OnWatchContainer {
      */
     public long getUserId() {
         return userId;
+    }
+
+    public String getCaseId() {
+        return caseId;
     }
 
     /**

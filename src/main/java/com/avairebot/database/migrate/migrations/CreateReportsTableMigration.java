@@ -10,7 +10,7 @@ public class CreateReportsTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Thursday, April 2nd, 2020 11:38 PM";
+        return "Tue, Nov 1, 2020 10:37 PM";
     }
 
     @Override
@@ -22,11 +22,10 @@ public class CreateReportsTableMigration implements Migration {
             table.Long("reporter_discord_id");
             table.String("reporter_discord_name");
             table.Long("reported_roblox_id").unsigned();
-            table.String("reporter_discord_name");
             table.String("reported_roblox_name");
+            table.String("reported_roblox_rank").nullable();
             table.String("report_punishment").nullable();
             table.String("report_evidence");
-            table.String("report_date");
             table.String("report_reason");
             table.Timestamps();
         });
