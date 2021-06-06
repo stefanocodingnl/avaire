@@ -99,6 +99,7 @@ public class GuildTransformer extends Transformer {
     private String suggestionChannel = null;
     private String suggestionCommunityChannel = null;
     private String suggestionEmoteId = null;
+    private String suggestionApprovedChannelId = null;
     private String reportEmoteId = null;
     private String handbookReportChannel = null;
     private String reportInfoMessage = null;
@@ -178,6 +179,7 @@ public class GuildTransformer extends Transformer {
             suggestionChannel = data.getString("suggestion_channel");
             suggestionCommunityChannel = data.getString("suggestion_community_channel");
             suggestionEmoteId = data.getString("suggestion_emote_id");
+            suggestionApprovedChannelId = data.getString("approved_suggestion_channel");
 
             reportEmoteId = data.getString("report_emote_id");
             handbookReportChannel = data.getString("handbook_report_channel");
@@ -564,6 +566,14 @@ public class GuildTransformer extends Transformer {
 
     public String getSuggestionEmoteId() {
         return suggestionEmoteId;
+    }
+
+    public String getSuggestionApprovedChannelId() {
+        return suggestionApprovedChannelId;
+    }
+
+    public void setSuggestionApprovedChannelId(String suggestionApprovedChannelId) {
+        this.suggestionApprovedChannelId = suggestionApprovedChannelId;
     }
 
     public void setSuggestionEmoteId(String suggestionEmoteId) {

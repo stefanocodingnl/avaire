@@ -37,7 +37,7 @@ public class AddApprovedSuggestionsChannelToGuildsTableMigration implements Migr
 
     @Override
     public boolean up(Schema schema) throws SQLException {
-        iif (schema.hasColumn(Constants.GUILD_TABLE_NAME, "approved_suggestion_channel")) {
+        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "approved_suggestion_channel")) {
             return true;
         }
 
@@ -59,7 +59,7 @@ public class AddApprovedSuggestionsChannelToGuildsTableMigration implements Migr
 
     @Override
     public boolean down(Schema schema) throws SQLException {
-        if (!hasColumns(schema)) {
+        if (schema.hasColumn(Constants.GUILD_TABLE_NAME, "approved_suggestion_channel")) {
             return true;
         }
 
