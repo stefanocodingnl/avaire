@@ -706,14 +706,38 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                 e.getReaction().removeReaction(e.getUser()).queueAfter(1, TimeUnit.SECONDS);
                                                 return;
                                             }
-                                            msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(0, 255, 0))
-                                                .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Approved by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
-                                                .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl())
-                                                .setDescription(msg.getEmbeds().get(0).getDescription())
-                                                .setTimestamp(Instant.now())
-                                                .buildEmbed()).queue();
 
-                                            msg.clearReactions().queue();
+                                            if (databaseEventHolder.getGuild().getSuggestionApprovedChannelId() != null) {
+                                                TextChannel atc = avaire.getShardManager().getTextChannelById(databaseEventHolder.getGuild().getSuggestionApprovedChannelId());
+                                                if (atc != null) {
+                                                    atc.sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(0, 255, 0))
+                                                        .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Approved by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
+                                                        .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl())
+                                                        .setDescription(msg.getEmbeds().get(0).getDescription())
+                                                        .setTimestamp(Instant.now())
+                                                        .buildEmbed()).queue();
+                                                    msg.delete().queue();
+                                                } else {
+                                                    msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(0, 255, 0))
+                                                        .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Approved by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
+                                                        .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl())
+                                                        .setDescription(msg.getEmbeds().get(0).getDescription())
+                                                        .setTimestamp(Instant.now())
+                                                        .buildEmbed()).queue();
+                                                    msg.clearReactions().queue();
+
+                                                }
+                                            } else {
+                                                msg.editMessage(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(0, 255, 0))
+                                                    .setAuthor("Suggestion for: " + e.getGuild().getName() + " | Approved by: " + e.getMember().getEffectiveName(), null, e.getGuild().getIconUrl())
+                                                    .setFooter(msg.getEmbeds().get(0).getFooter().getText(), msg.getEmbeds().get(0).getFooter().getIconUrl())
+                                                    .setDescription(msg.getEmbeds().get(0).getDescription())
+                                                    .setTimestamp(Instant.now())
+                                                    .buildEmbed()).queue();
+                                                msg.clearReactions().queue();
+
+                                            }
+
                                             qb.delete();
                                             break;
                                         case "\uD83D\uDD04":

@@ -18,8 +18,10 @@ import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
@@ -165,7 +167,9 @@ public class ReportUserCommand extends Command {
                                     message.editMessage(context.makeInfo(d.getString("report_info_message", "A report message for ``:guild`` could not be found. Ask the HR's of ``:guild`` to set one.\n" +
                                         "If you'd like to report someone, say their name right now.")).set("guild", d.getString("name")).set(":user", context.member.getEffectiveName()).buildEmbed()).queue(
                                         nameMessage -> {
-                                            avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, m -> m.getMember().equals(context.member) && message.getChannel().equals(l.getChannel()),
+                                            avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, m -> {
+                                                    return m.getMember() != null && m.getMember().equals(context.member) && message.getChannel().equals(l.getChannel());
+                                                },
                                                 content -> {
                                                 goToStep2(context, message, content, d, c);
                                                 },
@@ -360,24 +364,34 @@ public class ReportUserCommand extends Command {
     }
 
     private void startConfirmationWaiter(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String evidence, String description, List<Message> messagesToRemove, String explainedEvidence) {
+
+        Button b1 = Button.primary("yes", "Yes").withEmoji(Emoji.fromUnicode("✅"));
+        Button b2 = Button.primary("no", "No").withEmoji(Emoji.fromUnicode("❌"));
+
+
+
         message.editMessage(context.makeInfo("Ok, so. I've collected everything you've told me. And this is the data I got:\n\n" +
             "**Username**: " + username + "\n" +
             "**Group**: " + dataRow.getString("name") + "\n" + (groupInfo.map(data -> "**Rank**: " + data.getRole().getName() + "\n").orElse("\n")) +
             "**Description**: \n" + description + "\n\n" +
             "**Evidence**: \n" + evidence +
-            (explainedEvidence != null ? "\n\n**Evidence of warning**:\n" + explainedEvidence : "") + "\n\nIs this correct?").buildEmbed()).queue(l -> {
-            l.addReaction("✅").queue();
-            l.addReaction("❌").queue();
-            avaire.getWaiter().waitForEvent(GuildMessageReactionAddEvent.class, r -> isValidMember(r, context, l), send -> {
-                if (send.getReactionEmote().getName().equalsIgnoreCase("❌") || send.getReactionEmote().getName().equalsIgnoreCase("x")) {
-                    message.editMessage("Report has been canceled, if you want to restart the report. Do ``!ru`` in any bot-commands channel.").queue();
+            (explainedEvidence != null ? "\n\n**Evidence of warning**:\n" + explainedEvidence : "") + "\n\nIs this correct?").buildEmbed())
+            .setActionRow(b1.asEnabled(), b2.asEnabled()).queue(l -> {
+            //l.addReaction("✅").queue();
+            //l.addReaction("❌").queue();
+
+
+
+            avaire.getWaiter().waitForEvent(ButtonClickEvent.class, r -> isValidMember(r, context, l), send -> {
+                if (send.getButton().getEmoji().getName().equalsIgnoreCase("❌") || send.getButton().getEmoji().getName().equalsIgnoreCase("x")) {
+                    message.editMessage("Report has been canceled, if you want to restart the report. Do ``!ru`` in any bot-commands channel.").setActionRows(Collections.emptyList()).queue();
                     removeAllUserMessages(messagesToRemove);
-                } else if (send.getReactionEmote().getName().equalsIgnoreCase("✅")) {
+                } else if (send.getButton().getEmoji().getName().equalsIgnoreCase("✅")) {
                     message.editMessage("Report has been \"sent\".").queue();
-                    sendReport(context, message, groupInfo, dataRow, username, evidence, description, messagesToRemove, explainedEvidence);
+                    sendReport(context, message, groupInfo, dataRow, username, evidence, description, explainedEvidence, send);
                     removeAllUserMessages(messagesToRemove);
                 } else {
-                    message.editMessage("Invalid emoji given, report deleted!").queue();
+                    message.editMessage("Invalid emoji given, report deleted!").setActionRows(Collections.emptyList()).queue();
                     removeAllUserMessages(messagesToRemove);
                 }
             }, 5, TimeUnit.MINUTES, () -> {
@@ -387,7 +401,7 @@ public class ReportUserCommand extends Command {
         });
     }
 
-    private void sendReport(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String description, String evidence, List<Message> messagesToRemove, String explainedEvidence) {
+    private void sendReport(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String description, String evidence, String explainedEvidence, ButtonClickEvent send) {
         TextChannel tc = avaire.getShardManager().getTextChannelById(dataRow.getString("handbook_report_channel"));
 
         if (tc != null) {
@@ -405,7 +419,7 @@ public class ReportUserCommand extends Command {
                 .queue(
                     finalMessage -> {
                         message.editMessage(context.makeSuccess("[Your report has been created in the correct channel.](:link).").set("link", finalMessage.getJumpUrl())
-                            .buildEmbed())
+                            .buildEmbed()).setActionRows(Collections.emptyList())
                             .queue();
                         createReactions(finalMessage);
                         try {
@@ -427,8 +441,9 @@ public class ReportUserCommand extends Command {
 
                     }
                 );
+
         } else {
-            context.makeError("Channel can't be found for the guild ``" + dataRow.getString("name") + "``. Please contact the bot developer, or guild HRs.");
+            context.makeError("Channel can't be found for the guild ``" + dataRow.getString("name") + "``. Please contact the bot developer, or guild HRs.").queue();
         }
     }
 
@@ -440,8 +455,8 @@ public class ReportUserCommand extends Command {
         else return members.get(0).getUser().getEffectiveAvatarUrl();
     }
 
-    private static boolean isValidMember(GuildMessageReactionAddEvent r, CommandMessage context, Message l) {
-        return context.getMember().equals(r.getMember()) && r.getReaction().getMessageId().equalsIgnoreCase(l.getId());
+    private static boolean isValidMember(ButtonClickEvent r, CommandMessage context, Message l) {
+        return context.getMember().equals(r.getMember()) && r.getMessageId().equalsIgnoreCase(l.getId());
     }
 
     private boolean runSetReportMessage(CommandMessage context) {

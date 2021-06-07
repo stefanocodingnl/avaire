@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PBSTFeedbackCommand extends Command {
 
@@ -97,7 +98,9 @@ public class PBSTFeedbackCommand extends Command {
                     case "cch":
                     case "change-community-threshold":
                         return runChangeCommunityThreshold(context, args);
-
+                    case "sasc":
+                    case "set-approved-suggestions-channel":
+                        return runChangeCommunityThreshold(context, args);
                     case "ca":
                     case "clear-all":
                         return runClearAllChannelsFromDatabase(context);
@@ -197,6 +200,8 @@ public class PBSTFeedbackCommand extends Command {
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
+        }, 5, TimeUnit.MINUTES, () -> {
+            message.editMessage(context.makeEmbeddedMessage().setColor(Color.BLACK).setDescription("Stopped the suggestion system. Timeout of 5 minutes reached .").buildEmbed()).queue();
         });
     }
 
@@ -218,9 +223,51 @@ public class PBSTFeedbackCommand extends Command {
                 q.set("suggestion_channel", null);
                 q.set("suggestion_emote_id", null);
                 q.set("suggestion_community_channel", null);
+                q.set("approved_suggestion_channel", null);
             });
 
             context.makeSuccess("Any information about the suggestion channel has been removed from the database.").queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+
+    }
+
+    private boolean runSetApprovedSuggestionsChannel(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+        GuildTransformer transformer = context.getGuildTransformer();
+        if (transformer == null) {
+            context.makeError("I can't pull the guilds information, please try again later.").queue();
+            return false;
+        }
+
+        if (transformer.getSuggestionChannel() == null) {
+            context.makeError("You want to set a approved suggestion channel, without the suggestions channel being set. Please set a \"Suggestion Channel\" with ``:command set-suggestions <channel> <emote>``").set("command", generateCommandTrigger(context.message)).queue();
+            return false;
+        }
+
+        GuildChannel channel = MentionableUtil.getChannel(context.message, args, 1);
+        if (channel == null) {
+            return sendErrorMessage(context, "Something went wrong please try again or report this to a higher up! (Channel)");
+        }
+
+
+        return updateApprovedSuggestionChannelInDatabase(transformer, context, (TextChannel) channel);
+    }
+
+    private boolean updateApprovedSuggestionChannelInDatabase(GuildTransformer transformer, CommandMessage context, TextChannel channel) {
+        transformer.setSuggestionApprovedChannelId(channel.getId());
+
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("approved_suggestion_channel", transformer.getSuggestionApprovedChannelId());
+            });
+            context.makeSuccess("Set the approved suggestion channel to " + channel.getAsMention()).queue();
             return true;
         } catch (SQLException throwables) {
             context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
@@ -305,6 +352,7 @@ public class PBSTFeedbackCommand extends Command {
 
         return updateChannelAndEmote(context, transformer.getSuggestionEmoteId(), transformer.getSuggestionChannel());
     }
+
 
 
     private boolean updateChannelAndEmote(CommandMessage context, String emoteId, String suggestionChannel) {
