@@ -179,7 +179,7 @@ public class MuteRatelimit {
      *         or <code>null</code> if the user was not blacklisted.
      */
     @Nullable
-    public static Carbon hit(ThrottleMiddleware.ThrottleType type, long id, Guild g, Message e) {
+    public static Carbon hit(ThrottleMiddleware.ThrottleType type, long id, Message e) {
         Rate rate = CacheUtil.getUncheckedUnwrapped(cache, id);
         if (rate == null) {
             // This should never happen, if it does we'll just return
@@ -252,20 +252,6 @@ public class MuteRatelimit {
             g.addRoleToMember(
                 m, muteRole
             ).reason("You have triggered the auto mod way to fast").queue(aVoid -> {
-                ModlogAction modlogAction = new ModlogAction(
-                    type, context.getAuthor(), context.getAuthor(),
-                    finalExpiresAt.toDayDateTimeString() + " (" + finalExpiresAt.diffForHumans(true) + ")" + "\n" + "You have triggered the filter way to fast"
-                );
-
-                String caseId = Modlog.log(AvaIre.getInstance(), context, modlogAction);
-                MuteRatelimit.sendMuteMessage(context.getAuthor(), punishment, g);
-
-                try {
-                    AvaIre.getInstance().getMuteManger().registerMute(caseId, g.getIdLong(), context.getAuthor().getIdLong(), finalExpiresAt);
-                } catch (SQLException e) {
-                    AvaIre.getLogger().error(e.getMessage(), e);
-                }
-            }, fail -> {
                 ModlogAction modlogAction = new ModlogAction(
                     type, context.getAuthor(), context.getAuthor(),
                     finalExpiresAt.toDayDateTimeString() + " (" + finalExpiresAt.diffForHumans(true) + ")" + "\n" + "You have triggered the filter way to fast"

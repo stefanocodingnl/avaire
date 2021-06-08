@@ -327,12 +327,12 @@ public class MessageEventAdapter extends EventAdapter {
             if (checkGlobalExactFilter(message, guild, event)) {
                 System.out.println("Exact Filter removed: " + message);
                 event.delete().queue();
-                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
+                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event);
                 return;
             } else if (checkGlobalWildcardFilter(message, guild, event)) {
                 System.out.println("Wildcard Filter removed: " + message);
                 event.delete().queue();
-                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
+                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event);
                 return;
             } else if (checkAutomodFilters(guild, event)) {
                 event.getTextChannel().retrieveMessageById(event.getId()).queue(l -> {
@@ -342,7 +342,7 @@ public class MessageEventAdapter extends EventAdapter {
                 }, failure -> {
                     System.out.println("AutoMod failed to remove in " + event.getGuild().getName() + " (<#" + event.getTextChannel().getId() + ">): " + event.getContentRaw());
                 });
-                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event.getGuild(), event);
+                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, event.getAuthor().getIdLong(), event);
                 return;
             }
             checkPIAInviteFilter(event, databaseEventHolder);
@@ -526,14 +526,14 @@ public class MessageEventAdapter extends EventAdapter {
                         "**Guild**: " + v.getGuild().getName() + "\n" +
                         "**Invite**: [Click here!](" + v.getUrl() + ")\n" +
                         "**Inviter**:" + v.getInviter(), new Color(0, 0, 0), message.getTextChannel());
-                    MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), message);
+                    MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message);
                 }
             }, f -> {
                 message.delete().queue();
                 warnUserColor(message, databaseEventHolder.getGuild(), "**AUTOMOD**: Filter was activated!\n**Type**: " + "``INVITE``\n" +
                     "**Guild**: " + "INVALID (Xeus is banned from the guild)" + "\n" +
                     "**Violator**:" + message.getMember().getEffectiveName(), new Color(0, 0, 0), message.getTextChannel());
-                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), message);
+                MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message);
             });
         }
     }
@@ -852,7 +852,7 @@ public class MessageEventAdapter extends EventAdapter {
         event.getAuthor().openPrivateChannel().queue(pc -> {
             pc.sendMessage(MessageFactory.makeWarning(message, sendMessage).buildEmbed()).queue();
         });
-        MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), message.getGuild(), event);
+        MuteRatelimit.hit(ThrottleMiddleware.ThrottleType.USER, message.getAuthor().getIdLong(), event);
 
     }
 

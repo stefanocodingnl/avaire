@@ -54,6 +54,7 @@ import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateRegionEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -95,6 +96,7 @@ public class MainEventHandler extends EventHandler {
     private final ReactionEmoteEventAdapter reactionEmoteEventAdapter;
     private final GuildEventAdapter guildEventAdapter;
     private final WhitelistEventAdapter whitelistEventAdapter;
+    private final ButtonClickEventAdapter buttonClickEventAdapter;
 
     public static final Cache <Long, Boolean> cache = CacheBuilder.newBuilder()
         .recordStats()
@@ -121,6 +123,7 @@ public class MainEventHandler extends EventHandler {
         this.reactionEmoteEventAdapter = new ReactionEmoteEventAdapter(avaire);
         this.guildEventAdapter = new GuildEventAdapter(avaire);
         this.whitelistEventAdapter = new WhitelistEventAdapter(avaire, avaire.getVoiceWhitelistManager());
+        this.buttonClickEventAdapter = new ButtonClickEventAdapter(avaire);
     }
 
     @Override
@@ -350,14 +353,19 @@ public class MainEventHandler extends EventHandler {
             reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
             reactionEmoteEventAdapter.onReportsReactionAdd(event);
             reactionEmoteEventAdapter.onFeedbackMessageEvent(event);
-            reactionEmoteEventAdapter.onPatrolRemittanceReactionEvent(event);
         }
 
     }
 
+    @Override
+    public void onButtonClick(@Nonnull ButtonClickEvent event) {
+        buttonClickEventAdapter.onPatrolRemittanceButtonClickEvent(event);
+        buttonClickEventAdapter.onReportsButtonClickEvent(event);
+        buttonClickEventAdapter.onFeedbackButtonClickEvent(event);
+    }
 
     @Override
-    public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+    public void onMessageReactionRemove(@Nonnull MessageReactionRemoveEvent event) {
         if (isValidMessageReactionEvent(event)) {
             reactionEmoteEventAdapter.onMessageReactionRemove(event);
         }

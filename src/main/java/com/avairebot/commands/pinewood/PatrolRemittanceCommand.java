@@ -20,8 +20,10 @@ import com.avairebot.utilities.NumberUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
@@ -275,23 +277,27 @@ public class PatrolRemittanceCommand extends Command {
     }
 
     private void startConfirmationWaiter(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> b, DataRow d, GuildMessageReceivedEvent content, List<Message> messagesToRemove) {
+        Button b1 = Button.success("yes:" + message.getId(), "Yes").withEmoji(Emoji.fromUnicode("✅"));
+        Button b2 = Button.danger("no:" + message.getId(), "No").withEmoji(Emoji.fromUnicode("❌"));
+
+
         message.editMessage(context.makeInfo("Ok, so. I've collected everything you've told me. And this is the data I got:\n\n" +
             "**Username**: " + context.getMember().getEffectiveName() + "\n" +
             "**Group**: " + d.getString("name") + "\n" + (b.map(data -> "**Rank**: " + data.getRole().getName() + "\n").orElse("\n")) +
             "**Evidence**: \n" + content.getMessage().getContentRaw() +
-            "\n\nIs this correct?").buildEmbed()).queue(l -> {
-            l.addReaction("✅").queue();
-            l.addReaction("❌").queue();
-            avaire.getWaiter().waitForEvent(GuildMessageReactionAddEvent.class, r -> isValidMember(r, context, l), send -> {
-                if (send.getReactionEmote().getName().equalsIgnoreCase("❌") || send.getReactionEmote().getName().equalsIgnoreCase("x")) {
-                    message.editMessage("Report has been canceled, if you want to restart the report. Do ``!ru`` in any bot-commands channel.").queue();
+            "\n\nIs this correct?").buildEmbed()).setActionRow(b1.asEnabled(), b2.asEnabled()).queue(l -> {
+            //l.addReaction("✅").queue();
+            //l.addReaction("❌").queue();
+            avaire.getWaiter().waitForEvent(ButtonClickEvent.class, r -> isValidMember(r, context, l), send -> {
+                if (send.getButton().getEmoji().getName().equalsIgnoreCase("❌") || send.getButton().getEmoji().getName().equalsIgnoreCase("x")) {
+                    message.editMessage(context.makeSuccess("Remittance has been canceled, if you want to restart the report. Do ``!pr`` in any bot-commands channel.").buildEmbed()).setActionRows(Collections.emptyList()).queue();
                     removeAllUserMessages(messagesToRemove);
-                } else if (send.getReactionEmote().getName().equalsIgnoreCase("✅")) {
-                    message.editMessage("Report has been \"sent\".").queue();
+                } else if (send.getButton().getEmoji().getName().equalsIgnoreCase("✅")) {
+                    message.editMessage("Report has been \"sent\".").setActionRows(Collections.emptyList()).queue();
                     sendReport(context, message, b, d, context.getMember().getEffectiveName(), content.getMessage().getContentRaw(), messagesToRemove);
                     removeAllUserMessages(messagesToRemove);
                 } else {
-                    message.editMessage("Invalid emoji given, report deleted!").queue();
+                    message.editMessage("Invalid button given, report deleted!").setActionRows(Collections.emptyList()).queue();
                     removeAllUserMessages(messagesToRemove);
                 }
             }, 5, TimeUnit.MINUTES, () -> {
@@ -311,6 +317,11 @@ public class PatrolRemittanceCommand extends Command {
         TextChannel tc = avaire.getShardManager().getTextChannelById(dataRow.getString("patrol_remittance_channel"));
 
         if (tc != null) {
+            Button b1 = Button.success("accept:" + message.getId(), "Accept").withEmoji(Emoji.fromUnicode("✅"));
+            Button b2 = Button.danger("reject:" + message.getId(), "Reject").withEmoji(Emoji.fromUnicode("❌"));
+            Button b3 = Button.secondary("remove:" + message.getId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
+
+
             tc.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
                 .setAuthor("Remittance created for: " + username, null, getImageByName(context.guild, username))
                 .setDescription(
@@ -320,13 +331,14 @@ public class PatrolRemittanceCommand extends Command {
                 .requestedBy(context)
                 .setTimestamp(Instant.now())
                 .buildEmbed())
+                .setActionRow(b1.asEnabled(), b2.asEnabled(), b3.asEnabled())
                 .queue(
                     finalMessage -> {
 
                         message.editMessage(context.makeSuccess("[Your remittance has been created in the correct channel.](:link).").set("link", finalMessage.getJumpUrl())
                             .buildEmbed())
                             .queue();
-                        createReactions(finalMessage);
+                        //createReactions(finalMessage);
                         try {
                             avaire.getDatabase().newQueryBuilder(Constants.REMITTANCE_DATABASE_TABLE_NAME).insert(data -> {
                                 data.set("pb_server_id", finalMessage.getGuild().getId());
@@ -359,8 +371,8 @@ public class PatrolRemittanceCommand extends Command {
         else return members.get(0).getUser().getEffectiveAvatarUrl();
     }
 
-    private static boolean isValidMember(GuildMessageReactionAddEvent r, CommandMessage context, Message l) {
-        return context.getMember().equals(r.getMember()) && r.getReaction().getMessageId().equalsIgnoreCase(l.getId());
+    private static boolean isValidMember(ButtonClickEvent r, CommandMessage context, Message l) {
+        return context.getMember().equals(r.getMember()) && r.getMessageId().equalsIgnoreCase(l.getId());
     }
 
     private boolean checkAccountAge(CommandMessage context) {

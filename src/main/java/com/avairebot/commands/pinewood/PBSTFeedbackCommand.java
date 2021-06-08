@@ -17,6 +17,8 @@ import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Button;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -100,7 +102,7 @@ public class PBSTFeedbackCommand extends Command {
                         return runChangeCommunityThreshold(context, args);
                     case "sasc":
                     case "set-approved-suggestions-channel":
-                        return runChangeCommunityThreshold(context, args);
+                        return runSetApprovedSuggestionsChannel(context, args);
                     case "ca":
                     case "clear-all":
                         return runClearAllChannelsFromDatabase(context);
@@ -173,11 +175,24 @@ public class PBSTFeedbackCommand extends Command {
                         }
 
 
+                        Button b1 = Button.success("accept:" + message.getId(), "Accept").withEmoji(Emoji.fromUnicode("✅"));
+                        Button b2 = Button.danger("reject:" + message.getId(), "Reject").withEmoji(Emoji.fromUnicode("❌"));
+                        Button b3 = Button.secondary("remove:" + message.getId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
+                        Button b4 = Button.secondary("comment:" + message.getId(), "Comment").withEmoji(Emoji.fromUnicode("\uD83D\uDCAC"));
+                        Button b5 = Button.secondary("community-move:" + message.getId(), "Move to CAS").withEmoji(Emoji.fromUnicode("\uD83D\uDC51"));
+
+                        ActionRow actionRow;
+                        if (d.getString("suggestion_community_channel") != null) {
+                            actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asEnabled());
+                        } else {
+                            actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asDisabled());
+                        }
+
                         c.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
                             .setAuthor("Suggestion for: " + c.getGuild().getName(), null, c.getGuild().getIconUrl())
                             .requestedBy(context.member).setDescription(p.getMessage().getContentRaw())
                             .setTimestamp(Instant.now())
-                            .buildEmbed()).queue(v -> {
+                            .buildEmbed()).setActionRows(actionRow).queue(v -> {
                             context.makeSuccess("[Your suggestion has been posted in the correct suggestion channel.](:link)").set("link", v.getJumpUrl()).queue();
                             createReactions(v, d.getString("suggestion_community_channel"));
 
@@ -375,7 +390,7 @@ public class PBSTFeedbackCommand extends Command {
     public static void createReactions(Message r, String communityApprovedSuggestion) {
         r.addReaction("\uD83D\uDC4D").queue();   // 👍
         r.addReaction("\uD83D\uDC4E").queue();  // 👎
-        r.addReaction("✅").queue();
+        /*r.addReaction("✅").queue();
         r.addReaction("❌").queue();
         r.addReaction("🚫").queue();
         r.addReaction("\uD83D\uDCAC").queue(); // 💬
@@ -383,7 +398,7 @@ public class PBSTFeedbackCommand extends Command {
 
         if (communityApprovedSuggestion != null) {
             r.addReaction("\uD83D\uDC51").queue(); // 👑
-        }
+        }*/
 
     }
 }

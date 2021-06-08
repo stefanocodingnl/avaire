@@ -347,7 +347,7 @@ public class ReportUserCommand extends Command {
                     context.getMember().equals(pm.getMember()) && context.getChannel().equals(pm.getChannel()) && checkEvidenceAcceptance(context, pm),
                 explainedEvidence -> {
                     messagesToRemove.add(explainedEvidence.getMessage());
-                    startConfirmationWaiter(context, message, groupInfo, dataRow, username, evidence, contentRaw, messagesToRemove, explainedEvidence.getMessage().getContentRaw());
+                    startConfirmationWaiter(context, message, groupInfo, dataRow, username, contentRaw, evidence, messagesToRemove, explainedEvidence.getMessage().getContentRaw());
                 },
                 5, TimeUnit.MINUTES,
                 () -> {
@@ -355,7 +355,7 @@ public class ReportUserCommand extends Command {
                     removeAllUserMessages(messagesToRemove);
                 }));
         } else {
-            startConfirmationWaiter(context, message, groupInfo, dataRow, username, evidence, contentRaw, messagesToRemove, null);
+            startConfirmationWaiter(context, message, groupInfo, dataRow, username, contentRaw, evidence, messagesToRemove, null);
         }
 
 
@@ -365,10 +365,8 @@ public class ReportUserCommand extends Command {
 
     private void startConfirmationWaiter(CommandMessage context, Message message, Optional<RobloxUserGroupRankService.Data> groupInfo, DataRow dataRow, String username, String evidence, String description, List<Message> messagesToRemove, String explainedEvidence) {
 
-        Button b1 = Button.primary("yes", "Yes").withEmoji(Emoji.fromUnicode("✅"));
-        Button b2 = Button.primary("no", "No").withEmoji(Emoji.fromUnicode("❌"));
-
-
+        Button b1 = Button.success("yes", "Yes").withEmoji(Emoji.fromUnicode("✅"));
+        Button b2 = Button.danger("no", "No").withEmoji(Emoji.fromUnicode("❌"));
 
         message.editMessage(context.makeInfo("Ok, so. I've collected everything you've told me. And this is the data I got:\n\n" +
             "**Username**: " + username + "\n" +
@@ -377,10 +375,6 @@ public class ReportUserCommand extends Command {
             "**Evidence**: \n" + evidence +
             (explainedEvidence != null ? "\n\n**Evidence of warning**:\n" + explainedEvidence : "") + "\n\nIs this correct?").buildEmbed())
             .setActionRow(b1.asEnabled(), b2.asEnabled()).queue(l -> {
-            //l.addReaction("✅").queue();
-            //l.addReaction("❌").queue();
-
-
 
             avaire.getWaiter().waitForEvent(ButtonClickEvent.class, r -> isValidMember(r, context, l), send -> {
                 if (send.getButton().getEmoji().getName().equalsIgnoreCase("❌") || send.getButton().getEmoji().getName().equalsIgnoreCase("x")) {
@@ -405,6 +399,11 @@ public class ReportUserCommand extends Command {
         TextChannel tc = avaire.getShardManager().getTextChannelById(dataRow.getString("handbook_report_channel"));
 
         if (tc != null) {
+
+            Button b1 = Button.success("accept:" + message.getId(), "Accept").withEmoji(Emoji.fromUnicode("✅"));
+            Button b2 = Button.danger("reject:" + message.getId(), "Reject").withEmoji(Emoji.fromUnicode("❌"));
+            Button b3 = Button.secondary("remove:" + message.getId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
+
             tc.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
                 .setAuthor("Report created for: " + username, null, getImageByName(context.guild, username))
                 .setDescription(
@@ -415,7 +414,7 @@ public class ReportUserCommand extends Command {
                         (explainedEvidence != null ? "\n**Evidence of warning**:\n" + explainedEvidence : ""))
                 .requestedBy(context)
                 .setTimestamp(Instant.now())
-                .buildEmbed())
+                .buildEmbed()).setActionRow(b1.asEnabled(), b2.asEnabled(), b3.asEnabled())
                 .queue(
                     finalMessage -> {
                         message.editMessage(context.makeSuccess("[Your report has been created in the correct channel.](:link).").set("link", finalMessage.getJumpUrl())
@@ -647,10 +646,10 @@ public class ReportUserCommand extends Command {
     public static void createReactions(Message r) {
         r.addReaction("\uD83D\uDC4D").queue();   // 👍
         r.addReaction("\uD83D\uDC4E").queue();  // 👎
-        r.addReaction("✅").queue();
+/*        r.addReaction("✅").queue();
         r.addReaction("❌").queue();
         r.addReaction("🚫").queue();
-        r.addReaction("\uD83D\uDD04").queue(); // 🔄
+        r.addReaction("\uD83D\uDD04").queue(); // 🔄*/
     }
 
     private static Long getRobloxId(String un) {
