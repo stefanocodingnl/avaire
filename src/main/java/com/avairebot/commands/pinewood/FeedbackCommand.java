@@ -29,9 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class PBSTFeedbackCommand extends Command {
+public class FeedbackCommand extends Command {
 
-    public PBSTFeedbackCommand(AvaIre avaire) {
+    public FeedbackCommand(AvaIre avaire) {
         super(avaire);
     }
 

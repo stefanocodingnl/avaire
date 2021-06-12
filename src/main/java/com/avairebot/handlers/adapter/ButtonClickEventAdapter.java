@@ -518,7 +518,6 @@ public class ButtonClickEventAdapter extends EventAdapter {
                             e.deferEdit().queue(deferReply -> {
                                 try {
 
-
                                     if (e.getButton().getEmoji().getName().equals("❌") || e.getButton().getEmoji().getName().equals("✅") || e.getButton().getEmoji().getName().equals("\uD83D\uDD04")) {
                                         switch (e.getButton().getEmoji().getName()) {
                                             case "❌":

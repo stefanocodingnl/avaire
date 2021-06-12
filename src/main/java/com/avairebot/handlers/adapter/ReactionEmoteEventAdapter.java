@@ -45,6 +45,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -396,11 +398,20 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                 mb.requestedBy(m);
                                             }
 
-                                            finalCtc.sendMessage(mb.buildEmbed()).queue(p -> {
+                                            net.dv8tion.jda.api.interactions.components.Button b1 = net.dv8tion.jda.api.interactions.components.Button.success("accept:" + e.getMessageId(), "Accept").withEmoji(Emoji.fromUnicode("✅"));
+                                            net.dv8tion.jda.api.interactions.components.Button b2 = net.dv8tion.jda.api.interactions.components.Button.danger("reject:" + e.getMessageId(), "Reject").withEmoji(Emoji.fromUnicode("❌"));
+                                            net.dv8tion.jda.api.interactions.components.Button b3 = net.dv8tion.jda.api.interactions.components.Button.secondary("remove:" + e.getMessageId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
+                                            net.dv8tion.jda.api.interactions.components.Button b4 = net.dv8tion.jda.api.interactions.components.Button.secondary("comment:" + e.getMessageId(), "Comment").withEmoji(Emoji.fromUnicode("\uD83D\uDCAC"));
+                                            net.dv8tion.jda.api.interactions.components.Button b5 = Button.danger("community-move:" + e.getMessageId(), "Move to CAS").withEmoji(Emoji.fromUnicode("\uD83D\uDC51"));
+
+                                            ActionRow actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asDisabled());
+
+                                            finalCtc.sendMessage(mb.buildEmbed()).setActionRows(actionRow).queue(p -> {
+                                                /*
                                                 p.addReaction("✅").queue();
                                                 p.addReaction("❌").queue();
                                                 p.addReaction("\uD83D\uDEAB").queue();
-                                                p.addReaction("\uD83D\uDD04").queue();
+                                                p.addReaction("\uD83D\uDD04").queue();*/
                                                 try {
                                                     qb.update(l -> {
                                                         l.set("suggestion_message_id", p.getId());

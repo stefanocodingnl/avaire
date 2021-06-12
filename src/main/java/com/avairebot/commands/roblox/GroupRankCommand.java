@@ -1,4 +1,4 @@
-package com.avairebot.commands.pinewood;
+package com.avairebot.commands.roblox;
 
 import com.avairebot.AppInfo;
 import com.avairebot.AvaIre;
@@ -6,7 +6,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import com.avairebot.utilities.CheckPermissionUtil;
+import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import okhttp3.*;
 import org.json.JSONObject;
@@ -17,8 +17,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PBSTGroupShoutCommand extends Command {
-    public PBSTGroupShoutCommand(AvaIre avaire) {
+import static com.avairebot.utils.JsonReader.readJsonFromUrl;
+
+public class GroupRankCommand extends Command {
+    public GroupRankCommand(AvaIre avaire) {
         super(avaire);
     }
 
@@ -27,32 +29,32 @@ public class PBSTGroupShoutCommand extends Command {
 
     @Override
     public String getName() {
-        return "Group Shout Command";
+        return "Group Rank Command";
     }
 
     @Override
     public String getDescription() {
-        return "Shouts in the Roblox Group.";
+        return "Rank someone in the Roblox Group.";
     }
 
     @Override
     public List<String> getUsageInstructions() {
         return Collections.singletonList(
-            "`:command` - Shouting in the roblox Groups."
+            "`:command` - Ranking in the roblox Groups."
         );
     }
 
     @Override
     public List<String> getExampleUsage() {
         return Collections.singletonList(
-            "`:command` - Shouting in the roblox Groups."
+            "`:command` - Ranking in the roblox Groups."
         );
     }
 
 
     @Override
     public List<String> getTriggers() {
-        return Arrays.asList("group-shout", "gs");
+        return Arrays.asList("group-rank", "gr");
     }
 
     @Nonnull
@@ -66,7 +68,8 @@ public class PBSTGroupShoutCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "throttle:user,1,10"
+            "throttle:user,1,10",
+            ""
         );
     }
 
@@ -88,6 +91,11 @@ public class PBSTGroupShoutCommand extends Command {
             return false;
         }
 
+        if (context.getGuildTransformer().getRobloxGroupId() == 0) {
+            context.makeError("The roblox ID of this group has not been set, please request a Facilitator or above to set this for you with `;rmanage`.").queue();
+            return false;
+        }
+
         context.makeWarning("PLEASE BE WARNED, THIS WILL SEND A GROUP SHOUT AS **PB_XBot** (If PB_XBot has permission to shout on ``"+context.getGuildTransformer().getRobloxGroupId()+"``) TO THE GROUP CONNECTED TO THE GUILD.").queue();
 
         if (context.getGuildTransformer().getRobloxGroupId() == 0) {
@@ -104,8 +112,14 @@ public class PBSTGroupShoutCommand extends Command {
                     return;
                 }
 
+                Long botAccount = getRobloxId("PB_Xbot");
 
-                sendMessage(context, k);
+                Request.Builder request = new Request.Builder()
+                    .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                    .url("");
+
+
+                //sendMessage(context, k);
             });
         });
         return false;
@@ -113,29 +127,17 @@ public class PBSTGroupShoutCommand extends Command {
 
     private void sendMessage(CommandMessage context, GuildMessageReceivedEvent k) {
         String message = k.getMessage().getContentRaw();
-        int charLimit = 255;
-        if ((context.getGuild().getId().equals("438134543837560832") && !context.getAuthor().getId().equals("173839105615069184")) ||
-            CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
-            if ((context.getMember().getRoles().contains(context.getGuild().getRoleById("771360204696059904")) || context.getMember().getRoles().contains(context.getGuild().getRoleById("771360069036146708"))) || CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
-                charLimit = charLimit - context.getMember().getEffectiveName().length() + 2;
-                message = context.getMember().getEffectiveName() + ": " + message;
-            } else {
-                context.makeError("You're not authorised to use this feature.").queue();
-                return;
-            }
-        } else {
-            context.makeError("This guild is not authorised to use this feature.").queue();
-            return;
-        }
 
-        if (message.length() >= charLimit) {
-            context.makeError("Sorry, but this message is to long to be sent to the group shout. (Roblox has a limit of 255 characters)").queue();
-            return;
+
+        Long id = getRobloxId(context.getMember().getEffectiveName());
+        if (id == null) {
+            context.makeError("I coudn't find ")
+            return false;
         }
 
         Request.Builder request = new Request.Builder()
             .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url(avaire.getConfig().getString("URL.noblox"))
+            .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "GroupShout"))
             .post(RequestBody.create(json, buildPayload(message, context.getGuildTransformer().getRobloxGroupId())));
 
         try (Response response = client.newCall(request.build()).execute()) {
@@ -145,14 +147,24 @@ public class PBSTGroupShoutCommand extends Command {
         }
     }
 
-    private String buildPayload(String contentRaw, int robloxId) {
+    private String buildPayload(long userId, long robloxId, int rankId) {
         JSONObject main = new JSONObject();
 
         main.put("auth_key", avaire.getConfig().getString("apiKeys.nobloxServerAPIKey"));
         main.put("Group", robloxId);
-        main.put("Message", contentRaw);
+        main.put("Target", userId);
+        main.put("Rank", rankId);
 
         return main.toString();
+    }
+
+    public Long getRobloxId(String un) {
+        try {
+            JSONObject json = readJsonFromUrl("http://api.roblox.com/users/get-by-username?username=" + un);
+            return json.getLong("Id");
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

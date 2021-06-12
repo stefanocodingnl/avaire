@@ -193,7 +193,7 @@ public class GuildEventAdapter extends EventAdapter {
                         sb.append("\n - **").append(role.getName()).append("**");
                     }
                     MessageFactory.makeEmbeddedMessage(tc, new Color(255, 129, 31))
-                        .setAuthor("Roles where added to member!"
+                        .setAuthor("Roles were added to member!"
                             , null, e.getUser().getEffectiveAvatarUrl())
                         .setDescription("**Member**: " + e.getUser().getAsMention() + "\n" +
                             "**User**: " + e.getUser().getName() + "#" + e.getUser().getDiscriminator() + "\n" +
