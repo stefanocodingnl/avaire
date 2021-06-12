@@ -58,6 +58,7 @@ public class CommandMessage implements CommandContext {
     private final boolean mentionableCommand;
     private final String aliasArguments;
     private final DatabaseEventHolder databaseEventHolder;
+    private final CommandContainer container;
 
     private YamlConfiguration i18n;
     private String i18nCommandPrefix;
@@ -97,6 +98,7 @@ public class CommandMessage implements CommandContext {
         this.member = isNull ? null : message.getMember();
         this.channel = isNull ? null : message.getTextChannel();
         this.databaseEventHolder = databaseEventHolder;
+        this.container = container;
 
         this.mentionableCommand = mentionableCommand;
         this.aliasArguments = aliasArguments.length == 0 ?
@@ -237,6 +239,10 @@ public class CommandMessage implements CommandContext {
         return message.getGuild().getSelfMember().hasPermission(message.getTextChannel(),
             Permission.MESSAGE_WRITE, Permission.MESSAGE_READ, Permission.MESSAGE_EMBED_LINKS
         );
+    }
+
+    public CommandContainer getContainer() {
+        return container;
     }
 
     public PlaceholderMessage makeError(String message) {

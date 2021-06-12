@@ -26,11 +26,10 @@ import com.avairebot.audio.AudioHandler;
 import com.avairebot.audio.AudioSession;
 import com.avairebot.audio.GuildMusicManager;
 import com.avairebot.audio.LavalinkManager;
-import com.avairebot.blacklist.Ratelimit;
+import com.avairebot.blacklist.bot.Ratelimit;
 import com.avairebot.cache.CacheType;
 import com.avairebot.cache.adapters.MemoryAdapter;
 import com.avairebot.commands.administration.MuteRoleCommand;
-import com.avairebot.contracts.commands.InteractionCommand;
 import com.avairebot.contracts.scheduler.Task;
 import com.avairebot.handlers.adapter.JDAStateEventAdapter;
 import com.avairebot.handlers.adapter.MessageEventAdapter;
@@ -144,11 +143,6 @@ public class GarbageCollectorTask implements Task {
         // blacklist-ratelimit
         synchronized (Ratelimit.cache) {
             Ratelimit.cache.cleanUp();
-        }
-
-        // interaction-lottery
-        synchronized (InteractionCommand.cache) {
-            InteractionCommand.cache.cleanUp();
         }
 
         // autorole

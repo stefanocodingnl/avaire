@@ -100,7 +100,6 @@ public class AiCommand extends Command {
             context.makeError("Failed to save the guild settings: " + ex.getMessage()).queue();
             return false;
         }
-
         return true;
     }
 }

@@ -53,7 +53,7 @@ public class Configuration implements ConfigurationSection {
         this.configFile = new File(folder, fileName);
 
         this.fileConfiguration = YamlConfiguration.loadConfiguration(
-            new InputStreamReader(plugin.getPluginLoader().getResource(fileName))
+                new InputStreamReader(plugin.getPluginLoader().getResource(fileName))
         );
 
         this.plugin = plugin;

@@ -102,7 +102,7 @@ public class Migrations {
             migration.getMigration().up(dbm.getSchema());
             updateRemoteMigrationBatchValue(migration, 1);
 
-            log.info("Created \"{}\"", migration.getName());
+            log.info("Created \"{}\" + \"{}\"", migration.getName(), migration.getMigration().created_at());
 
             ranMigrations = true;
         }
@@ -242,7 +242,11 @@ public class Migrations {
     public List<MigrationContainer> getOrderedMigrations(boolean orderByAsc) {
         List<MigrationContainer> orderedMigrations = new ArrayList<>(migrations);
 
-        Collections.sort(orderedMigrations, new MigrationComparator(orderByAsc));
+        orderedMigrations.sort(new MigrationComparator(orderByAsc));
+
+        for (MigrationContainer orderedMigration : orderedMigrations) {
+            log.warn(orderedMigration.getMigration().created_at() + " - " + orderedMigration.getName());
+        }
 
         return orderedMigrations;
     }

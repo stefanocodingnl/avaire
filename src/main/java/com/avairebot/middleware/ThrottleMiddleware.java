@@ -30,6 +30,7 @@ import com.avairebot.factories.MessageFactory;
 import com.avairebot.metrics.Metrics;
 import com.avairebot.time.Carbon;
 import com.avairebot.utilities.CacheUtil;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.NumberUtil;
 import com.avairebot.utilities.RestActionUtil;
 import com.google.common.cache.Cache;
@@ -65,6 +66,13 @@ public class ThrottleMiddleware extends Middleware {
             ));
             return stack.next();
         }
+        if (message.getChannelType().isGuild()) {
+            int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+            if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
+                return stack.next();
+            }
+        }
+
 
         ThrottleType type = ThrottleType.fromName(args[0]);
 
@@ -86,7 +94,6 @@ public class ThrottleMiddleware extends Middleware {
                     );
                     return false;
                 }
-
                 return cancelCommandThrottleRequest(message, stack, entity);
             }
 
@@ -218,7 +225,7 @@ public class ThrottleMiddleware extends Middleware {
         private int hit;
 
         ThrottleEntity(int maxAttempts, int decaySeconds) {
-            this.time = System.currentTimeMillis() + (decaySeconds * 1000);
+            this.time = System.currentTimeMillis() + (decaySeconds * 1000L);
             this.maxAttempts = maxAttempts;
             this.hit = 0;
         }

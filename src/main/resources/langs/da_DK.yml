@@ -10,7 +10,7 @@ errors:
   cantMentionEveryone: "Du har ikke tilladelser til at nævne alle."
   cantMentionUsersOrRoles: "Du har ikke tilladelse til at bruge denne kommando til at nævne brugere eller roller"
   requireLevelFeatureToBeEnabled: 'Denne kommando kræver, at `Level og Experience'' funktionen er aktiveret for serveren, du kan spørge en serveradministrator, hvis de vil aktivere den med `{0}`'
-  errorOccurredWhileLoading: 'Der opstod en fejl under indlæsningen af {0}. Prøv venligst igen. Hvis problemet fortsætter kan du rapportere dette til et af mine udviklere på [AvaIre support serveren](https://avairebot.com/support).'
+  errorOccurredWhileLoading: 'Der opstod en fejl under indlæsningen af {0}. Prøv venligst igen. Hvis problemet fortsætter kan du rapportere dette til et af mine udviklere på [Xeus support serveren](https://discord.gg/SUPJEt3Ma9).'
 levelupMessages:
   - "GG :user, du har lige nået **Level :level**"
   - "Eyy :user, du lige levelet op! Du er nu **Level :level**"
@@ -82,7 +82,7 @@ administration:
     invalidAmountGiven: "Egenskaben `amount` skal være mellem 1 og {0} for at tilføje eller tage XP fra en bruger."
     aboutToResetEverything: "You're about to reset the XP for everyone on the entire server. If you're sure you wanna continue, run the command to completely reset the servers XP.\n\n```:command server-reset :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
     aboutToSyncEverything: "You're about to sync the XP with the global leaderboard, this will effectively revert any custom XP changes made on the entire server. If you're sure you wanna continue, run the command to completely sync the servers XP.\n\n```:command server-sync :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
-    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [AvaIre support server](https://avairebot.com/support)."
+    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [Xeus support server](https://discord.gg/SUPJEt3Ma9)."
     mustBeAnAdmin: "You must be a server admin to use this action."
     invalidSecurityToken: "Ugyldigt sikkerheds token givet, angiv venligst det korrekte sikkerheds token for at nulstille alle XP for all på serveren."
     warning: "Advarsel!"
@@ -176,7 +176,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "Ugyldig sprogkode givet, `{0}` er ikke en gyldig sprogkode, eller sproget er ikke understøttes inu!"
     changed: "The servers language has been successfully been updated to use the :name language!"
-    note: "AvaIre understøtter flere brugerbidragte sprog som du kan vælge med denne kommando. Oversættelser er nok ikke 100% nøjagtige eller fuldstændige.\nVælg en sprog du vil bruge med `{0} <code>`"
+    note: "Xeus understøtter flere brugerbidragte sprog som du kan vælge med denne kommando. Oversættelser er nok ikke 100% nøjagtige eller fuldstændige.\nVælg en sprog du vil bruge med `{0} <code>`"
   LevelAlertsCommand:
     message: "`Levels op alerts` has been `:status` for serveren.:note"
     note: "\nAlle level op beskeder bliver logget i <#{0}> kanalen."
@@ -764,7 +764,7 @@ utility:
       10000: 'det her giver ingen mening :thinking: #BlameAlexis'
       other: 'langsom af. :dizzy_face:'
   RankBackgroundCommand:
-    canBeUnlocked: "Rang baggrunde kan låses op ved hjælp af **[Vote Points](https://discordbots.org/bot/avaire)**,\nDu får **1 point** hver gang du stemmer for botten, eller **2 points** hvis du voter i weekenderne."
+    canBeUnlocked: "Rang baggrunde kan låses op ved hjælp af **[Vote Points](https://discordbots.org/bot/Xeus)**,\nDu får **1 point** hver gang du stemmer for botten, eller **2 points** hvis du voter i weekenderne."
     listTitle: "Rank Baggrundsbilleder ({0})"
     youHaveVotePoints: "Du har {0} vote points."
     exampleTitle: "{0} Eksempel"
@@ -815,8 +815,8 @@ utility:
     allShards: 'Alle Shards'
     totalShards: 'Samlede Shards'
   SourceCommand:
-    noArgs: 'Avaire kildekode:'
-    command: 'Avaire kildekoden for kommandoen **:command**:'
+    noArgs: 'Xeus kildekode:'
+    command: 'Xeus kildekoden for kommandoen **:command**:'
     invalidCommand: 'Ugyldig kommando givet, her er den fulde kildekode i stedet.'
     externalCommand: "Kommandoen er registreret via et eksternt plugin, forfatteren af plugin'en har ikke lavet kilden til kommandoen public, eller de glemte at tilføje et link til den, her er den fulde kildekode til boten i stedet."
   StatsCommand:
@@ -866,9 +866,9 @@ utility:
     timeFormat: 'EEE, dd MMM yyyy HH:mm'
   VersionCommand:
     current: 'Jeg er for tiden `:difference` :type versioner bagud!'
-    getLatest: 'Du kan få den nyeste version af mig på github på [avaire/avaire](https://github.com/avaire/avaire)'
-    usingLatest: "Du bruger den nyeste version af AvaIre!"
-    latestVersion: 'Den seneste version af AvaIre er v{0}'
+    getLatest: 'Du kan få den nyeste version af mig på github på [Xeus/Xeus](https://github.com/Xeus/Xeus)'
+    usingLatest: "Du bruger den nyeste version af Xeus!"
+    latestVersion: 'Den seneste version af Xeus er v{0}'
     latestChanges: 'Seneste ændringer:'
     versions:
       majorName: 'Major'
@@ -885,3 +885,8 @@ utility:
       temperature: "Temperatur"
       windDirection: "Vindretning"
       windSpeed: "Vindhastighed"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

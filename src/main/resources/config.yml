@@ -14,7 +14,7 @@
 # management system? Try out https://codebeautify.org/yaml-validator
 #
 # Got any questions? Contact the development team on the official support
-# server for Ava at https://avairebot.com/support
+# server for Ava at https://discord.gg/SUPJEt3Ma9
 #
 
 #--------------------------------------------------------------------------
@@ -700,3 +700,17 @@ apiKeys:
   # Get a key at: https://home.openweathermap.org/api_keys
   #
   openWeatherMap: ''
+
+  # Gitlabs API Key for the gitlab API
+  gitlabKey: ''
+
+  # Kronos API Key for connecting to the Kronos API (Blacklist and Database)
+  kronosApiKey: ''
+  kronosDatabaseApiKey: ''
+
+  # API key for connecting to an selfhosted noblox.js server
+  nobloxServerAPIKey: ''
+
+URL:
+  # Link to noblox.js server
+  noblox: ''

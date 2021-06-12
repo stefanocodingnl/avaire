@@ -22,6 +22,9 @@
 package com.avairebot.requests;
 
 import com.avairebot.contracts.async.Future;
+import com.avairebot.requests.ratelimit.RateLimitInterceptor;
+import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -42,7 +46,7 @@ public class Request extends Future {
     private final String url;
     private final RequestType type;
 
-    private final OkHttpClient client;
+    private final OkHttpClient.Builder clientBuilder;
     private final okhttp3.Request.Builder builder;
 
     private final Map<String, Object> parameters = new HashMap<>();
@@ -56,8 +60,20 @@ public class Request extends Future {
         this.url = url;
         this.type = type;
 
-        client = new OkHttpClient();
+        clientBuilder = new OkHttpClient.Builder().addInterceptor(new RateLimitInterceptor());
         builder = new okhttp3.Request.Builder();
+
+
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(200);
+        dispatcher.setMaxRequestsPerHost(60);
+        ConnectionPool connectionPool = new ConnectionPool(5,
+            5, TimeUnit.MINUTES);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        builder.dispatcher(dispatcher);
+        builder.connectionPool(connectionPool);
+
         headers.put("User-Agent", "Mozilla/5.0");
     }
 
@@ -85,7 +101,7 @@ public class Request extends Future {
                     break;
             }
 
-            success.accept(new Response(client.newCall(builder.build()).execute()));
+            success.accept(new Response(clientBuilder.build().newCall(builder.build()).execute()));
         } catch (Exception ex) {
             failure.accept(ex);
         }

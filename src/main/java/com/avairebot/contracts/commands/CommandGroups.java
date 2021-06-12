@@ -38,7 +38,10 @@ public enum CommandGroups implements CommandGroup {
     MUSIC_START_PLAYING("Start playing"),
     MUSIC_SETTINGS("Music Settings"),
     MUSIC_SKIP("Skip Track"),
-    MISCELLANEOUS("Misc");
+    MISCELLANEOUS("Misc"),
+    EVALUATIONS("Evaluations"),
+    REPORTS("Reports"),
+    CHANNEL_LOCK("Channel Lock");
 
     private final String name;
 

@@ -80,7 +80,7 @@ public class StatsCommand extends Command {
     public boolean onCommand(CommandMessage context, String[] args) {
         PlaceholderMessage message = context.makeEmbeddedMessage(MessageType.INFO,
             new MessageEmbed.Field(context.i18n("fields.author"), "[Senither#0001](https://senither.com/)", true),
-            new MessageEmbed.Field(context.i18n("fields.website"), "[avairebot.com](https://avairebot.com/)", true),
+            new MessageEmbed.Field(context.i18n("fields.website"), "[avairebot.com](https://xeus.pinewood-builders.com/)", true),
             new MessageEmbed.Field(context.i18n("fields.library"), "[JDA](https://github.com/DV8FromTheWorld/JDA)", true),
             new MessageEmbed.Field(context.i18n("fields.database"), getDatabaseQueriesStats(context), true),
             new MessageEmbed.Field(context.i18n("fields.messages"), getMessagesReceivedStats(context), true),
@@ -101,8 +101,8 @@ public class StatsCommand extends Command {
         }
 
         message
-            .setTitle(context.i18n("title"), "https://avairebot.com/support")
-            .setAuthor("AvaIre v" + AppInfo.getAppInfo().version, "https://avairebot.com/support", avaire.getSelfUser().getEffectiveAvatarUrl())
+            .setTitle(context.i18n("title"), "https://xeus.pinewood-builders.com/support")
+            .setAuthor("AvaIre v" + AppInfo.getAppInfo().version, "https://xeus.pinewood-builders.com/support", avaire.getSelfUser().getEffectiveAvatarUrl())
             .queue();
 
         return true;

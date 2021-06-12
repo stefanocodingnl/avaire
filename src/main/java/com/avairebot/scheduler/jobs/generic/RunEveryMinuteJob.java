@@ -39,6 +39,7 @@ public class RunEveryMinuteJob extends Job {
     private final SyncValidVoteRequestsWithMetricsTask syncValidVoteRequestsWithMetricsTask = new SyncValidVoteRequestsWithMetricsTask();
     private final SyncPlayerExperienceWithDatabaseTask syncPlayerExperienceWithDatabaseTask = new SyncPlayerExperienceWithDatabaseTask();
     private final SyncPlayerUpdateReferencesWithDatabaseTask syncPlayerUpdateReferencesWithDatabaseTask = new SyncPlayerUpdateReferencesWithDatabaseTask();
+    private final DrainOnWatchQueueTask drainOnWatchQueueTask = new DrainOnWatchQueueTask();
 
     public RunEveryMinuteJob(AvaIre avaire) {
         super(avaire, 0, 1, TimeUnit.MINUTES);
@@ -56,7 +57,8 @@ public class RunEveryMinuteJob extends Job {
             updateWebsocketHeartbeatMetricsTask,
             syncValidVoteRequestsWithMetricsTask,
             syncPlayerExperienceWithDatabaseTask,
-            syncPlayerUpdateReferencesWithDatabaseTask
+            syncPlayerUpdateReferencesWithDatabaseTask,
+            drainOnWatchQueueTask
         );
     }
 }

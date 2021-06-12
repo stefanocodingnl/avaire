@@ -85,7 +85,7 @@ public class ServerInfoCommand extends Command {
 
         PlaceholderMessage placeholderMessage = context.makeEmbeddedMessage(getRoleColor(guild.getSelfMember().getRoles()),
             new MessageEmbed.Field(context.i18n("fields.id"), guild.getId(), true),
-            new MessageEmbed.Field(context.i18n("fields.owner"), guild.getOwner().getUser().getName() + "#" + guild.getOwner().getUser().getDiscriminator(), true),
+            new MessageEmbed.Field(context.i18n("fields.owner"), guild.retrieveOwner().submit().getNow(null).getUser().getName() + "#" + guild.retrieveOwner().submit().getNow(null).getUser().getDiscriminator(), true),
             new MessageEmbed.Field(context.i18n("fields.textChannels"), NumberUtil.formatNicely(guild.getTextChannels().size()), true),
             new MessageEmbed.Field(context.i18n("fields.voiceChannels"), NumberUtil.formatNicely(guild.getVoiceChannels().size()), true),
             new MessageEmbed.Field(context.i18n("fields.members"), NumberUtil.formatNicely(guild.getMembers().size()), true),

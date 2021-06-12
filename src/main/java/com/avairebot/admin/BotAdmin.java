@@ -32,6 +32,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 public class BotAdmin {
 
@@ -158,6 +159,7 @@ public class BotAdmin {
         }
 
         Member member = role.getGuild().getMemberById(userId);
+
         if (member == null) {
             return AdminType.USER;
         }

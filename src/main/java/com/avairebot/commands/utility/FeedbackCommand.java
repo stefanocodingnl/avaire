@@ -58,7 +58,7 @@ public class FeedbackCommand extends Command {
 
     @Override
     public String getDescription() {
-        return "Send feedback about Ava back to the developers and the staff team, any message passed to the command will be sent in the [#feedback](https://avairebot.com/support) channel on the [AvaIre Central](https://avairebot.com/support) server.";
+        return "Send feedback about Ava back to the developers and the staff team, any message passed to the command will be sent in the [#feedback](https://xeus.pinewood-builders.com/support) channel on the [AvaIre Central](https://xeus.pinewood-builders.com/support) server.";
     }
 
     @Override
@@ -73,7 +73,7 @@ public class FeedbackCommand extends Command {
 
     @Override
     public List<String> getTriggers() {
-        return Collections.singletonList("feedback");
+        return Collections.singletonList("bot-feedback");
     }
 
     @Override

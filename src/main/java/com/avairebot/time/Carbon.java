@@ -605,7 +605,7 @@ public final class Carbon {
      * calendar fields are validated and this method throws an
      * exception if any calendar fields have out-of-range values. The
      * normalization and validation are handled by the
-     * {@link java.util.Calendar#complete()} method, which process is calendar
+     * complete method, which process is calendar
      * system dependent.
      *
      * @param field the given calendar field.

@@ -10,7 +10,7 @@ errors:
   cantMentionEveryone: "Je hebt geen toestemming om iedereen te pingen."
   cantMentionUsersOrRoles: "You don't have permission to use this command for mentioning users or roles"
   requireLevelFeatureToBeEnabled: 'Om dit commando te kunnen gebruiken, moet je de `Levels en Experience` module aan hebben op de server, je kan een server admin vragen als ze dit aan willen zetten met `{0}`'
-  errorOccurredWhileLoading: 'Er is een error voorgekomen onder het laden van {0}, A.U.B opnieuw proberen, als dit probleem niet weg gaat, laat het weten bij een van de developers in de [AvaIre support server](https://avairebot.com/support).'
+  errorOccurredWhileLoading: 'Er is een error voorgekomen onder het laden van {0}, A.U.B opnieuw proberen, als dit probleem niet weg gaat, laat het weten bij een van de developers in de [Xeus support server](https://discord.gg/SUPJEt3Ma9).'
 levelupMessages:
   - "GG :user, je hebt **Level :level** berijkt"
   - "Eyy :user, je bent net een level omhoog gegaan! Nu ben je **Level :level**"
@@ -82,7 +82,7 @@ administration:
     invalidAmountGiven: "De `amount` waarde moet tussen de 0 en de {0} zijn om exp van een user af te pakken of om exp toe te voegen."
     aboutToResetEverything: " Je staat op het punt om de XP van iedereen op de gehele server ongedaan te maken. Als je zeker bent van deze actie, typ het commando in om de XP van de server te resetten.\n\n```:command server-reset :token```\nDit commando werkt voor 60 seconden, na dit moment wordt het token ongeldig en moet je het commando opnieuw uitvoeren om een nieuw token te krijgen."
     aboutToSyncEverything: "Je staat op het punt om de XP te synchroniseren met het wereldwijde scorebord, dit vervangt alle aangepast XP aanpassingen gemaakt op deze server. Als je zeker bent van deze actie, voer het commando uit om de XP te laten synchroniseren met het wereldwijde scorebord.\n\n```:command server-sync :token```\nDit commando werkt voor 60 seconden, daarna wordt het token invalide en moet je het commando nogmaals uitvoeren om een nieuw token te krijgen."
-    failedToSaveChanges: "Het opslaan naar de database is mislukt, probeer het opnieuw, of als het probleem zich blijft voordoen, zoek dan ondersteuning in [de officiele AvaIre server](https://avairebot.com/support)."
+    failedToSaveChanges: "Het opslaan naar de database is mislukt, probeer het opnieuw, of als het probleem zich blijft voordoen, zoek dan ondersteuning in [de officiele Xeus server](https://discord.gg/SUPJEt3Ma9)."
     mustBeAnAdmin: "Je moet een server administrator zijn om dit te kunnen doen."
     invalidSecurityToken: "Ongeldig security token gegeven, geef A.U.B een geldig security token om de EXP van alle servers te resetten."
     warning: "Waarschuwing!"
@@ -176,7 +176,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "Ongeldige taal code gegeven, `{0}` is geen geldige taal code, of word nog niet geondersteund!"
     changed: "De servers taal is succesvol veranderd naar: :name!"
-    note: "AvaIre ondersteund meerdere vrijwillig vertaalde talen die kan uitkiezen met dit commando. Vertallingen kunnen niet 100% compleet zijn, en kunnen fouten bevatten.\nOm een taal te selecteren, gebruik `{0} <code>`"
+    note: "Xeus ondersteund meerdere vrijwillig vertaalde talen die kan uitkiezen met dit commando. Vertallingen kunnen niet 100% compleet zijn, en kunnen fouten bevatten.\nOm een taal te selecteren, gebruik `{0} <code>`"
   LevelAlertsCommand:
     message: "`Level up meldingen` zijn veranderd naar `:status` voor de server.:note"
     note: "\nAlle level up berichten worden gestuurd in het <#{0}> kanaal."
@@ -764,7 +764,7 @@ utility:
       10000: 'dit is niet logisch :thinking: #BlameAlexis'
       other: 'scheld Alexis uit voor me. :dizzy_face:'
   RankBackgroundCommand:
-    canBeUnlocked: "Rank achtergronden kunnen ontgrendeld worden met **[Vote Points](https://discordbots.org/bot/avaire)**,\nJe krijgt **1 punt** elke keer als je op de bot stempt."
+    canBeUnlocked: "Rank achtergronden kunnen ontgrendeld worden met **[Vote Points](https://discordbots.org/bot/Xeus)**,\nJe krijgt **1 punt** elke keer als je op de bot stempt."
     listTitle: "Rank achtergronden ({0})"
     youHaveVotePoints: "Je hebt {0} stem punten."
     exampleTitle: "{0} Voorbeeld"
@@ -815,8 +815,8 @@ utility:
     allShards: 'Alle Shards'
     totalShards: 'Totale Shards'
   SourceCommand:
-    noArgs: 'AvaIre source code:'
-    command: 'AvaIre source code voor de **:command** command:'
+    noArgs: 'Xeus source code:'
+    command: 'Xeus source code voor de **:command** command:'
     invalidCommand: 'Ongeldig commando gegeven, hier is alle source code.'
     externalCommand: "Het commando is geregisteerd via een externe plugin, de auteur van deze plugin heeft de source code nog niet publiek gemaakt, of ze zijn vergeten een linkje toe te voegen, hier is alle source code voor de bot."
   StatsCommand:
@@ -866,9 +866,9 @@ utility:
     timeFormat: 'EEE, dd MMM yyyy HH:mm'
   VersionCommand:
     current: 'Ik loop op dit moment `:difference` :type versier achter!'
-    getLatest: 'Je kan de laatste versie van mij krijgen op github [avaire/avaire](https://github.com/avaire/avaire)'
-    usingLatest: "Je gebruikt de laatste versie van AvaIre!"
-    latestVersion: 'De laatste versie voor AvaIre is v{0}'
+    getLatest: 'Je kan de laatste versie van mij krijgen op github [Xeus/Xeus](https://github.com/Xeus/Xeus)'
+    usingLatest: "Je gebruikt de laatste versie van Xeus!"
+    latestVersion: 'De laatste versie voor Xeus is v{0}'
     latestChanges: 'Laatste veranderingen:'
     versions:
       majorName: 'Belangrijkste'
@@ -885,3 +885,8 @@ utility:
       temperature: "Temperatuur"
       windDirection: "Wind Richting"
       windSpeed: "Wind Snelheid"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

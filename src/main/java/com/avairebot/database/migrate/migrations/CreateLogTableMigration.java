@@ -31,7 +31,7 @@ public class CreateLogTableMigration implements Migration {
 
     @Override
     public String created_at() {
-        return "Fri, Apr 06, 2018 1:04 PM";
+        return "Sat, Oct 20, 2018 8:40 PM";
     }
 
     @Override

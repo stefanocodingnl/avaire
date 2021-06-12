@@ -22,6 +22,7 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
@@ -29,6 +30,7 @@ import com.avairebot.middleware.permission.PermissionCheck;
 import com.avairebot.middleware.permission.PermissionCommon;
 import com.avairebot.middleware.permission.PermissionType;
 import com.avairebot.permissions.Permissions;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
@@ -72,6 +74,11 @@ public class RequireOnePermissionMiddleware extends Middleware {
             AvaIre.getLogger().warn(String.format(
                 "\"%s\" is parsing invalid amount of arguments to the require middleware, 2 arguments are required.", stack.getCommand()
             ));
+            return stack.next();
+        }
+
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 

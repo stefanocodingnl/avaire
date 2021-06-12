@@ -22,10 +22,13 @@
 package com.avairebot.handlers;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
+import com.avairebot.Environment;
 import com.avairebot.contracts.handlers.EventHandler;
 import com.avairebot.database.controllers.PlayerController;
 import com.avairebot.handlers.adapter.*;
 import com.avairebot.metrics.Metrics;
+import com.avairebot.pinewood.adapter.WhitelistEventAdapter;
 import com.avairebot.utilities.CacheUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -41,17 +44,24 @@ import net.dv8tion.jda.api.events.channel.text.update.TextChannelUpdateNameEvent
 import net.dv8tion.jda.api.events.channel.text.update.TextChannelUpdatePositionEvent;
 import net.dv8tion.jda.api.events.channel.voice.VoiceChannelDeleteEvent;
 import net.dv8tion.jda.api.events.emote.EmoteRemovedEvent;
+import net.dv8tion.jda.api.events.guild.GenericGuildEvent;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.api.events.guild.GuildUnbanEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateNameEvent;
 import net.dv8tion.jda.api.events.guild.update.GuildUpdateRegionEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
 import net.dv8tion.jda.api.events.message.MessageBulkDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -69,6 +79,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -83,8 +94,11 @@ public class MainEventHandler extends EventHandler {
     private final JDAStateEventAdapter jdaStateEventAdapter;
     private final ChangelogEventAdapter changelogEventAdapter;
     private final ReactionEmoteEventAdapter reactionEmoteEventAdapter;
+    private final GuildEventAdapter guildEventAdapter;
+    private final WhitelistEventAdapter whitelistEventAdapter;
+    private final ButtonClickEventAdapter buttonClickEventAdapter;
 
-    public static final Cache<Long, Boolean> cache = CacheBuilder.newBuilder()
+    public static final Cache <Long, Boolean> cache = CacheBuilder.newBuilder()
         .recordStats()
         .expireAfterWrite(15, TimeUnit.MINUTES)
         .build();
@@ -107,6 +121,9 @@ public class MainEventHandler extends EventHandler {
         this.jdaStateEventAdapter = new JDAStateEventAdapter(avaire);
         this.changelogEventAdapter = new ChangelogEventAdapter(avaire);
         this.reactionEmoteEventAdapter = new ReactionEmoteEventAdapter(avaire);
+        this.guildEventAdapter = new GuildEventAdapter(avaire);
+        this.whitelistEventAdapter = new WhitelistEventAdapter(avaire, avaire.getVoiceWhitelistManager());
+        this.buttonClickEventAdapter = new ButtonClickEventAdapter(avaire);
     }
 
     @Override
@@ -177,11 +194,25 @@ public class MainEventHandler extends EventHandler {
         channelEvent.updateChannelData(event.getGuild());
     }
 
+    public void onGuildVoiceJoin(@Nonnull GuildVoiceJoinEvent event) {
+        whitelistEventAdapter.whitelistCheckEvent(event);
+    }
+    public void onGuildVoiceMove(@Nonnull GuildVoiceMoveEvent event) {
+        whitelistEventAdapter.whitelistCheckEvent(event);
+    }
+
+
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         if (!avaire.getSettings().isMusicOnlyMode()) {
             memberEvent.onGuildMemberJoin(event);
         }
+    }
+
+    @Override
+    public void onGenericGuild(@Nonnull GenericGuildEvent event) {
+        guildEventAdapter.onGenericGuildEvent(event);
+        guildEventAdapter.onJoinLogsEvent(event);
     }
 
     @Override
@@ -196,8 +227,27 @@ public class MainEventHandler extends EventHandler {
         if (changelogEventAdapter.isChangelogMessage(event.getChannel())) {
             changelogEventAdapter.onMessageReceived(event);
         }
-
         messageEvent.onMessageReceived(event);
+
+        if (AvaIre.getEnvironment().getName().equals(Environment.DEVELOPMENT.getName())) {
+            return;
+        }
+
+        if (event.isFromGuild()) {
+            if (Constants.guilds.contains(event.getGuild().getId())) {
+                if (!event.getAuthor().isBot()) {
+                    messageEvent.onLocalFilterMessageReceived(event);
+                    messageEvent.onGlobalFilterMessageReceived(event);
+                    messageEvent.onNoLinksFilterMessageReceived(event);
+
+                    if (event.getChannel().getId().equals("769274801768235028")) {
+                        messageEvent.onPBSTEventGalleryMessageSent(event);
+                    }
+                }
+            }
+
+        }
+
     }
 
     @Override
@@ -219,8 +269,18 @@ public class MainEventHandler extends EventHandler {
         if (changelogEventAdapter.isChangelogMessage(event.getChannel())) {
             changelogEventAdapter.onMessageUpdate(event);
         }
-
         messageEvent.onMessageUpdate(event);
+
+        if (AvaIre.getEnvironment().getName().equals(Environment.DEVELOPMENT.getName())) {
+            return;
+        }
+        if (event.isFromGuild()) {
+            if (Constants.guilds.contains(event.getGuild().getId())) {
+                messageEvent.onGuildMessageUpdate(event);
+                messageEvent.onGlobalFilterEditReceived(event);
+                messageEvent.onLocalFilterEditReceived(event);
+            }
+        }
     }
 
     @Override
@@ -284,7 +344,28 @@ public class MainEventHandler extends EventHandler {
     }
 
     @Override
-    public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+    public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
+        if (isValidMessageReactionEvent(event)) {
+            if (event.getChannel().getId().equals(Constants.REWARD_REQUESTS_CHANNEL_ID)) {
+                reactionEmoteEventAdapter.onPBSTRequestRewardMessageAddEvent(event);
+            }
+
+            reactionEmoteEventAdapter.onGuildSuggestionValidation(event);
+            reactionEmoteEventAdapter.onReportsReactionAdd(event);
+            reactionEmoteEventAdapter.onFeedbackMessageEvent(event);
+        }
+
+    }
+
+    @Override
+    public void onButtonClick(@Nonnull ButtonClickEvent event) {
+        buttonClickEventAdapter.onPatrolRemittanceButtonClickEvent(event);
+        buttonClickEventAdapter.onReportsButtonClickEvent(event);
+        buttonClickEventAdapter.onFeedbackButtonClickEvent(event);
+    }
+
+    @Override
+    public void onMessageReactionRemove(@Nonnull MessageReactionRemoveEvent event) {
         if (isValidMessageReactionEvent(event)) {
             reactionEmoteEventAdapter.onMessageReactionRemove(event);
         }
@@ -294,6 +375,11 @@ public class MainEventHandler extends EventHandler {
         return event.isFromGuild() && event.getReactionEmote().isEmote();
     }
 
+/*    private boolean isValidReportChannel(GuildMessageReactionAddEvent event) {
+        return event.getChannel().getId().equals(Constants.PBST_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PET_REPORT_CHANNEL)
+                || event.getChannel().getId().equals(Constants.TMS_REPORT_CHANNEL) || event.getChannel().getId().equals(Constants.PB_REPORT_CHANNEL) || event.getChannel().getName().equals("handbook-violator-reports");
+    }*/
+
     private void prepareGuildMembers(GenericEvent event) {
         if (event instanceof GenericMessageEvent) {
             GenericMessageEvent genericMessageEvent = (GenericMessageEvent) event;
@@ -301,11 +387,41 @@ public class MainEventHandler extends EventHandler {
             if (genericMessageEvent.isFromGuild()) {
                 loadGuildMembers(genericMessageEvent.getGuild());
             }
+
         } else if (event instanceof GenericRoleEvent) {
             GenericRoleEvent genericRoleEvent = (GenericRoleEvent) event;
 
             loadGuildMembers(genericRoleEvent.getGuild());
+        } else if (event instanceof GenericGuildMessageReactionEvent) {
+            GenericGuildMessageReactionEvent genericGuildMessageReactionEvent = (GenericGuildMessageReactionEvent) event;
+
+            loadGuildMembers(genericGuildMessageReactionEvent.getGuild());
+        } else if (event instanceof GenericGuildEvent) {
+            GenericGuildEvent genericGuildEvent = (GenericGuildEvent) event;
+
+            loadGuildMembers(genericGuildEvent.getGuild());
         }
+    }
+
+    public final ArrayList <String> guilds = new ArrayList <String>() {{
+        add("495673170565791754"); // Aerospace
+        add("438134543837560832"); // PBST
+        add("791168471093870622"); // Kronos Dev
+        add("371062894315569173"); // Official PB Server
+        add("514595433176236078"); // PBQA
+        add("436670173777362944"); // PET
+        add("505828893576527892"); // MMFA
+        add("498476405160673286"); // PBM
+        add("572104809973415943"); // TMS
+        add("758057400635883580"); // PBOP
+        add("669672893730258964"); // PB Dev
+    }};
+
+
+    public void onGuildUnban(@Nonnull GuildUnbanEvent e) {
+      if (guilds.contains(e.getGuild().getId())) {
+          guildEventAdapter.onGuildPIAMemberBanEvent(e);
+      }
     }
 
     private void loadGuildMembers(Guild guild) {
@@ -315,7 +431,7 @@ public class MainEventHandler extends EventHandler {
 
         CacheUtil.getUncheckedUnwrapped(cache, guild.getIdLong(), () -> {
             log.debug("Lazy-loading members for guild: {} (ID: {})", guild.getName(), guild.getIdLong());
-            Task<List<Member>> task = guild.loadMembers();
+            Task <List <Member>> task = guild.loadMembers();
 
             guild.getMemberCount();
 
@@ -334,4 +450,20 @@ public class MainEventHandler extends EventHandler {
             return true;
         });
     }
+
+    private boolean isValidMessageReactionEvent(MessageReactionAddEvent event) {
+        return event.isFromGuild()
+            && event.getReactionEmote().isEmote()
+            && !event.getMember().getUser().isBot();
+    }
+
+    private boolean isValidMessageReactionEvent(MessageReactionRemoveEvent event) {
+        return event.isFromGuild()
+            && event.getReactionEmote().isEmote();
+    }
+
+    private boolean isValidMessageReactionEvent(GuildMessageReactionAddEvent event) {
+        return !event.getUser().isBot();
+    }
+
 }

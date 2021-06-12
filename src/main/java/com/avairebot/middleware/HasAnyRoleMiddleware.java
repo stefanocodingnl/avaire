@@ -22,10 +22,12 @@
 package com.avairebot.middleware;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.middleware.Middleware;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.permissions.Permissions;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.RestActionUtil;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
@@ -54,6 +56,11 @@ public class HasAnyRoleMiddleware extends Middleware {
     @Override
     public boolean handle(@Nonnull Message message, @Nonnull MiddlewareStack stack, String... args) {
         if (!message.getChannelType().isGuild()) {
+            return stack.next();
+        }
+
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.PIA.getLevel()) {
             return stack.next();
         }
 

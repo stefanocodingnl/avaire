@@ -83,12 +83,12 @@ public class PlaceholderMessageTests extends BaseTest {
     @Test
     public void testTitleIsSetWithUrlCorrectly() {
         PlaceholderMessage message = createWith(null);
-        message.setTitle("Some weird Title", "https://avairebot.com/");
+        message.setTitle("Some weird Title", "https://xeus.pinewood-builders.com/");
 
         MessageEmbed embed = message.buildEmbed();
 
         assertEquals("Some weird Title", embed.getTitle());
-        assertEquals("https://avairebot.com/", embed.getUrl());
+        assertEquals("https://xeus.pinewood-builders.com/", embed.getUrl());
     }
 
     @Test
@@ -160,24 +160,24 @@ public class PlaceholderMessageTests extends BaseTest {
     @Test
     public void testAuthorIsSetWithoutIconCorrectly() {
         PlaceholderMessage message = createWith(null);
-        message.setAuthor("Senither", "https://avairebot.com/");
+        message.setAuthor("Senither", "https://xeus.pinewood-builders.com/");
 
         MessageEmbed embed = message.buildEmbed();
 
         assertEquals("Senither", embed.getAuthor().getName());
-        assertEquals("https://avairebot.com/", embed.getAuthor().getUrl());
+        assertEquals("https://xeus.pinewood-builders.com/", embed.getAuthor().getUrl());
         assertEquals(null, embed.getAuthor().getIconUrl());
     }
 
     @Test
     public void testAuthorIsSetCorrectly() {
         PlaceholderMessage message = createWith(null);
-        message.setAuthor("Senither", "https://avairebot.com/", "https://i.imgur.com/odFyo1Q.gif");
+        message.setAuthor("Senither", "https://xeus.pinewood-builders.com/", "https://i.imgur.com/odFyo1Q.gif");
 
         MessageEmbed embed = message.buildEmbed();
 
         assertEquals("Senither", embed.getAuthor().getName());
-        assertEquals("https://avairebot.com/", embed.getAuthor().getUrl());
+        assertEquals("https://xeus.pinewood-builders.com/", embed.getAuthor().getUrl());
         assertEquals("https://i.imgur.com/odFyo1Q.gif", embed.getAuthor().getIconUrl());
     }
 

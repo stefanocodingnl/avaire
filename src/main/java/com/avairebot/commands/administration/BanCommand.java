@@ -76,7 +76,8 @@ public class BanCommand extends BanableCommand {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "require:all,general.ban_members",
+            "isModOrHigher",
+            "require:bot,general.ban_members",
             "throttle:user,1,4"
         );
     }

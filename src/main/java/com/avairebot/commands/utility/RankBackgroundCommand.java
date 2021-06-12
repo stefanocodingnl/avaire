@@ -35,6 +35,7 @@ import com.avairebot.imagegen.RankBackground;
 import com.avairebot.imagegen.RankBackgroundHandler;
 import com.avairebot.imagegen.renders.RankBackgroundRender;
 import com.avairebot.shared.DiscordConstants;
+import com.avairebot.utilities.CheckPermissionUtil;
 import com.avairebot.utilities.ComparatorUtil;
 import com.avairebot.utilities.NumberUtil;
 import com.avairebot.utilities.RandomUtil;
@@ -272,15 +273,16 @@ public class RankBackgroundCommand extends Command {
             return false;
         }
 
+        int permissionLevel = CheckPermissionUtil.getPermissionLevel(context).getLevel();
+
         VoteCacheEntity voteEntity = avaire.getVoteManager().getVoteEntity(context.getAuthor());
         int votePoints = voteEntity == null ? 0 : voteEntity.getVotePoints();
 
-        if (background.getCost() > votePoints) {
+        if (background.getCost() > votePoints && !(permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel())) {
             return sendErrorMessage(context, context.i18n("doesntHaveEnoughPoints",
                 NumberUtil.formatNicely(background.getCost()), NumberUtil.formatNicely(votePoints)
             ));
         }
-
         try {
             avaire.getDatabase().newQueryBuilder(Constants.PURCHASES_TABLE_NAME)
                 .insert(statement -> {

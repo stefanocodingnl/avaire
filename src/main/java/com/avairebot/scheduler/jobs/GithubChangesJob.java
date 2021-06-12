@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 
 public class GithubChangesJob extends Job {
 
-    private final String cacheToken = "github.commits";
+    private final String cacheToken = "gitlab.commits";
 
     public GithubChangesJob(AvaIre avaire) {
         super(avaire, 90, 90, TimeUnit.MINUTES);
@@ -47,7 +47,7 @@ public class GithubChangesJob extends Job {
     @Override
     public void run() {
         handleTask((Task) avaire -> {
-            RequestFactory.makeGET("https://api.github.com/repos/avaire/avaire/commits")
+            RequestFactory.makeGET("https://gitlab.com/api/v4/projects/17658373/repository/commits")
                 .send((Consumer<Response>) response -> {
                     List service = (List) response.toService(List.class);
 

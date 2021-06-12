@@ -10,7 +10,7 @@ errors:
   cantMentionEveryone: "You don't have permissions to mention everyone."
   cantMentionUsersOrRoles: "You don't have permission to use this command for mentioning users or roles"
   requireLevelFeatureToBeEnabled: 'Cette commande requiert que la fonctionnalité `Levels & Experience` soit active pour le serveur, tu peux demander à un admin serveur si ils veulent l''activer avec `{0}`'
-  errorOccurredWhileLoading: 'Une erreur est survenue lors du chargement de {0}, réessayer, si le problème persiste reportez le à l''un de mes développeurs sur le [serveur de support AvaIre](https://avairebot.com/support).'
+  errorOccurredWhileLoading: 'Une erreur est survenue lors du chargement de {0}, réessayer, si le problème persiste reportez le à l''un de mes développeurs sur le [serveur de support Xeus](https://discord.gg/SUPJEt3Ma9).'
 levelupMessages:
   - "GG :user, tu as atteint le **Niveau :level**"
   - "Hey :user, tu viens de monter en niveau! Tu es maintenant **Niveau :level**"
@@ -176,7 +176,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "Code de langue invalide donné, `{0}` n'est pas un code de langue valide, ou il n'est pas encore supporté !"
     changed: "La langue du serveur a été mise à jour avec succès pour utiliser la langue :name !"
-    note: "AvaIre supporte plusieurs langues fournies par l'utilisateur que tu peux sélectionner avec cette commande. Les traductions peuvent ne pas être à 100% exactes ou complètes. Pour sélectionner une langue, utilisez `{0} <code>`"
+    note: "Xeus supporte plusieurs langues fournies par l'utilisateur que tu peux sélectionner avec cette commande. Les traductions peuvent ne pas être à 100% exactes ou complètes. Pour sélectionner une langue, utilisez `{0} <code>`"
   LevelAlertsCommand:
     message: "Les alertes de niveau supérieur ont été :status pour le serveur.:note"
     note: "\nTous les messages de niveau supérieur seront enregistrés dans le canal <#{0}>."
@@ -764,7 +764,7 @@ utility:
       10000: 'cela n''a aucun sens :thinking: #BlameAlexis'
       other: 'lent. :dizzy_face:'
   RankBackgroundCommand:
-    canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/avaire)**,\nyou'll get **1 point** each time you vote for the bot."
+    canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/Xeus)**,\nyou'll get **1 point** each time you vote for the bot."
     listTitle: "Rank Backgrounds ({0})"
     youHaveVotePoints: "You have {0} vote points."
     exampleTitle: "{0} Example"
@@ -815,8 +815,8 @@ utility:
     allShards: 'Tous les fragments'
     totalShards: 'Total des fragments'
   SourceCommand:
-    noArgs: 'code source AvaIre:'
-    command: 'code source AvaIre pour la commande **:command**:'
+    noArgs: 'code source Xeus:'
+    command: 'code source Xeus pour la commande **:command**:'
     invalidCommand: 'Commande invalide, voici plutôt le code source complet.'
     externalCommand: "La commande est enregistrée via un plugin externe, les auteurs de ce plugin n'ont pas rendu public les sources de la commande, ou ils ont oublié d'ajouter le lien, voici à la place le code source complet du bot."
   StatsCommand:
@@ -866,9 +866,9 @@ utility:
     timeFormat: 'EEE, dd MMM yyyy HH:mm'
   VersionCommand:
     current: 'Je suis actuellement `:difference` versions :type derrière!'
-    getLatest: 'Tu peux obtenir ma dernière version sur github [avaire/avaire](https://github.com/avaire/avaire)'
-    usingLatest: "Vous utilisez la dernière version de AvaIre!"
-    latestVersion: 'La dernière version de AvaIre est v{0}'
+    getLatest: 'Tu peux obtenir ma dernière version sur github [Xeus/Xeus](https://github.com/Xeus/Xeus)'
+    usingLatest: "Vous utilisez la dernière version de Xeus!"
+    latestVersion: 'La dernière version de Xeus est v{0}'
     latestChanges: 'Derniers changements :'
     versions:
       majorName: 'Majeure'
@@ -885,3 +885,8 @@ utility:
       temperature: "Temperature"
       windDirection: "Wind Direction"
       windSpeed: "Wind Speed"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

@@ -10,7 +10,7 @@ errors:
   cantMentionEveryone: "You don't have permissions to mention everyone."
   cantMentionUsersOrRoles: "You don't have permission to use this command for mentioning users or roles"
   requireLevelFeatureToBeEnabled: 'Ez a parancs megköveteli a `Levels & Experience` funkciót, hogy be legyen kapcsolva a szerveren. Megkérdheted a szerver tulajdonost, hogy be akarják-e kapcsolni a `{0}`-vel'
-  errorOccurredWhileLoading: 'Hiba lépett fel a {0} betöltése közben, kérlek próbáld újra, ha a hiba továbbra is fennáll kérlek jelentsd ezt az egyik fejlesztőmnek az [AvaIre support server](https://avairebot.com/support)-en.'
+  errorOccurredWhileLoading: 'Hiba lépett fel a {0} betöltése közben, kérlek próbáld újra, ha a hiba továbbra is fennáll kérlek jelentsd ezt az egyik fejlesztőmnek az [Xeus support server](https://discord.gg/SUPJEt3Ma9)-en.'
 levelupMessages:
   - "GG :user, éppen elérted a **Level :level** szintet."
   - "Eyy :user, szintet léptél! Jelenleg **Level :level** vagy."
@@ -82,7 +82,7 @@ administration:
     invalidAmountGiven: "The `amount` property must be between 1 and {0} to add or take XP from a user."
     aboutToResetEverything: "You're about to reset the XP for everyone on the entire server. If you're sure you wanna continue, run the command to completely reset the servers XP.\n\n```:command server-reset :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
     aboutToSyncEverything: "You're about to sync the XP with the global leaderboard, this will effectively revert any custom XP changes made on the entire server. If you're sure you wanna continue, run the command to completely sync the servers XP.\n\n```:command server-sync :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
-    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [AvaIre support server](https://avairebot.com/support)."
+    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [Xeus support server](https://discord.gg/SUPJEt3Ma9)."
     mustBeAnAdmin: "You must be a server admin to use this action."
     invalidSecurityToken: "Invalid security token given, please provide the correct security token to reset all the servers XP."
     warning: "Warning!"
@@ -176,7 +176,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "Invalid language code given, `{0}` is not a valid language code, or it is not yet supported!"
     changed: "The servers language has been successfully been updated to use the :name language!"
-    note: "AvaIre supports several user-contributed languages that you can select with this command. Translations may not be 100% accurate or complete.\nTo select a language use `{0} <code>`"
+    note: "Xeus supports several user-contributed languages that you can select with this command. Translations may not be 100% accurate or complete.\nTo select a language use `{0} <code>`"
   LevelAlertsCommand:
     message: "`Levels up alerts` has been `:status` for the server.:note"
     note: "\nAll level up messages will be logged into the <#{0}> channel."
@@ -764,7 +764,7 @@ utility:
       10000: 'ennek semmi értelme :thinking: #BlameAlexis'
       other: 'lassú mint a sz. :dizzy_face:'
   RankBackgroundCommand:
-    canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/avaire)**,\nyou'll get **1 point** each time you vote for the bot."
+    canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/Xeus)**,\nyou'll get **1 point** each time you vote for the bot."
     listTitle: "Rank Backgrounds ({0})"
     youHaveVotePoints: "You have {0} vote points."
     exampleTitle: "{0} Example"
@@ -815,8 +815,8 @@ utility:
     allShards: 'Összes Szilánk'
     totalShards: 'Összes Szilánk'
   SourceCommand:
-    noArgs: 'AvaIre forrás kód:'
-    command: 'AvaIre forrás kódja a **:command** parancsnak:'
+    noArgs: 'Xeus forrás kód:'
+    command: 'Xeus forrás kódja a **:command** parancsnak:'
     invalidCommand: 'Érvénytelen parancs megadva, itt van a teljes forrás kód inkább.'
     externalCommand: "A parancs egy kölső plugin által van regisztrálva, a készítője még nem nem tette publikussá a forrást, vagy elfelejtett linket adni hozzá, itt a bot teljes forrás kódja inkább."
   StatsCommand:
@@ -866,9 +866,9 @@ utility:
     timeFormat: 'EEE, dd MMM yyyy HH:mm'
   VersionCommand:
     current: 'Jelenleg `:difference` :type verzióval le vagyok maradva!'
-    getLatest: 'Letöltheted a legfrissebb verziót githubról [avaire/avaire](https://github.com/avaire/avaire)'
-    usingLatest: "A legfrissebb AvaIre verziót használod!"
-    latestVersion: 'A legfrissebb AvaIre verzió: v{0}'
+    getLatest: 'Letöltheted a legfrissebb verziót githubról [Xeus/Xeus](https://github.com/Xeus/Xeus)'
+    usingLatest: "A legfrissebb Xeus verziót használod!"
+    latestVersion: 'A legfrissebb Xeus verzió: v{0}'
     latestChanges: 'Utolsó változtatások:'
     versions:
       majorName: 'Fontos'
@@ -885,3 +885,8 @@ utility:
       temperature: "Temperature"
       windDirection: "Wind Direction"
       windSpeed: "Wind Speed"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

@@ -10,7 +10,7 @@ errors:
   cantMentionEveryone: "您没有权限提及所有人."
   cantMentionUsersOrRoles: "You don't have permission to use this command for mentioning users or roles"
   requireLevelFeatureToBeEnabled: '此命令要求为服务器启用 `级别和体验` 您可以询问服务器管理员是否要使用 `{0}`'
-  errorOccurredWhileLoading: '加载时出错 {0}, 请再试一次. 如果问题继续存在, 请将此情况报告给[Avaire支持服务器]上的一个开发人员。(https://avairebot.com/support). 如果你不懂如何操作，请联系我QQ1653573879来帮助操作'
+  errorOccurredWhileLoading: '加载时出错 {0}, 请再试一次. 如果问题继续存在, 请将此情况报告给[Xeus支持服务器]上的一个开发人员。(https://discord.gg/SUPJEt3Ma9). 如果你不懂如何操作，请联系我QQ1653573879来帮助操作'
 levelupMessages:
   - "GG :user, 你成功的升为 **Level :level**"
   - "Eyy :user, 你又升级了，你现在等级为 **Level :level**"
@@ -82,7 +82,7 @@ administration:
     invalidAmountGiven: "这个 `amount` 属性必须介于 1 和 {0} 添加或接受用户的经验."
     aboutToResetEverything: "You're about to reset the XP for everyone on the entire server. If you're sure you wanna continue, run the command to completely reset the servers XP.\n\n```:command server-reset :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
     aboutToSyncEverything: "You're about to sync the XP with the global leaderboard, this will effectively revert any custom XP changes made on the entire server. If you're sure you wanna continue, run the command to completely sync the servers XP.\n\n```:command server-sync :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
-    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [AvaIre support server](https://avairebot.com/support)."
+    failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [Xeus support server](https://discord.gg/SUPJEt3Ma9)."
     mustBeAnAdmin: "You must be a server admin to use this action."
     invalidSecurityToken: "Invalid security token given, please provide the correct security token to reset all the servers XP."
     warning: "Warning!"
@@ -176,7 +176,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "给出的语言代码无效, `{0}` 不是有效的语言代码, 或者还不支持!"
     changed: "服务器的语言已成功更新，以使用 :name 语言!"
-    note: "AvaIre 支持多种用户提供的语言，您可以使用此命令进行选择。翻译可能不是100%准确或完整.\n选择语言使用 `{0} <code>`"
+    note: "Xeus 支持多种用户提供的语言，您可以使用此命令进行选择。翻译可能不是100%准确或完整.\n选择语言使用 `{0} <code>`"
   LevelAlertsCommand:
     message: "`升级警报 `:status` 对于服务器.:note"
     note: "\n所有级别上的消息都将登录到 <#{0}> 频道."
@@ -764,7 +764,7 @@ utility:
       10000: '这毫无意义：思考：#BlameAlexis'
       other: '慢腾腾的af.：眩晕的脸：'
   RankBackgroundCommand:
-    canBeUnlocked: "级别背景可以使用 **[Vote Points](https://discordbots.org/bot/avaire)**,\nyou'll 到达 **1 point** 每次你投票给机器人."
+    canBeUnlocked: "级别背景可以使用 **[Vote Points](https://discordbots.org/bot/Xeus)**,\nyou'll 到达 **1 point** 每次你投票给机器人."
     listTitle: "等级背景 ({0})"
     youHaveVotePoints: "你有 {0} 投票点数."
     exampleTitle: "{0} 例子"
@@ -815,8 +815,8 @@ utility:
     allShards: '所有碎片'
     totalShards: '碎片总数'
   SourceCommand:
-    noArgs: 'AvaIre源码:'
-    command: 'AvaIre 指令的源码 **:command** command:'
+    noArgs: 'Xeus源码:'
+    command: 'Xeus 指令的源码 **:command** command:'
     invalidCommand: '给出的命令无效，以下是完整的源代码.'
     externalCommand: "该命令是通过一个外部插件注册的，插件的作者没有公开该命令的源代码，或者他们忘了向它添加一个链接，以下是bot的完整源代码."
   StatsCommand:
@@ -866,9 +866,9 @@ utility:
     timeFormat: 'EEE, dd MMM yyyy HH:mm'
   VersionCommand:
     current: '我现在 `:difference` :type 后面的版本!'
-    getLatest: '您可以在GitHub上获得我的最新版本： [avaire/avaire](https://github.com/avaire/avaire)'
-    usingLatest: "您使用的是最新版本的AvaIre!"
-    latestVersion: 'AvaIre的最新版本是 v{0}'
+    getLatest: '您可以在GitHub上获得我的最新版本： [Xeus/Xeus](https://github.com/Xeus/Xeus)'
+    usingLatest: "您使用的是最新版本的Xeus!"
+    latestVersion: 'Xeus的最新版本是 v{0}'
     latestChanges: '最后的 changes:'
     versions:
       majorName: 'Major'
@@ -885,3 +885,8 @@ utility:
       temperature: "温度"
       windDirection: "风向"
       windSpeed: "风速"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

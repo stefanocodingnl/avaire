@@ -53,7 +53,17 @@ public class GuildController {
         "guilds.music_channel_text", "guilds.music_channel_voice", "guilds.music_messages", "guilds.prefixes", "guilds.aliases",
         "guilds.level_exempt_channels", "guilds.level_exempt_roles", "guilds.modlog_case", "guilds.modlog", "guilds.mute_role",
         "guilds.autorole", "guilds.level_channel", "guilds.level_alerts", "guilds.levels", "guilds.hierarchy",
-        "guilds.default_volume", "guilds.dj_level", "guilds.dj_role"
+        "guilds.default_volume", "guilds.dj_level", "guilds.dj_role", "guilds.gamenight_role", "guilds.on_watch_role",
+        "guilds.on_watch_case", "guilds.on_watch", "guilds.filter_wildcard", "guilds.filter_exact",
+        "guilds.filter", "guilds.piaf_wildcard", "guilds.piaf_exact", "guilds.report_discord", "guilds.report_discord_category",
+        "guilds.filter_log", "guilds.lockable_channels_roles", "guilds.lockable_channels", "guilds.moderator_roles",
+        "guilds.admin_roles", "guilds.manager_roles", "guilds.vote_validation_channel", "guilds.no_links_roles",
+        "guilds.suggestion_channel", "guilds.suggestion_emote_id", "guilds.suggestion_community_channel",
+        "guilds.report_info_message", "guilds.report_emote_id", "guilds.handbook_report_channel",
+        "guilds.automod_character_spam", "guilds.automod_emoji_spam", "guilds.automod_image_spam", "guilds.automod_link_spam",
+        "guilds.automod_mass_mention", "guilds.automod_message_spam", "guilds.audit_log", "guilds.roblox_group_id",
+        "guilds.member_to_young_channel_id", "guilds.join_logs", "guilds.event_request_channel", "guilds.patrol_remittance_channel",
+        "guilds.patrol_remittance_message", "guilds.patrol_remittance_emote_id", "guilds.main_discord_role", "guilds.approved_suggestion_channel"
     };
 
     /**

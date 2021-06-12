@@ -10,7 +10,7 @@ errors:
     cantMentionEveryone: "You don't have permissions to mention everyone."
     cantMentionUsersOrRoles: "You don't have permission to use this command for mentioning users or roles"
     requireLevelFeatureToBeEnabled: 'This command requires the `Levels & Experience` feature to be enabled for the server, you can ask a server admin if they want to enable it with `{0}`'
-    errorOccurredWhileLoading: 'An error occurred while loading the {0}, please try again. If the problem continues, please report this to one of my developers on the [AvaIre support server](https://avairebot.com/support).'
+    errorOccurredWhileLoading: 'An error occurred while loading the {0}, please try again. If the problem continues, please report this to one of my developers on the [Xeus support server](https://discord.gg/SUPJEt3Ma9).'
 
 levelupMessages:
     - "GG :user, you just reached **Level :level**"
@@ -62,6 +62,74 @@ modlog-types:
         name: "Unmute"
         action: "Unmuted"
 
+on-watch-types:
+    onWatch:
+        name: "On Watch!"
+        action: "On Watch"
+    unOnWatch:
+        name: "Un watched"
+        action: "Unwatched"
+    tempOnWatch:
+        name: "Temp Watch"
+        action: "Temporary On Watch"
+
+
+onwatch:
+    WatchRoleCommand:
+        onCooldown: "You have recently use a command option that created and/or modified roles and channel permissions, you have to wait **:cooldown** before you can use this command again."
+        roleDoesntExists: "Invalid role given, the `{0}` role doesn't exists."
+        rolePositionedHigher: "The {0} role is positioned higher than any role I have, so I can't assign the role to anyone."
+        cantCreateRoleDueToPermissions: "I can't create the \"On Watch\" role because I don't have the \"Manage Roles\" permissions for the server."
+        noMuteRoleSet: "There are currently no \"On Watch\" role set for the server, you can set the role you wanna use as the mute role using `:command set <role>`, or you can make the bot create a new \"On Watch\" role using `:command create-role`."
+        usingRoleMessage: "The server is using the :role role for \"On Watch\"."
+        roleHasBeenRemoved: "The \"On Watch\" role has been removed, the \"On Watch\" feature is now disabled until another \"On Watch\" role is assigned."
+        roleHasBeenCreated: "The :role role has been successfully created, and all the channel permissions to prevent users with the role from talking in channels have automatically been setup for the channels I have access to."
+        nowUsingRole: "The :role role will now be used for \"On Watch\" users."
+        nowUsingExistingRole: "A role called `On Watch` already exists on the server, now using the :role role for \"On Watch\" cases, if you want the bot to setup all the channel override permissions to prevent users with the role from talking in the channels, you can use the\n`:command setup-permissions` command."
+    OnWatchCommand:
+        requiresModlogToBeSet: "This command requires a \"On Watch\" log channel to be set, a \"On Watch\" log channel can be set using the `{0}watchlog` command."
+        requireMuteRoleToBeSet: "No \"On Watch\" role have been setup for the server, you can setup a \"On Watch\" role using the `{0}watchrole` command."
+        higherOrSameRole: "You can't \"On Watch\" people with a higher, or the same role as yourself."
+        muteRoleIsPositionedHigher: "The {0} role used for \"On Watch\" cases are positioned higher in the role hierarchy than any roles I have, so I can't automatically assign the role to other users, please fix this or use another role for \"On Watch\" cases."
+        invalidUserMentioned: "Invalid user mentioned, you must mention a user on the server you want to \"On Watch\" to use this command."
+        invalidTimeGiven: "Invalid time given, the time must be at least one minute or more."
+        userHasBeenMuted: ":target has been set \"On Watch\" :time!"
+        time:
+            permanently: "permanently"
+            forFormat: "for {0}"
+    WatchlogCommand:
+        mustMentionTextChannel: "Invalid channel argument given, you must mention a valid text channel"
+        cantSendEmbedMessages: "I can't send embedded messages in the specified channel, please change my permission level for the {0} channel if you want to use it as a \"On Watch\" log channel."
+        enable: ":user **\"On Watch\"** is now enabled and set to the :on_watch channel."
+        enabled: ":user **\"On Watch\"** is currently enabled and set to the :on_watch channel."
+        disable: ":user **\"On Watch\"** is now disabled for the server."
+        disabled: ":user **\"On Watch\"** is currently disabled."
+
+    WatchlogHistoryCommand:
+        mustMentionUser: "You must mention a valid `user` that you want to display the \"On Watch\" history for."
+        noHistory: "No \"On Watch\" history was found for this user."
+        title: "{0}#{1} History ({2})"
+        entry: "**{1}** | **#{0}** | **Moderator:** {2}\n**Date:** {3}\n**Reason:** {4}"
+        noReasonGiven: "No reason was given."
+
+    WatchlogReasonCommand:
+        modlogNotEnabled: "No \"On Watch\" channel has been set, you must set a \"On Watch\" channel to use this command."
+        invalidCaseId: "Invalid case ID given, the ID must be greater than 0 and less than {0}"
+        couldntFindCaseWithId: "Couldn't find a \"On Watch\" case with an ID of {0} where you were the moderator, are you sure that you're the moderator for the given \"On Watch\" case?"
+        couldntFindModlogChannel: "Couldn't find the \"On Watch\" channel, was it removed?"
+        success: "The \"On Watch\" case with an ID of **:id** was successfully edited and the reason was set to `:reason`"
+        modlogCaseWasPardoned: "The \"On Watch\" case with an ID of `{0}` has been pardoned, you can't edit pardoned modlog cases."
+        failedToEdit: "Failed to edit \"On Watch\" message: {0}"
+        failedToFindMessage: "Couldn't find the message for the given \"On Watch\" case, was it deleted?"
+    UnWatchCommand:
+        requiresModlogToBeSet: "This command requires a \"On Watch\" channel to be set, a \"On Watch\" channel can be set using the `{0}watchlog` command."
+        requireMuteRoleToBeSet: "No mute role have been setup for the server, you can setup a mute role using the `{0}watchrole` command."
+        muteRoleIsPositionedHigher: "The {0} role used for mutes are positioned higher in the role hierarchy than any roles I have, so I can't automatically remove the role from other users, please fix this or use another role for \"On Watch\" cases."
+        invalidUserMentioned: "Invalid user mentioned, you must mention a user on the server you want to remove the \"On Watch\" from to use this command."
+        userDoesntHaveMuteRole: "{0} doesn't appear to have the mute role, they may already have been removed from the \"On Watch\" role!"
+        userHasBeenUnmuted: ":target has been removed from \"On Watch\"!"
+        userAutoUnmutedReason: "*Automatic removal of \"On Watch\" after the set time has elapsed*"
+
 administration:
     common:
         invalidRole: ":user Invalid role, I couldn't find any role called **:role**"
@@ -92,7 +160,7 @@ administration:
         invalidAmountGiven: "The `amount` property must be between 1 and {0} to add or take XP from a user."
         aboutToResetEverything: "You're about to reset the XP for everyone on the entire server. If you're sure you wanna continue, run the command to completely reset the servers XP.\n\n```:command server-reset :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
         aboutToSyncEverything: "You're about to sync the XP with the global leaderboard, this will effectively revert any custom XP changes made on the entire server. If you're sure you wanna continue, run the command to completely sync the servers XP.\n\n```:command server-sync :token```\nThis command will only work for 60 seconds, after that the token becomes invalid and the command has to be ran again to get a new token."
-        failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [AvaIre support server](https://avairebot.com/support)."
+        failedToSaveChanges: "Failed to save the changes to the database, please try again, if the error continues to happen, please contact support on the official [Xeus support server](https://discord.gg/SUPJEt3Ma9)."
         mustBeAnAdmin: "You must be a server admin to use this action."
         invalidSecurityToken: "Invalid security token given, please provide the correct security token to reset all the servers XP."
         warning: "Warning!"
@@ -161,6 +229,18 @@ administration:
             enabled: "Enabled"
             disabled: "Disabled"
 
+    ModifyLockChannelCommand:
+        invalidChannel: "Invalid channel given, the channel must be a valid text channel."
+        cantTalkInChannel: "I can't talk in the {0} channel"
+        noChannelsWithRewardsDisabled: "There are currently no channels with the level rewards disabled, you can add one by using the `{0} <channel>` command."
+        failedToUpdate: "Failed to save the changes to the database, please try again. If the issue persists, please contact one of my developers."
+        listChannels: "All the channels mentioned below currently have their lock-ability turned on, any channel not on this list is unaffected.\n\n:channels"
+        listChannelsTitle: "Channels with their lock-ability enabled({0})"
+        success: "The lock-ability for the :channel channel has been **:status**!"
+        status:
+            enabled: "Enabled"
+            disabled: "Disabled"
+
     GoodbyeCommand:
         note: "\nYou can customize the message by using `{0} [message]`"
         message: "The `Goodbye` module has been **:status** for the :channel channel."
@@ -199,7 +279,7 @@ administration:
     LanguageCommand:
         invalidLanguageCode: "Invalid language code given, `{0}` is not a valid language code, or it is not yet supported!"
         changed: "The server's language has been successfully been updated to use the :name language!"
-        note: "AvaIre supports several user-contributed languages that you can select with this command. Translations may not be 100% accurate or complete.\nTo select a language use `{0} <code>`"
+        note: "Xeus supports several user-contributed languages that you can select with this command. Translations may not be 100% accurate or complete.\nTo select a language use `{0} <code>`"
 
     LevelAlertsCommand:
         message: "`Level up alerts` have been `:status` for the server.:note"
@@ -352,6 +432,16 @@ administration:
             enabled: "Enabled"
             disabled: "Disabled"
 
+    ModifyRoleChannelLockCommand:
+        invalidRole: "Invalid role given, I found no role on the server called `{0}`"
+        noRolesWithRewardsDisabled: "There are currently no roles with the lock-ability enabled, you can add one by using the `{0} <role>` command."
+        listRoles: "All the roles mentioned below currently have their lock-ability turned off, any role not on this list is unaffected.\n\n:roles"
+        listRolesTitle: "Roles with their lock-ability enabled ({0})"
+        success: "The lock-ability for the :role role has been **:status**!"
+        status:
+            enabled: "Enabled"
+            disabled: "Disabled"
+
     SetRoleColorCommand:
         noRoleFound: "No role with the name \"{0}\" was found."
         invalidColor: "The color \"{0}\" is not recognized, use the following HEX format instead \"#XXXXXX\""
@@ -393,6 +483,24 @@ administration:
         userDoesntHaveMuteRole: "{0} doesn't appear to have the mute role, they may already have been unmuted!"
         userHasBeenUnmuted: ":target has been unmuted!"
         userAutoUnmutedReason: "*Automatic unmute after the set time has elapsed*"
+    UserAvatarCommand:
+        noUserFound: "I found no users with the name or ID of `{0}`"
+        title: "{0}#{1}'s Avatar"
+
+    UserIdCommand:
+        message: ':id: of the user **:target** is `:targetid`'
+
+    UserInfoCommand:
+        fields:
+          username: 'Username'
+          userId: 'User ID'
+          joinedServer: 'Joined Server'
+          joinedDiscord: 'Joined Discord'
+          roles: 'Roles ({0})'
+          servers: 'Servers'
+        inServers: '{0} the bot knows about'
+        noRoles: '*This user does not have any roles*'
+        timeFormat: 'EEE, dd MMM yyyy HH:mm'
 
     VoiceKickCommand:
         mustMentionUser: "You must mention the user that you want to kick."
@@ -412,7 +520,7 @@ administration:
         mustMentionUse: "You must mention a user that you want to warn."
         warnBots: "You can't warn bots!"
         failedToLogWarning: "Failed to log warning to the set modlog channel, does the modlog channel still exists, can I still send messages in the channel?"
-        message: ":target has been **warned** for \":reason\""
+        message: ":target has been **warned**!"
         failedToSendDM: "Failed to DM the user with the warning, they most likely have their private settings set to disable all DMs from this server."
 
     WelcomeCommand:
@@ -541,7 +649,6 @@ interaction:
     CuddleCommand: '**{0}** cuddles **{1}**'
     DivorceCommand: '**{0}** divorces **{1}**'
     EatCommand: '**{0}** eats some food with **{1}**'
-    HandHoldCommand: '**{0}** holds hands with **{1}**'
     HelloCommand: '**{0}** says hello to **{1}**'
     HighFiveCommand: '**{0}** high fives **{1}**'
     HugCommand: '**{0}** hugs **{1}**'
@@ -560,6 +667,20 @@ interaction:
     SlapCommand: '**{0}** slaps **{1}**'
     TickleCommand: '**{0}** tickles **{1}**'
     TriggeredCommand: '**{0}** is triggered by **{1}**'
+    UwUCommand: '**{0}** UwUs at **{1}**'
+    GiggleCommand: '**{0}** giggles at **{1}**'
+    StareCommand: '**{0}** stares at **{1}**'
+    CongratsCommand: '**{1}** is being congratulated by **{0}** for becoming an SD!'
+
+system:
+    RoleSettingsCommand:
+        invalidRole: "Invalid role given, I found no role on the server called `{0}`"
+        listRoles: "All the roles mentioned below currently have their been setup, any role not on this list is unaffected.\n:roles"
+        listRolesTitle: "Roles that are used: ({0})"
+        success: "The :rank status for the :role role has been **:status**!"
+        status:
+            enabled: "Enabled"
+            disabled: "Disabled"
 
 music:
     internal:
@@ -838,7 +959,7 @@ utility:
 
     InviteCommand:
         message: 'You can invite me to your server by [clicking here](:oauth) or using the link below:\n\n:oauth\n\n:note'
-        note: 'If you would like try out newly developed features before everyone else, you could also try the *__Cutting Edge__* bot which gets new features added almost daily, you can invite that bot by [clicking here](:edgeInvite) or using the link below:\n\n:edgeInvite'
+        note: '\n :)'
 
     IPInfoCommand:
         hostname: 'Hostname'
@@ -869,7 +990,7 @@ utility:
             other: 'slow af. :dizzy_face:'
 
     RankBackgroundCommand:
-        canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/avaire)**,\nyou'll get **1 point** each time you vote for the bot."
+        canBeUnlocked: "Rank backgrounds can be unlocked using **[Vote Points](https://discordbots.org/bot/Xeus)**,\nyou'll get **1 point** each time you vote for the bot."
         listTitle: "Rank Backgrounds ({0})"
         youHaveVotePoints: "You have {0} vote points."
         exampleTitle: "{0} Example"
@@ -926,8 +1047,8 @@ utility:
         totalShards: 'Total Shards'
 
     SourceCommand:
-        noArgs: 'AvaIre source code:'
-        command: 'AvaIre source code for the **:command** command:'
+        noArgs: 'Xeus source code:'
+        command: 'Xeus source code for the **:command** command:'
         invalidCommand: 'Invalid command given, here is the full source code instead.'
         externalCommand: "The command is registered via an external plugin, the author of the plugin hasn't made the source of the command public, or they forgot to add a link to it, here is the full source code for the bot instead."
 
@@ -963,30 +1084,11 @@ utility:
         dateFormat: 'EEEEEEEE, dd MMM yyyy'
         timeFormat: 'HH:mm:ss z'
 
-    UserAvatarCommand:
-        noUserFound: "I found no users with the name or ID of `{0}`"
-        title: "{0}#{1}'s Avatar"
-
-    UserIdCommand:
-        message: ':id: of the user **:target** is `:targetid`'
-
-    UserInfoCommand:
-        fields:
-            username: 'Username'
-            userId: 'User ID'
-            joinedServer: 'Joined Server'
-            joinedDiscord: 'Joined Discord'
-            roles: 'Roles ({0})'
-            servers: 'Servers'
-        inServers: '{0} the bot knows about'
-        noRoles: '*This user does not have any roles*'
-        timeFormat: 'EEE, dd MMM yyyy HH:mm'
-
     VersionCommand:
         current: 'I am currently `:difference` :type versions behind!'
-        getLatest: 'You can get the latest version of me on github at [avaire/avaire](https://github.com/avaire/avaire)'
-        usingLatest: "You're using the latest version of AvaIre!"
-        latestVersion: 'The latest version of AvaIre is v{0}'
+        getLatest: 'You can get the latest version of me on github at [Xeus/Xeus](https://gitlab.com/pinewood-builders/discord/xeus)'
+        usingLatest: "You're using the latest version of Xeus!"
+        latestVersion: 'The latest version of Xeus is v{0}'
         latestChanges: 'Latest changes:'
         versions:
             majorName: 'Major'
@@ -1004,3 +1106,8 @@ utility:
             temperature: "Temperature"
             windDirection: "Wind Direction"
             windSpeed: "Wind Speed"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

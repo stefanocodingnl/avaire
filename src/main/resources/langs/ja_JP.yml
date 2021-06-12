@@ -10,7 +10,7 @@ errors:
   cantMentionEveryone: "全員宛にメンションする権限がありません。"
   cantMentionUsersOrRoles: "You don't have permission to use this command for mentioning users or roles"
   requireLevelFeatureToBeEnabled: 'このコマンドを実行するには、サーバーで「レベルとエクスペリエンス」機能を有効にする必要があります。サーバー管理者に `{0}` で有効にするかどうかを尋ねることができます。'
-  errorOccurredWhileLoading: '{0} の読み込み中にエラーが発生しました。もう一度お試しください。 問題が解決しない場合は、[AvaIreサポートサーバー (英語)](https://avairebot.com/support)の開発者に報告してください。'
+  errorOccurredWhileLoading: '{0} の読み込み中にエラーが発生しました。もう一度お試しください。 問題が解決しない場合は、[Xeusサポートサーバー (英語)](https://discord.gg/SUPJEt3Ma9)の開発者に報告してください。'
 levelupMessages:
   - "GG :userさん、 あなたは **レベル :level** になりました！"
   - "Eyy :userさん、 レベルアップしました！ あなたは現在 **レベル :level** です。"
@@ -82,7 +82,7 @@ administration:
     invalidAmountGiven: "ユーザーからXPを追加または取得するには、 `amount`プロパティが1から{0}の間でなければなりません。"
     aboutToResetEverything: "サーバー全体の全員のXPをリセットしようとしています。 続行する場合は、以下のコマンドを実行してサーバーXPを完全にリセットしてください。\n\n```:command server-reset :token```\nこのコマンドは、トークンの取得後 **60秒間** しか機能しません。 新しいトークンを取得するには、コマンドが無効になった後、コマンドを再度実行する必要があります。"
     aboutToSyncEverything: "XPをグローバルリーダーボードと同期しようとしています。これにより、サーバー全体で行われたカスタムXPの変更が事実上元に戻ります。 続行する場合は、以下のコマンドを実行してサーバーXPを完全に同期してください。\n\n```:command server-sync :token``` \nこのコマンドは、トークンの取得後 **60秒間** しか機能しません。 新しいトークンを取得するには、コマンドが無効になった後、コマンドを再度実行する必要があります。"
-    failedToSaveChanges: "データベースへの変更を保存できませんでした。もう一度お試しください。エラーが引き続き発生する場合は、公式の [AvaIreサポートサーバー (英語)](https://avairebot.com/support)のサポートにお問い合わせください。"
+    failedToSaveChanges: "データベースへの変更を保存できませんでした。もう一度お試しください。エラーが引き続き発生する場合は、公式の [Xeusサポートサーバー (英語)](https://discord.gg/SUPJEt3Ma9)のサポートにお問い合わせください。"
     mustBeAnAdmin: "このアクションをするには、サーバー管理者の権限を持っている必要があります。"
     invalidSecurityToken: "無効なセキュリティトークンが指定されました。すべてのサーバーXPをリセットするための正しいセキュリティトークンを指定してください。"
     warning: "Warning!"
@@ -176,7 +176,7 @@ administration:
   LanguageCommand:
     invalidLanguageCode: "指定された言語コードが無効です。`{0}` は有効な言語コードではないか、まだサポートされていません！"
     changed: "サーバーの言語は、:name を使用するように正常に更新されました！"
-    note: "AvaIreは、このコマンドで選択できるユーザー提供の言語をいくつかサポートしています。 翻訳は100％正確または完全ではない場合があります。\n言語を選択するには `{0} <code>` を使用してください。"
+    note: "Xeusは、このコマンドで選択できるユーザー提供の言語をいくつかサポートしています。 翻訳は100％正確または完全ではない場合があります。\n言語を選択するには `{0} <code>` を使用してください。"
   LevelAlertsCommand:
     message: "`レベルアップアラート` はサーバーで `:status` になっています。:note"
     note: "\n全てのレベルアップメッセージは <#{0}> チャンネルに送信されます。"
@@ -764,7 +764,7 @@ utility:
       10000: 'これはもう意味がないですね。 :thinking: #BlameAlexis'
       other: 'めっちゃ遅い！ :dizzy_face:'
   RankBackgroundCommand:
-    canBeUnlocked: "ランクの背景は **[投票ポイント](https://discordbots.org/bot/avaire)** を使用してアンロックできます。\nボットに投票するたびに **1ポイント** を獲得できます。"
+    canBeUnlocked: "ランクの背景は **[投票ポイント](https://discordbots.org/bot/Xeus)** を使用してアンロックできます。\nボットに投票するたびに **1ポイント** を獲得できます。"
     listTitle: "ランク背景 ({0})"
     youHaveVotePoints: "あなたは {0} 投票ポイントを所持しています。"
     exampleTitle: "例 {0}"
@@ -815,8 +815,8 @@ utility:
     allShards: 'すべてのシャード'
     totalShards: '合計シャード'
   SourceCommand:
-    noArgs: 'AvaIreソースコード:'
-    command: 'AvaIre ソースコードのコマンドは **:command** コマンドです:'
+    noArgs: 'Xeusソースコード:'
+    command: 'Xeus ソースコードのコマンドは **:command** コマンドです:'
     invalidCommand: '指定されたコマンドは無効です。代わりに完全なソースコードを表示します。'
     externalCommand: "コマンドが外部プラグインを介して登録されている、プラグインの作成者がコマンドのソースを公開していない、またはリンクを追加するのを忘れているため、代わりにボットの完全なソースコードを表示します。"
   StatsCommand:
@@ -866,9 +866,9 @@ utility:
     timeFormat: 'yyyy MMM dd EEE HH:mm'
   VersionCommand:
     current: '現在 `:difference` :type バージョン以下です！'
-    getLatest: '[avaire/avaire](https://github.com/avaire/avaire) のgithubでボットの最新バージョンを入手できます。'
-    usingLatest: "AvaIreの最新バージョンを使用しています！"
-    latestVersion: 'AvaIreの最新バージョンは v{0} です'
+    getLatest: '[Xeus/Xeus](https://github.com/Xeus/Xeus) のgithubでボットの最新バージョンを入手できます。'
+    usingLatest: "Xeusの最新バージョンを使用しています！"
+    latestVersion: 'Xeusの最新バージョンは v{0} です'
     latestChanges: '最新の変更:'
     versions:
       majorName: 'メジャー'
@@ -885,3 +885,8 @@ utility:
       temperature: "温度"
       windDirection: "風向き"
       windSpeed: "風速"
+economy:
+  BaltopCommand:
+    title: "Balance leaderboard for guild {0}"
+    yourRank: "Your rank"
+    line: '`:num` **:username** **:balance**.'

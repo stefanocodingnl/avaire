@@ -22,7 +22,9 @@
 package com.avairebot.handlers.adapter;
 
 import com.avairebot.AvaIre;
+import com.avairebot.Constants;
 import com.avairebot.contracts.handlers.EventAdapter;
+import com.avairebot.database.collection.Collection;
 import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.transformers.ChannelTransformer;
 import com.avairebot.database.transformers.GuildTransformer;
@@ -30,15 +32,16 @@ import com.avairebot.factories.MessageFactory;
 import com.avairebot.permissions.Permissions;
 import com.avairebot.utilities.StringReplacementUtil;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.sql.SQLException;
 
 public class MemberEventAdapter extends EventAdapter {
 
@@ -95,6 +98,10 @@ public class MemberEventAdapter extends EventAdapter {
             }
         }
 
+        if (event.getUser().isBot()) {
+            return;
+        }
+
         // Re-mutes the user if a valid mute role have been setup for the guild
         // and the user is still registered as muted for the server.
         if (transformer.getMuteRole() != null) {
@@ -106,8 +113,15 @@ public class MemberEventAdapter extends EventAdapter {
             }
         }
 
-        if (event.getUser().isBot()) {
-            return;
+        // Re-WATCHES the user if a valid WATCH role have been setup for the guild
+        // and the user is still registered as WATCHED for the server.
+        if (transformer.getOnWatchRole() != null) {
+            Role watch = event.getGuild().getRoleById(transformer.getOnWatchRole());
+            if (canGiveRole(event, watch) && avaire.getOnWatchManger().isOnWatchd(event.getGuild().getIdLong(), event.getUser().getIdLong())) {
+                event.getGuild().addRoleToMember(
+                    event.getMember(), watch
+                ).queue();
+            }
         }
 
         if (transformer.getAutorole() != null) {
@@ -118,6 +132,25 @@ public class MemberEventAdapter extends EventAdapter {
                 ).queue();
             }
         }
+
+        try {
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ROLE_PERSISTENCE_TABLE_NAME)
+                .where("guild_id", event.getGuild().getId()).andWhere("user_id", event.getMember().getIdLong()).get();
+            if (c.size() > 0) {
+                c.forEach(p -> {
+                    Role r = event.getGuild().getRoleById(p.getLong("role_id"));
+                    Member m = event.getMember();
+
+                    if (r != null) {
+                        event.getGuild().addRoleToMember(m, r).queue();
+                    }
+                });
+            }
+        } catch (SQLException throwables) {
+            return;
+        }
+
+
     }
 
     public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
