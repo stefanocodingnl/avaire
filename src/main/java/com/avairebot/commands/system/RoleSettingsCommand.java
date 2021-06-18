@@ -314,7 +314,7 @@ public class RoleSettingsCommand extends SystemCommand {
                 }
             }
         } else {
-            sb.append("\n\n**Moderator roles**:\n" + "" + "No roles have been found!");
+            sb.append("\n\n**Group Shout roles**:\n" + "" + "No roles have been found!");
         }
     }
 
