@@ -143,7 +143,7 @@ public class GlobalBanCommand extends Command {
             }
         }
 
-        int time = soft.getValue() ? 0 : 7;
+        int time = !soft.getValue() ? 0 : 7;
         String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
         boolean pbacBan = false;
         if (reason.endsWith("--pbac-ban")) {

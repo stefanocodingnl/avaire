@@ -11,13 +11,13 @@ import net.dv8tion.jda.api.entities.Message;
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
-public class IsModOrHigherMiddleware extends Middleware {
+public class IsGroupShoutOrHigherMiddleware extends Middleware {
 
-    public IsModOrHigherMiddleware(AvaIre avaire) {
+    public IsGroupShoutOrHigherMiddleware(AvaIre avaire) {
         super(avaire);
     }
 
-    String rankName = CheckPermissionUtil.GuildPermissionCheckType.MOD.getRankName();
+    String rankName = CheckPermissionUtil.GuildPermissionCheckType.GROUP_SHOUT.getRankName();
 
     @Override
     public String buildHelpDescription(@Nonnull CommandMessage context, @Nonnull String[] arguments) {
@@ -35,22 +35,22 @@ public class IsModOrHigherMiddleware extends Middleware {
         }
 
         int permissionLevel = CheckPermissionUtil.getPermissionLevel(stack.getDatabaseEventHolder().getGuild(), message.getGuild(), message.getMember()).getLevel();
-        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
+        if (permissionLevel >= CheckPermissionUtil.GuildPermissionCheckType.GROUP_SHOUT.getLevel()) {
             return stack.next();
         }
 
         if (args.length == 0) {
-            return sendMustBeModOrHigherMessage(message);
+            return sendMustBeGroupShoutOrHigherMessage(message);
         }
 
         if (!avaire.getBotAdmins().getUserById(message.getAuthor().getIdLong()).isAdmin()) {
-            return sendMustBeModOrHigherMessage(message);
+            return sendMustBeGroupShoutOrHigherMessage(message);
         }
 
         return stack.next();
     }
 
-    private boolean sendMustBeModOrHigherMessage(@Nonnull Message message) {
+    private boolean sendMustBeGroupShoutOrHigherMessage(@Nonnull Message message) {
         return runMessageCheck(message, () -> {
             MessageFactory.makeError(message, "<a:alerta:729735220319748117> This command is only allowed to be executed by a ``"+rankName+"`` or higher!")
                 .queue(newMessage -> newMessage.delete().queueAfter(45, TimeUnit.SECONDS), RestActionUtil.ignore);

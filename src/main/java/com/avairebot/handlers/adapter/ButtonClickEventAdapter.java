@@ -111,9 +111,8 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                     .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
                                                     .send((Consumer<Response>) response -> {
                                                         List<LinkedTreeMap<String, Double>> service = (List<LinkedTreeMap<String, Double>>) response.toService(List.class);
-                                                        for (LinkedTreeMap<String, Double> list : service) {
                                                             Long userId = reportedRobloxId;
-                                                            Long points = list.size() != 0 ? list.get("Points").longValue() : 0L;
+                                                            Long points = service.size() != 0 ? service.get(0).get("Points").longValue() : 0L;
 
                                                             tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
                                                                 if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0)))
@@ -172,7 +171,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                                 });
                                                             });
 
-                                                        }
+
                                                     });
                                             } else {
                                                 tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
