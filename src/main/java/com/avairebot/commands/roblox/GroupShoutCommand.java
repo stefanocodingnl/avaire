@@ -66,7 +66,8 @@ public class GroupShoutCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "throttle:user,1,10"
+            "throttle:user,1,10",
+            "isGroupShoutOrHigher"
         );
     }
 

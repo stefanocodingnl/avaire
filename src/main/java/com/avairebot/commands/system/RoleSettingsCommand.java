@@ -208,10 +208,12 @@ public class RoleSettingsCommand extends SystemCommand {
                 case "admin":
                 case "manager":
                 case "no-links":
+                case "group-shout":
                     if (args.length > 2) {
                         return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[2]));
                     }
                     return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[1]));
+
                 default:
                     context.makeError("Invalid role given to manage.").queue();
                     return false;
@@ -302,6 +304,20 @@ public class RoleSettingsCommand extends SystemCommand {
         }
     }
 
+    private void runGroupShoutRolesCheck(CommandMessage context, boolean b, StringBuilder sb, Set <Long> groupShouts) {
+        if (b) {
+            sb.append("\n\n**Group Shout roles**:");
+            for (Long s : groupShouts) {
+                Role r = context.getGuild().getRoleById(s);
+                if (r != null) {
+                    sb.append("\n - ").append(r.getAsMention());
+                }
+            }
+        } else {
+            sb.append("\n\n**Moderator roles**:\n" + "" + "No roles have been found!");
+        }
+    }
+
     private void runManagerRolesCheck(CommandMessage context, boolean b, StringBuilder sb, Set <Long> managers) {
         if (b) {
             sb.append("\n\n**Manager roles**:");
@@ -353,7 +369,8 @@ public class RoleSettingsCommand extends SystemCommand {
         Set <Long> mod = transformer.getModeratorRoles();
         Set <Long> manager = transformer.getManagerRoles();
         Set <Long> admins = transformer.getAdministratorRoles();
-        Set <Long> nolinks = transformer.getNoLinksRoles();
+        Set <Long> noLinks = transformer.getNoLinksRoles();
+        Set <Long> groupShouts = transformer.getGroupShoutRoles();
         int groupId = transformer.getRobloxGroupId();
         String mainRoleId = transformer.getMainDiscordRole();
 
@@ -361,7 +378,8 @@ public class RoleSettingsCommand extends SystemCommand {
         runAdminRolesCheck(context, admins.size() > 0, sb, admins);
         runManagerRolesCheck(context, manager.size() > 0, sb, manager);
         runModRolesCheck(context, mod.size() > 0, sb, mod);
-        runNoLinksRolesCheck(context, nolinks.size() > 0, sb, nolinks);
+        runNoLinksRolesCheck(context, noLinks.size() > 0, sb, noLinks);
+        runGroupShoutRolesCheck(context, groupShouts.size() > 0, sb, groupShouts);
         runRobloxGroupIdCheck(context, sb, groupId);
         runMainRoleIdCheck(context, sb, mainRoleId);
 
@@ -410,6 +428,9 @@ public class RoleSettingsCommand extends SystemCommand {
                 if (rank.equals("no-links")) {
                     guildTransformer.getNoLinksRoles().remove(role.getIdLong());
                 }
+                if (rank.equals("group-shout")) {
+                    guildTransformer.getNoLinksRoles().remove(role.getIdLong());
+                }
                 break;
 
             case TRUE:
@@ -423,6 +444,9 @@ public class RoleSettingsCommand extends SystemCommand {
                     guildTransformer.getModeratorRoles().add(role.getIdLong());
                 }
                 if (rank.equals("no-links")) {
+                    guildTransformer.getNoLinksRoles().add(role.getIdLong());
+                }
+                if (rank.equals("group-shout")) {
                     guildTransformer.getNoLinksRoles().add(role.getIdLong());
                 }
 
@@ -462,12 +486,21 @@ public class RoleSettingsCommand extends SystemCommand {
                     }
                     break;
                 }
+                if (rank.equals("group-shout")) {
+                    if (guildTransformer.getNoLinksRoles().contains(role.getIdLong())) {
+                        guildTransformer.getNoLinksRoles().remove(role.getIdLong());
+                    } else {
+                        guildTransformer.getNoLinksRoles().add(role.getIdLong());
+                    }
+                    break;
+                }
         }
 
         boolean isEnabled = guildTransformer.getModeratorRoles().contains(role.getIdLong()) ||
             guildTransformer.getAdministratorRoles().contains(role.getIdLong()) ||
             guildTransformer.getManagerRoles().contains(role.getIdLong()) ||
-            guildTransformer.getNoLinksRoles().contains(role.getIdLong());
+            guildTransformer.getNoLinksRoles().contains(role.getIdLong()) ||
+            guildTransformer.getGroupShoutRoles().contains(role.getIdLong());
 
         try {
             if (rank.equals("admin")) {
@@ -498,6 +531,15 @@ public class RoleSettingsCommand extends SystemCommand {
                     });
             }
             if (rank.equals("no-links")) {
+                avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
+                    .where("id", context.getGuild().getId())
+                    .update(statement -> {
+                        statement.set("no_links_roles", AvaIre.gson.toJson(
+                            guildTransformer.getNoLinksRoles()
+                        ), true);
+                    });
+            }
+            if (rank.equals("group-shout")) {
                 avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
                     .where("id", context.getGuild().getId())
                     .update(statement -> {

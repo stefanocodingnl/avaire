@@ -382,7 +382,7 @@ public class ReportUserCommand extends Command {
                     removeAllUserMessages(messagesToRemove);
                 } else if (send.getButton().getEmoji().getName().equalsIgnoreCase("✅")) {
                     message.editMessage("Report has been \"sent\".").queue();
-                    sendReport(context, message, groupInfo, dataRow, username, evidence, description, explainedEvidence, send);
+                    sendReport(context, message, groupInfo, dataRow, username, description, evidence, explainedEvidence, send);
                     removeAllUserMessages(messagesToRemove);
                 } else {
                     message.editMessage("Invalid emoji given, report deleted!").setActionRows(Collections.emptyList()).queue();

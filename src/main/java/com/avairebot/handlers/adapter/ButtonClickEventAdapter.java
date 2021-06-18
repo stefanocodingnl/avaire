@@ -112,64 +112,66 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                     .send((Consumer<Response>) response -> {
                                                         List<LinkedTreeMap<String, Double>> service = (List<LinkedTreeMap<String, Double>>) response.toService(List.class);
                                                         for (LinkedTreeMap<String, Double> list : service) {
-                                                            Long userId = list.get("UserId").longValue();
-                                                            Long points = list.get("Points").longValue();
+                                                            Long userId = reportedRobloxId;
+                                                            Long points = list.size() != 0 ? list.get("Points").longValue() : 0L;
 
-                                                            if (userId.equals(reportedRobloxId)) {
-                                                                tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
-                                                                    if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0)))
-                                                                        return;
+                                                            tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
+                                                                if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0)))
+                                                                    return;
 
-                                                                    e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200),
-                                                                        "You've chosen to approve this report, may I know the amount of points I have to remove? (This user currently has ``:points`` points)")
-                                                                        .set("points", points).buildEmbed()).queue(z -> {
-                                                                        avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class,
-                                                                            p -> p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel()) && NumberUtil.isNumeric(p.getMessage().getContentStripped()), run -> {
-                                                                                v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
-                                                                                    .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
-                                                                                    .setDescription(
-                                                                                        "**Violator**: " + username + "\n" +
-                                                                                            (rank != null ? "**Rank**: ``:rRank``\n" : "") +
-                                                                                            "**Information**: \n" + description + "\n\n" +
-                                                                                            "**Evidence**: \n" + evidence + "\n\n" +
-                                                                                            (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
-                                                                                            "**Punishment**: \n``" + run.getMessage().getContentRaw() + "`` points pending removal.")
-                                                                                    .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
-                                                                                    .setTimestamp(Instant.now()).set("rRank", rank)
-                                                                                    .buildEmbed()).setActionRows(Collections.emptyList())
-                                                                                    .queue();
-                                                                                try {
-                                                                                    qb.useAsync(true).update(statement -> {
-                                                                                        statement.set("report_punishment", run.getMessage().getContentRaw(), true);
-                                                                                    });
-                                                                                } catch (SQLException throwables) {
-                                                                                    e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
+                                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200),
+                                                                    "You've chosen to approve this report, may I know the amount of points I have to remove? (This user currently has ``:points`` points)")
+                                                                    .requestedBy(e.getMember()).set("points", points).buildEmbed()).queue(z -> {
+                                                                    avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class,
+                                                                        p -> p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel()) && NumberUtil.isNumeric(p.getMessage().getContentStripped()), run -> {
+                                                                            v.editMessage(MessageFactory.makeEmbeddedMessage(tc, new Color(0, 255, 0))
+                                                                                .setAuthor("Report created for: " + username, null, getImageByName(tc.getGuild(), username))
+                                                                                .setDescription(
+                                                                                    "**Violator**: " + username + "\n" +
+                                                                                        (rank != null ? "**Rank**: ``:rRank``\n" : "") +
+                                                                                        "**Information**: \n" + description + "\n\n" +
+                                                                                        "**Evidence**: \n" + evidence + "\n\n" +
+                                                                                        (warningEvidence != null ? "**Evidence of warning**:\n" + warningEvidence + "\n\n" : "") +
+                                                                                        "**Punishment**: \n``" + run.getMessage().getContentRaw() + "`` points pending removal.")
+                                                                                .requestedBy(memberAsReporter != null ? memberAsReporter : e.getMember().getUser())
+                                                                                .setTimestamp(Instant.now()).set("rRank", rank)
+                                                                                .buildEmbed()).setActionRows(Collections.emptyList())
+                                                                                .queue();
+                                                                            try {
+                                                                                qb.useAsync(true).update(statement -> {
+                                                                                    statement.set("report_punishment", run.getMessage().getContentRaw(), true);
+                                                                                });
+                                                                            } catch (SQLException throwables) {
+                                                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0))
+                                                                                    .requestedBy(e.getMember())
+                                                                                    .setDescription("Something went wrong in the database, please contact the developer.")
+                                                                                    .setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
                                                                                         n.delete().queueAfter(30, TimeUnit.SECONDS);
-                                                                                    });
-                                                                                }
-                                                                                z.delete().queue();
-                                                                                v.clearReactions().queue();
-                                                                                run.getMessage().delete().queue();
+                                                                                });
+                                                                            }
+                                                                            z.delete().queue();
+                                                                            v.clearReactions().queue();
+                                                                            run.getMessage().delete().queue();
 
-                                                                                Request.Builder request = new Request.Builder()
-                                                                                    .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-                                                                                    .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
-                                                                                    .url("https://www.pb-kronos.dev/api/v2/smartlog/pbst/single")
-                                                                                    .post(RequestBody.create(json, buildPayload(username, userId, -Long.parseLong(run.getMessage().getContentRaw()))));
+                                                                            Request.Builder request = new Request.Builder()
+                                                                                .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                                                                                .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
+                                                                                .url("https://www.pb-kronos.dev/api/v2/smartlog/pbst/single")
+                                                                                .post(RequestBody.create(json, buildPayload(username, userId, -Long.parseLong(run.getMessage().getContentRaw()))));
 
-                                                                                try (okhttp3.Response exportResponse = client.newCall(request.build()).execute()) {
-                                                                                    e.getChannel().sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel())
-                                                                                        .setDescription("Sent point export to the database, please use ``;smartlogs`` in a bot commands channel to update the smartlog that was just sent to Kronos. Debugging info: \n```json\n" +
-                                                                                            ":info```").set("info", exportResponse.body() != null ? exportResponse.body().string() : "Empty Body").setFooter("This message self-destructs after 25 seconds").buildEmbed()).queue(b -> {
-                                                                                        b.delete().queueAfter(25, TimeUnit.SECONDS);
-                                                                                    });
-                                                                                } catch (IOException error) {
-                                                                                    AvaIre.getLogger().error("Failed sending sync with beacon request: " + error.getMessage());
-                                                                                }
-                                                                            });
-                                                                    });
+                                                                            try (okhttp3.Response exportResponse = client.newCall(request.build()).execute()) {
+                                                                                e.getChannel().sendMessage(MessageFactory.makeEmbeddedMessage(e.getChannel())
+                                                                                    .requestedBy(e.getMember()).setDescription("Sent point export to the database, please use ``;smartlogs`` in a bot commands channel to update the smartlog that was just sent to Kronos. Debugging info: \n```json\n" +
+                                                                                        ":info```").set("info", exportResponse.body() != null ? exportResponse.body().string() : "Empty Body").setFooter("This message self-destructs after 25 seconds").buildEmbed()).queue(b -> {
+                                                                                    b.delete().queueAfter(25, TimeUnit.SECONDS);
+                                                                                });
+                                                                            } catch (IOException error) {
+                                                                                AvaIre.getLogger().error("Failed sending sync with beacon request: " + error.getMessage());
+                                                                            }
+                                                                        });
                                                                 });
-                                                            }
+                                                            });
+
                                                         }
                                                     });
                                             } else {
@@ -177,7 +179,10 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                     if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0)))
                                                         return;
 
-                                                    e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to approve a report, may I know the punishment you're giving to the user?").buildEmbed()).queue(z -> {
+                                                    e.getChannel().sendMessage(e.getMember().getAsMention()).embed(
+                                                        MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200),
+                                                            "You've chosen to approve a report, may I know the punishment you're giving to the user?")
+                                                        .requestedBy(e.getMember()).buildEmbed()).queue(z -> {
                                                         avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
                                                             return p.getMember() != null && p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
                                                         }, run -> {
@@ -199,7 +204,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                                     statement.set("report_punishment", run.getMessage().getContentRaw(), true);
                                                                 });
                                                             } catch (SQLException throwables) {
-                                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
+                                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 0, 0)).requestedBy(e.getMember()).setDescription("Something went wrong in the database, please contact the developer.").setFooter("This message will self-destruct in 30s").buildEmbed()).queue(n -> {
                                                                     n.delete().queueAfter(30, TimeUnit.SECONDS);
                                                                 });
                                                             }
@@ -219,9 +224,10 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                             CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
 
                                             tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
-                                                if (v.getEmbeds().get(0).getColor().equals(new Color(255, 0, 0))) return;
+                                                if (v.getEmbeds().get(0).getColor().equals(new Color(255, 0, 0)))
+                                                    return;
 
-                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to reject a report, may I know the reason you're giving for this?").buildEmbed()).queue(z -> {
+                                                e.getChannel().sendMessage(e.getMember().getAsMention()).embed(MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(100, 200, 200), "You've chosen to reject a report, may I know the reason you're giving for this?").requestedBy(e.getMember()).buildEmbed()).queue(z -> {
                                                     avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, p -> {
                                                         return p.getMember().equals(e.getMember()) && e.getChannel().equals(p.getChannel());
                                                     }, run -> {
@@ -285,6 +291,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
             }
         });
     }
+
     public void onPatrolRemittanceButtonClickEvent(ButtonClickEvent e) {
         loadDatabasePropertiesIntoMemory(e).thenAccept(databaseEventHolder -> {
             if (databaseEventHolder.getGuild().getPatrolRemittanceChannel() != null) {
@@ -295,21 +302,21 @@ public class ButtonClickEventAdapter extends EventAdapter {
                     int permissionLevel = CheckPermissionUtil.getPermissionLevel(databaseEventHolder.getGuild(), e.getGuild(), e.getMember()).getLevel();
                     if (e.getChannel().equals(tc)) {
 
-                            QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.REMITTANCE_DATABASE_TABLE_NAME)
-                                .where("pb_server_id", e.getGuild().getId()).andWhere("request_message_id", e.getMessageId());
-                            try {
-                                DataRow c = qb.get().get(0);
-                                if (qb.get().size() < 1) {
-                                    return;
-                                }
+                        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.REMITTANCE_DATABASE_TABLE_NAME)
+                            .where("pb_server_id", e.getGuild().getId()).andWhere("request_message_id", e.getMessageId());
+                        try {
+                            DataRow c = qb.get().get(0);
+                            if (qb.get().size() < 1) {
+                                return;
+                            }
 
-                                String username = c.getString("requester_discord_name");
-                                String evidence = c.getString("requester_evidence");
-                                long requester = c.getLong("requester_discord_id");
-                                String rank = c.getString("requester_roblox_rank");
-                                User memberAsReporter = avaire.getShardManager().getUserById(requester);
+                            String username = c.getString("requester_discord_name");
+                            String evidence = c.getString("requester_evidence");
+                            long requester = c.getLong("requester_discord_id");
+                            String rank = c.getString("requester_roblox_rank");
+                            User memberAsReporter = avaire.getShardManager().getUserById(requester);
 
-                                e.deferEdit().queue(deferEdit -> {
+                            e.deferEdit().queue(deferEdit -> {
                                 switch (e.getButton().getEmoji().getName()) {
                                     case "✅":
                                         if (permissionLevel >=
@@ -467,10 +474,11 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                         } else {
                                             deferEdit.setEphemeral(true).sendMessage("Sorry, but you do not have the required permissions to remove this remittance.").queue();
                                         }
-                                }});
-                            } catch (SQLException throwables) {
-                                throwables.printStackTrace();
-                            }
+                                }
+                            });
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
 
 
                     }
@@ -671,9 +679,10 @@ public class ButtonClickEventAdapter extends EventAdapter {
 
                                     } //👑
 
-                            } catch (SQLException throwables) {
-                                throwables.printStackTrace();
-                            }});
+                                } catch (SQLException throwables) {
+                                    throwables.printStackTrace();
+                                }
+                            });
                         });
                     }
                 } catch (SQLException throwables) {

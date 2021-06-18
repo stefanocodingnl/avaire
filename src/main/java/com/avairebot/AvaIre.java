@@ -254,6 +254,7 @@ public class AvaIre {
         MiddlewareHandler.register("isAdminOrHigher", new IsAdminOrHigherMiddleware(this));
         MiddlewareHandler.register("isManagerOrHigher", new IsManagerOrHigherMiddleware(this));
         MiddlewareHandler.register("isModOrHigher", new IsModOrHigherMiddleware(this));
+        MiddlewareHandler.register("isGroupShoutOrHigher", new IsGroupShoutOrHigherMiddleware(this));
 
         String defaultPrefix = getConfig().getString("default-prefix", DiscordConstants.DEFAULT_COMMAND_PREFIX);
         if (getConfig().getString("system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX).equals(defaultPrefix)) {
@@ -275,6 +276,7 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Pinewood", defaultPrefix);
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
         CategoryHandler.addCategory(this, "Reports", defaultPrefix);
+        CategoryHandler.addCategory(this, "Roblox", defaultPrefix);
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));

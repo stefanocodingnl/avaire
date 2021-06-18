@@ -64,7 +64,7 @@ public class GuildTransformer extends Transformer {
     private final Set <Long> managerRoles = new HashSet <>();
     private final Set <Long> administratorRoles = new HashSet <>();
     private final Set <Long> noLinksRoles = new HashSet <>();
-
+    private final Set <Long> groupShoutRoles = new HashSet<>();
 
     private final GuildTypeTransformer guildType;
     private boolean partner;
@@ -96,14 +96,17 @@ public class GuildTransformer extends Transformer {
     private String filterLog = null;
     private String memberToYoungChannelId = null;
     private String pinewoodEventRequestsChannelId = null;
+
     private String suggestionChannel = null;
     private String suggestionCommunityChannel = null;
     private String suggestionEmoteId = null;
     private String suggestionApprovedChannelId = null;
+
     private String reportEmoteId = null;
     private String handbookReportChannel = null;
     private String reportInfoMessage = null;
     private String voteValidationChannel = null;
+
     private String patrolRemittanceChannel = null;
     private String patrolRemittanceEmoteId = null;
     private String patrolRemittanceMessage = null;
@@ -436,6 +439,23 @@ public class GuildTransformer extends Transformer {
                 }
             }
 
+            if (data.getString("group_shout_roles", null) != null) {
+                List <String> groupShoutRolesList = AvaIre.gson.fromJson(
+                    data.getString("group_shout_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String roleId : groupShoutRolesList) {
+                    try {
+                        groupShoutRoles.add(
+                            Long.parseLong(roleId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
             if (data.getString("modules", null) != null) {
                 HashMap <String, Map <String, String>> dbModules = AvaIre.gson.fromJson(
                     data.getString("modules"),
@@ -666,6 +686,10 @@ public class GuildTransformer extends Transformer {
 
     public Set <Long> getAdministratorRoles() {
         return administratorRoles;
+    }
+
+    public Set <Long> getGroupShoutRoles() {
+        return groupShoutRoles;
     }
 
     public Set <Long> getNoLinksRoles() {

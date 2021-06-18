@@ -6,9 +6,11 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import com.avairebot.utilities.NumberUtil;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
@@ -69,7 +71,7 @@ public class GroupRankCommand extends Command {
     public List<String> getMiddleware() {
         return Arrays.asList(
             "throttle:user,1,10",
-            ""
+            "isManagerOrHigher"
         );
     }
 
@@ -96,27 +98,33 @@ public class GroupRankCommand extends Command {
             return false;
         }
 
-        context.makeWarning("PLEASE BE WARNED, THIS WILL SEND A GROUP SHOUT AS **PB_XBot** (If PB_XBot has permission to shout on ``"+context.getGuildTransformer().getRobloxGroupId()+"``) TO THE GROUP CONNECTED TO THE GUILD.").queue();
+        context.makeWarning("This command will allow you to rank someone in the configured group ID (``"+context.getGuildTransformer().getRobloxGroupId()+"``).").queue();
 
         if (context.getGuildTransformer().getRobloxGroupId() == 0) {
             context.makeError("No group ID has been set for this guild!").queue();
             return false;
         }
 
-        context.makeInfo("What would you like to shout? (Be warned, if you're authorised to use this, then this will send **INSTANTLY** after you send the message). Say ``cancel`` to cancel sending the message.").queue(v -> {
+        Long botAccount = getRobloxId("PB_Xbot");
+
+        Request.Builder request = new Request.Builder()
+            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+            .url("");
+
+
+        context.makeInfo("What Roblox user would you like to edit?").queue(v -> {
             avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l -> {
-                return l.getChannel().equals(context.getChannel()) && l.getMember().equals(context.getMember());
+                return (l.getChannel().equals(context.getChannel()) &&
+                    l.getMember() != null && l.getMember().equals(context.getMember()) &&
+                    getRobloxId(l.getMessage().getContentRaw()) != null) ||
+                    l.getMessage().getContentRaw().equalsIgnoreCase("cancel");
             }, k -> {
                 if (k.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
                     context.makeInfo("Cancelled").queue();
                     return;
                 }
 
-                Long botAccount = getRobloxId("PB_Xbot");
 
-                Request.Builder request = new Request.Builder()
-                    .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-                    .url("");
 
 
                 //sendMessage(context, k);
@@ -131,14 +139,14 @@ public class GroupRankCommand extends Command {
 
         Long id = getRobloxId(context.getMember().getEffectiveName());
         if (id == null) {
-            context.makeError("I coudn't find ")
-            return false;
+            context.makeError("I coudn't find ");
+            return;
         }
 
         Request.Builder request = new Request.Builder()
             .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "GroupShout"))
-            .post(RequestBody.create(json, buildPayload(message, context.getGuildTransformer().getRobloxGroupId())));
+            .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "GroupShout"));
+            //.post(RequestBody.create(json, buildPayload(message, context.getGuildTransformer().getRobloxGroupId())));
 
         try (Response response = client.newCall(request.build()).execute()) {
             context.makeSuccess("Message sent to the [group wall](https://www.roblox.com/groups/:RobloxID): \n```" + response.message() + "```").set("RobloxID", context.getGuildTransformer().getRobloxGroupId()).queue();
