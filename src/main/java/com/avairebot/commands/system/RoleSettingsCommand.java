@@ -429,7 +429,7 @@ public class RoleSettingsCommand extends SystemCommand {
                     guildTransformer.getNoLinksRoles().remove(role.getIdLong());
                 }
                 if (rank.equals("group-shout")) {
-                    guildTransformer.getNoLinksRoles().remove(role.getIdLong());
+                    guildTransformer.getGroupShoutRoles().remove(role.getIdLong());
                 }
                 break;
 
@@ -447,7 +447,7 @@ public class RoleSettingsCommand extends SystemCommand {
                     guildTransformer.getNoLinksRoles().add(role.getIdLong());
                 }
                 if (rank.equals("group-shout")) {
-                    guildTransformer.getNoLinksRoles().add(role.getIdLong());
+                    guildTransformer.getGroupShoutRoles().add(role.getIdLong());
                 }
 
                 break;
@@ -487,10 +487,10 @@ public class RoleSettingsCommand extends SystemCommand {
                     break;
                 }
                 if (rank.equals("group-shout")) {
-                    if (guildTransformer.getNoLinksRoles().contains(role.getIdLong())) {
-                        guildTransformer.getNoLinksRoles().remove(role.getIdLong());
+                    if (guildTransformer.getGroupShoutRoles().contains(role.getIdLong())) {
+                        guildTransformer.getGroupShoutRoles().remove(role.getIdLong());
                     } else {
-                        guildTransformer.getNoLinksRoles().add(role.getIdLong());
+                        guildTransformer.getGroupShoutRoles().add(role.getIdLong());
                     }
                     break;
                 }
@@ -543,8 +543,8 @@ public class RoleSettingsCommand extends SystemCommand {
                 avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
                     .where("id", context.getGuild().getId())
                     .update(statement -> {
-                        statement.set("no_links_roles", AvaIre.gson.toJson(
-                            guildTransformer.getNoLinksRoles()
+                        statement.set("group_shout_roles", AvaIre.gson.toJson(
+                            guildTransformer.getGroupShoutRoles()
                         ), true);
                     });
             }
