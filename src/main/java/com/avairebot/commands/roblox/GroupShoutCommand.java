@@ -70,7 +70,6 @@ public class GroupShoutCommand extends Command {
             "isGroupShoutOrHigher"
         );
     }
-
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
 
@@ -135,7 +134,7 @@ public class GroupShoutCommand extends Command {
 
         Request.Builder request = new Request.Builder()
             .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url(avaire.getConfig().getString("URL.noblox"))
+            .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "GroupShout"))
             .post(RequestBody.create(json, buildPayload(message, context.getGuildTransformer().getRobloxGroupId())));
 
         try (Response response = client.newCall(request.build()).execute()) {
@@ -148,7 +147,7 @@ public class GroupShoutCommand extends Command {
 
             TextChannel tc = context.getGuild().getTextChannelById(context.getGuildTransformer().getAuditLogChannel());
             if (tc != null) {
-                tc.sendMessage(context.makeWarning("The following was sent to the [group](https://www.roblox.com/groups/:RobloxID) shout by **:memberAsMention**:\n`:message`")
+                tc.sendMessage(context.makeWarning("The following was sent to the [group](https://www.roblox.com/groups/:RobloxID) shout by **:memberAsMention**:\n```:message```")
                     .set("RobloxID", context.getGuildTransformer().getRobloxGroupId())
                     .set("message", message)
                     .set("memberAsMention", context.getMember().getAsMention()).buildEmbed()).queue();

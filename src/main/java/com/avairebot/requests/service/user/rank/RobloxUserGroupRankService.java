@@ -44,10 +44,10 @@ public class RobloxUserGroupRankService {
                 return displayName;
             }
 
-            public String buildersClubMembershipType;
-            public long userId;
-            public String username;
-            public String displayName;
+            private String buildersClubMembershipType;
+            private long userId;
+            private String username;
+            private String displayName;
         }
 
         public class Poster {
@@ -67,17 +67,17 @@ public class RobloxUserGroupRankService {
                 return displayName;
             }
 
-            public String buildersClubMembershipType;
-            public long userId;
-            public String username;
-            public String displayName;
+            private String buildersClubMembershipType;
+            private long userId;
+            private String username;
+            private String displayName;
         }
 
         public class Shout {
-            public String body;
-            public Poster poster;
-            public Date created;
-            public Date updated;
+            private String body;
+            private Poster poster;
+            private Date created;
+            private Date updated;
 
             public String getBody() {
                 return body;
@@ -97,14 +97,14 @@ public class RobloxUserGroupRankService {
         }
 
         public class Group {
-            public int id;
-            public String name;
-            public String description;
-            public Owner owner;
-            public Shout shout;
-            public long memberCount;
-            public boolean isBuildersClubOnly;
-            public boolean publicEntryAllowed;
+            private int id;
+            private String name;
+            private String description;
+            private Owner owner;
+            private Shout shout;
+            private long memberCount;
+            private boolean isBuildersClubOnly;
+            private boolean publicEntryAllowed;
 
             public long getId() {
                 return id;
@@ -140,10 +140,10 @@ public class RobloxUserGroupRankService {
         }
 
         public class Role {
-            public int id;
-            public String name;
-            public int rank;
-            public long memberCount;
+            private int id;
+            private String name;
+            private int rank;
+            private long memberCount;
 
             public int getId() {
                 return id;
@@ -163,9 +163,9 @@ public class RobloxUserGroupRankService {
         }
 
         public class Datum {
-            public Group group;
-            public Role role;
-            public boolean isPrimaryGroup;
+            private Group group;
+            private Role role;
+            private boolean isPrimaryGroup;
 
             public Group getGroup() {
                 return group;
