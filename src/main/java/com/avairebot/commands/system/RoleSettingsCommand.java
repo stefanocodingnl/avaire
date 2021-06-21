@@ -117,6 +117,14 @@ public class RoleSettingsCommand extends SystemCommand {
             case "sgi":
             case "set-group-id":
                 return runSetGroupId(context, args);
+            case "smhrr":
+            case "s-mhr-r":
+            case "set-mhr-rank":
+                return runSetMinimalHrRank(context, args);
+            case "smlr":
+            case "s-l-r":
+            case "set-ml-rank":
+                return runSetMinimalLeadRank(context, args);
             case "smr":
             case "set-main-role":
                 return runSetMainRole(context, args);
@@ -125,6 +133,77 @@ public class RoleSettingsCommand extends SystemCommand {
         }
 
 
+    }
+
+    private boolean updateMinimalLeadRank(GuildTransformer transformer, CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("minimum_lead_rank", transformer.getMinimumLeadRank());
+            });
+
+            context.makeSuccess("Set the minimal lead rank for `:guild`'s configured group (`:groupId`) to ``:id``")
+                .set("groupId", context.getGuildTransformer().getRobloxGroupId() != 0 ? context.getGuildTransformer().getRobloxGroupId() : "ID NOT SET")
+                .set("guild", context.getGuild().getName())
+                .set("id", transformer.getMinimumLeadRank()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+    }
+    private boolean updateMinimalHrRank(GuildTransformer transformer, CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("minimum_hr_rank", transformer.getMinimalHrRank());
+            });
+
+            context.makeSuccess("Set the minimal hr rank for `:guild`'s configured group (`:groupId`) to ``:id``")
+                .set("groupId", context.getGuildTransformer().getRobloxGroupId() != 0 ? context.getGuildTransformer().getRobloxGroupId() : "ID NOT SET")
+                .set("guild", context.getGuild().getName())
+                .set("id", transformer.getMinimalHrRank()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+    }
+
+    private boolean runSetMinimalLeadRank(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+
+        if (NumberUtil.isNumeric(args[1])) {
+            GuildTransformer transformer = context.getGuildTransformer();
+            if (transformer == null) {
+                context.makeError("I can't pull the guilds information, please try again later.").queue();
+                return false;
+            }
+            transformer.setMinimumLeadRank(Integer.parseInt(args[1]));
+            return updateMinimalLeadRank(transformer, context);
+        } else {
+            return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
+        }
+    }
+
+    private boolean runSetMinimalHrRank(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+
+        if (NumberUtil.isNumeric(args[1])) {
+            GuildTransformer transformer = context.getGuildTransformer();
+            if (transformer == null) {
+                context.makeError("I can't pull the guilds information, please try again later.").queue();
+                return false;
+            }
+            transformer.setMinimalHrRank(Integer.parseInt(args[1]));
+            return updateMinimalHrRank(transformer, context);
+        } else {
+            return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
+        }
     }
 
     private boolean runSetGroupId(CommandMessage context, String[] args) {
@@ -143,7 +222,6 @@ public class RoleSettingsCommand extends SystemCommand {
         } else {
             return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
         }
-
     }
 
     private boolean runSetMainRole(CommandMessage context, String[] args) {

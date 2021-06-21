@@ -119,7 +119,11 @@ public class GuildTransformer extends Transformer {
     private long reportCategory = 0;
     private long audit_log = 0;
     private long join_logs = 0;
+
     private int robloxGroupId = 0;
+    private int minimalHrRank = 0;
+    private int minimumLeadRank = 0;
+
     private int characterSpam = 0;
     private int emojiSpam = 0;
     private int imageSpam = 0;
@@ -187,7 +191,10 @@ public class GuildTransformer extends Transformer {
             reportEmoteId = data.getString("report_emote_id");
             handbookReportChannel = data.getString("handbook_report_channel");
             reportInfoMessage = data.getString("report_info_message");
+
             robloxGroupId = data.getInt("roblox_group_id");
+            minimalHrRank = data.getInt("minimum_hr_rank");
+            minimumLeadRank = data.getInt("minimum_lead_rank");
 
             patrolRemittanceChannel = data.getString("patrol_remittance_channel");
             patrolRemittanceEmoteId = data.getString("patrol_remittance_emote_id");
@@ -622,6 +629,22 @@ public class GuildTransformer extends Transformer {
 
     public int getRobloxGroupId() {
         return robloxGroupId;
+    }
+
+    public int getMinimalHrRank() {
+        return minimalHrRank;
+    }
+
+    public void setMinimalHrRank(int minimalHrRank) {
+        this.minimalHrRank = minimalHrRank;
+    }
+
+    public int getMinimumLeadRank() {
+        return minimumLeadRank;
+    }
+
+    public void setMinimumLeadRank(int minimumLeadRank) {
+        this.minimumLeadRank = minimumLeadRank;
     }
 
     public void setRobloxGroupId(int robloxGroupId) {
