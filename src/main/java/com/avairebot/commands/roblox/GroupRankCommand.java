@@ -4,8 +4,10 @@ import com.avairebot.AppInfo;
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
+import com.avairebot.contracts.commands.CommandContext;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
+import com.avairebot.contracts.verification.VerificationEntity;
 import com.avairebot.requests.service.group.GroupRanksService;
 import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
 import com.avairebot.utilities.NumberUtil;
@@ -104,12 +106,12 @@ public class GroupRankCommand extends Command {
             return false;
         }
 
-        Long contextId = getRobloxId(context.getMember().getEffectiveName());
+        Long contextId = getRobloxFromRoverId(context);
         if (contextId == null) {
             context.makeError("I coudn't find `:robloxName` on Roblox, please make sure you're verified with the correct account.").requestedBy(context).set("robloxName", context.getMember().getEffectiveName()).queue();
             return false;
         }
-        Integer ownRank = returnOwnUserRank(context, contextId);
+        Integer ownRank = returnOwnUserRank(context.getGuildTransformer().getRobloxGroupId(), contextId);
 
         if (ownRank < context.getGuildTransformer().getMinimumLeadRank()) {
             context.makeError("You are not allowed to rank someone in `" + context.getGuildTransformer().getRobloxGroupId() + "`. Please make sure you have the minimal rank ID of " + context.getGuildTransformer().getMinimumLeadRank()).queue();
@@ -139,7 +141,6 @@ public class GroupRankCommand extends Command {
                             .set("rank", d.getRole().getName())
                             .setTitle(botAccount + " - PB_Xbot").requestedBy(context).queue();
                     }
-
 
                     context.makeInfo("What Roblox user would you like to edit?").requestedBy(context).queue(v -> {
                         avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l -> {
@@ -175,7 +176,7 @@ public class GroupRankCommand extends Command {
             return;
         }
 
-        Integer rankeeRank = returnOwnUserRank(context, id);
+        Integer rankeeRank = returnOwnUserRank(context.getGuildTransformer().getRobloxGroupId(), id);
 
         if (rankeeRank >= ownRank) {
             context.makeError("You're not able to rank someone who's the same rank as you, or higher!").queue();
@@ -243,21 +244,11 @@ public class GroupRankCommand extends Command {
 
     }
 
-    private Integer returnOwnUserRank(CommandMessage context, Long botAccount) {
-        Request.Builder request = new Request.Builder()
-            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url("https://groups.roblox.com/v2/users/{userId}/groups/roles".replace("{userId}", botAccount.toString()));
-
-        try (Response response = client.newCall(request.build()).execute()) {
-            if (response.code() == 200) {
-                RobloxUserGroupRankService grs = (RobloxUserGroupRankService) toService(response, RobloxUserGroupRankService.class);
-                if (grs.hasData()) {
-                    Optional<RobloxUserGroupRankService.Data> b = grs.getData().stream().filter(g -> g.getGroup().getId() == context.getGuildTransformer().getRobloxGroupId()).findFirst();
-                    return b.map(data -> data.getRole().getRank()).orElse(0);
-                }
+    private Integer returnOwnUserRank(int groupId, Long botAccount) {
+        for (RobloxUserGroupRankService.Data s : avaire.getRobloxAPIManager().getUserAPI().getUserRanks(botAccount)) {
+            if (s.getGroup().getId() == groupId) {
+                return s.getRole().getRank();
             }
-        } catch (IOException e) {
-            AvaIre.getLogger().error("Failed sending request to Roblox API: " + e.getMessage());
         }
         return 0;
     }
@@ -347,6 +338,11 @@ public class GroupRankCommand extends Command {
         }
     }
 
+    public Long getRobloxFromRoverId(CommandContext context) {
+        VerificationEntity robloxUser = avaire.getRobloxAPIManager()
+            .getVerification().fetchVerification(context.getMember().getId(), true);
+        return robloxUser != null ? robloxUser.getRobloxId() : null;
+    }
 
     public Object toService(Response response, Class<?> clazz) {
         return AvaIre.gson.fromJson(toString(response), clazz);
@@ -360,7 +356,7 @@ public class GroupRankCommand extends Command {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return null;
     }

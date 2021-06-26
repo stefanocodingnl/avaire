@@ -21,6 +21,7 @@
 
 package com.avairebot.requests;
 
+import com.avairebot.AvaIre;
 import com.avairebot.contracts.async.Future;
 import com.avairebot.requests.ratelimit.RateLimitInterceptor;
 import okhttp3.ConnectionPool;
@@ -122,7 +123,7 @@ public class Request extends Future {
                     item.getValue().toString(), "UTF-8"
                 ));
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
                 return String.format("%s=%s", item.getKey(), "invalid-format");
             }
         }).collect(Collectors.joining("&"));

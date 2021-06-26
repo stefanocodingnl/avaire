@@ -50,7 +50,7 @@ public class Response {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return null;
     }

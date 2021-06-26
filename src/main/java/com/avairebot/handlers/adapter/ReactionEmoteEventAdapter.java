@@ -257,7 +257,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                     }
                                     message.clearReactions().queue();
                                 } catch (SQLException throwables) {
-                                    throwables.printStackTrace();
+                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                 }
                             }
                         }
@@ -327,7 +327,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                 });
                             }
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
                     }
@@ -418,7 +418,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                         l.set("suggestion_message_id", p.getId());
                                                     });
                                                 } catch (SQLException throwables) {
-                                                    throwables.printStackTrace();
+                                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                                 }
                                             });
                                             msg.delete().queue();
@@ -619,7 +619,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                     l.set("suggestion_message_id", p.getId());
                                                 });
                                             } catch (SQLException throwables) {
-                                                throwables.printStackTrace();
+                                                AvaIre.getLogger().error("ERROR: ", throwables);
                                             }
                                         });
                                         msg.delete().queue();
@@ -632,12 +632,12 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
                                 } //👑
                             } catch (SQLException throwables) {
-                                throwables.printStackTrace();
+                                AvaIre.getLogger().error("ERROR: ", throwables);
                             }
                         });
                     }
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwables);
                 }
             }
         });
@@ -804,15 +804,15 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         final GuildMessageReactionAddEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannel().getType().isGuild()) {
-                return new DatabaseEventHolder(null, null);
+                return new DatabaseEventHolder(null, null, null);
             }
 
             GuildTransformer guild = GuildController.fetchGuild(avaire, event.getGuild());
 
             if (guild == null || !guild.isLevels() || event.getMember().getUser().isBot()) {
-                return new DatabaseEventHolder(guild, null);
+                return new DatabaseEventHolder(guild, null, null);
             }
-            return new DatabaseEventHolder(guild, null);
+            return new DatabaseEventHolder(guild, null, null);
         });
     }
 

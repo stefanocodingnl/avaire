@@ -112,7 +112,7 @@ public class AddPIAModWildcardCommand extends Command {
                 }
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
                 return false;
             }
         }
@@ -128,7 +128,7 @@ public class AddPIAModWildcardCommand extends Command {
                     .queue();
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
                 return false;
             }
         } else {
@@ -149,7 +149,7 @@ public class AddPIAModWildcardCommand extends Command {
                 .queue();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         }
     }

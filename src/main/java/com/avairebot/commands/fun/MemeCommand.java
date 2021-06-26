@@ -148,7 +148,7 @@ public class MemeCommand extends Command {
                     URLEncoder.encode(user.getEffectiveAvatarUrl(), "UTF-8")
                 )).queue();
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return true;
     }

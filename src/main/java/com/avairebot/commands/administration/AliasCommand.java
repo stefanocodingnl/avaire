@@ -144,7 +144,7 @@ public class AliasCommand extends Command {
                 .queue();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         }
     }
@@ -164,7 +164,7 @@ public class AliasCommand extends Command {
                 .queue();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         }
     }

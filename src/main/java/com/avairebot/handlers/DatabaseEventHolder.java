@@ -23,6 +23,7 @@ package com.avairebot.handlers;
 
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.database.transformers.PlayerTransformer;
+import com.avairebot.database.transformers.VerificationTransformer;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +31,7 @@ public class DatabaseEventHolder {
 
     private final GuildTransformer guild;
     private final PlayerTransformer player;
+    private final VerificationTransformer verification;
 
     /**
      * Creates a new database holder instance using
@@ -38,9 +40,10 @@ public class DatabaseEventHolder {
      * @param guild  The guild transformer that should be stored in the event holder.
      * @param player The player transformer that should be stored in the event holder.
      */
-    public DatabaseEventHolder(GuildTransformer guild, PlayerTransformer player) {
+    public DatabaseEventHolder(GuildTransformer guild, PlayerTransformer player, VerificationTransformer verification) {
         this.guild = guild;
         this.player = player;
+        this.verification = verification;
     }
 
     /**
@@ -67,4 +70,7 @@ public class DatabaseEventHolder {
     public PlayerTransformer getPlayer() {
         return player;
     }
+
+    @Nullable
+    public VerificationTransformer getVerification() {return verification;}
 }

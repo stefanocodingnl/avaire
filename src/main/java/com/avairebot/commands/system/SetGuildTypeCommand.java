@@ -127,7 +127,7 @@ public class SetGuildTypeCommand extends SystemCommand {
 
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
             }
             return false;
         }
@@ -153,7 +153,7 @@ public class SetGuildTypeCommand extends SystemCommand {
 
                 typeName = collection.first().getString("name");
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
             }
         }
 
@@ -170,7 +170,7 @@ public class SetGuildTypeCommand extends SystemCommand {
                 .set("type", typeName)
                 .queue();
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
         return true;

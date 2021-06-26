@@ -27,6 +27,7 @@ import com.avairebot.config.YamlConfiguration;
 import com.avairebot.database.controllers.PlayerController;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.database.transformers.PlayerTransformer;
+import com.avairebot.database.transformers.VerificationTransformer;
 import com.avairebot.handlers.DatabaseEventHolder;
 import net.dv8tion.jda.api.entities.*;
 
@@ -109,6 +110,9 @@ public interface CommandContext {
      */
     @Nullable
     GuildTransformer getGuildTransformer();
+
+    @Nullable
+    VerificationTransformer getVerificationTransformer();
 
     /**
      * Returns the {@link PlayerTransformer player transformer} instance linked to the current message, if
@@ -221,7 +225,7 @@ public interface CommandContext {
     /**
      * Returns the {@link YamlConfiguration configuration} for the current selected {@link com.avairebot.language.I18n I18n}
      * language, if the message was sent as a direct message, or if the guild doesn't have a valid language
-     * selected the {@link com.avairebot.language.I18n#defaultLanguage default language} will be used instead.
+     * selected the {@link com.avairebot.language.I18n default language} will be used instead.
      *
      * @return The selected {@link YamlConfiguration configuration} for the current messages {@link com.avairebot.language.I18n I18n} language.
      */

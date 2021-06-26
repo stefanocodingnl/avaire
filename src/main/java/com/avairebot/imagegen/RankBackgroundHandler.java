@@ -225,7 +225,9 @@ public class RankBackgroundHandler {
             usedIds.add(background.getId());
             usedNames.add(background.getName());
             localBackgrounds.add(background);
-            log.debug("Loaded background from file system: " + file.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Loaded background from file system: " + file.toString());
+            }
         }
 
         return localBackgrounds;

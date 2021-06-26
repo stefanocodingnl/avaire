@@ -184,7 +184,7 @@ public class GlobalBanCommand extends Command {
         try {
             handleGlobalPermBan(context, args, reason);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
             context.makeError("Something went wrong adding this user to the global perm ban database.").queue();
         }
         return true;
@@ -278,7 +278,7 @@ public class GlobalBanCommand extends Command {
             context.makeSuccess("**``" + c.size() + "``** global bans where synced to this guild...").queue();
 
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
             context.makeError("Something went wrong when syncing.").queue();
             return false;
         }

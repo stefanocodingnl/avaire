@@ -203,7 +203,7 @@ public class OnWatchManager {
                 getTotalAmountOfOnWatchs() - size
             );
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 

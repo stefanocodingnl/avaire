@@ -100,7 +100,7 @@ public class FileAdapter extends CacheAdapter {
                 return item.getValue();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return null;
     }
@@ -115,7 +115,7 @@ public class FileAdapter extends CacheAdapter {
         try {
             return AvaIre.gson.fromJson(new String(Files.readAllBytes(cacheFile.toPath())), CacheItem.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return null;
         }
     }
@@ -135,7 +135,7 @@ public class FileAdapter extends CacheAdapter {
 
             return item.getTime() > System.currentTimeMillis();
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         }
     }
@@ -156,7 +156,7 @@ public class FileAdapter extends CacheAdapter {
 
             return item;
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return null;
         }
     }
@@ -207,7 +207,7 @@ public class FileAdapter extends CacheAdapter {
 
             bw.write(AvaIre.gson.toJson(cacheItem) + "\n");
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         } finally {
             try {
@@ -245,7 +245,7 @@ public class FileAdapter extends CacheAdapter {
 
     private String encrypt(String string) {
         try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = MessageDigest.getInstance("SHA-256");
             md5.update(string.trim().toLowerCase().getBytes());
 
             byte[] digest = md5.digest();
@@ -257,7 +257,7 @@ public class FileAdapter extends CacheAdapter {
 
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return null;
         }
     }

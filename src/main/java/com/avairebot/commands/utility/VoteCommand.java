@@ -32,7 +32,6 @@ import com.avairebot.language.I18n;
 import com.avairebot.time.Carbon;
 import com.avairebot.vote.VoteCacheEntity;
 import com.avairebot.vote.VoteEntity;
-import net.dv8tion.jda.api.entities.Member;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -94,7 +93,7 @@ public class VoteCommand extends Command {
         //noinspection ConstantConditions
         String note = I18n.format(String.join("\n", Arrays.asList(
             "You'll gain access to the `{0}volume` and `{0}default-volume` commands for the",
-            "next 12 hours, as well as getting a vote point, you can spend your vote points",
+            "next 12 hours, as well as getting a vote point, you can spend your PineCoins",
             "to unlock special rank backgrounds using the `{1}backgrounds` command.",
             "",
             "Have you already voted and didn't get your vote rewards?",
@@ -114,8 +113,7 @@ public class VoteCommand extends Command {
             ":note"
         )))
             .set("note", note)
-            .setTitle("Vote for AvaIre on DBL", "https://discordbots.org/bot/avaire")
-            .setFooter("You have " + (voteEntity == null ? 0 : voteEntity.getVotePoints()) + " vote points")
+            .setFooter("You have " + (voteEntity == null ? 0 : voteEntity.getVotePoints()) + " PineCoins")
             .queue();
 
         return true;
@@ -125,7 +123,7 @@ public class VoteCommand extends Command {
         Carbon expire = avaire.getVoteManager().getExpireTime(context.getAuthor());
         if (expire != null && expire.isFuture()) {
             context.makeInfo("You have already voted today, thanks for that btw!\nYou can vote again in :time.")
-                .setFooter("You have " + (voteEntity == null ? 0 : voteEntity.getVotePoints()) + " vote points")
+                .setFooter("You have " + (voteEntity == null ? 0 : voteEntity.getVotePoints()) + " PineCoins")
                 .set("time", expire.diffForHumans())
                 .queue();
             return true;

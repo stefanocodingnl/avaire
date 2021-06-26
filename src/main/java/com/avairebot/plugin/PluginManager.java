@@ -191,7 +191,9 @@ public class PluginManager {
         }
 
         try {
-            log.debug("Attempting to load plugin: " + file.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Attempting to load plugin: " + file.toString());
+            }
             PluginLoader pluginLoader = new PluginLoader(file, pluginsFolder);
 
             plugins.add(pluginLoader);

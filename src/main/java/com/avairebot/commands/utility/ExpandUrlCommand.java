@@ -100,7 +100,7 @@ public class ExpandUrlCommand extends Command {
         } catch (UnknownHostException ex) {
             context.makeError("Unknown host for the provided `url`, does it actually go anywhere?").queue();
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return false;
     }

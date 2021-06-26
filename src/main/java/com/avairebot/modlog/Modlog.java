@@ -450,11 +450,12 @@ public class Modlog {
         user.openPrivateChannel().queue(channel -> {
             EmbedBuilder message = MessageFactory.createEmbeddedBuilder()
                 .setColor(color)
-                .setDescription(String.format("%s You have been **%s** %s " + guild.getName(),
+                .setDescription(String.format("%s You have been **%s** %s %s",
                     action.getType().getEmote(),
                     type,
                     action.getType().equals(ModlogType.WARN)
-                        ? "in" : "from"
+                        ? "in" : "from",
+                    guild.getName()
                 ))
                 .addField("Moderator", action.getModerator().getName() + "#" + action.getModerator().getDiscriminator(), true)
                 .addField("Reason", action.getMessage(), true)

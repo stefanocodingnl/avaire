@@ -138,7 +138,7 @@ public class JDAStateEventAdapter extends EventAdapter {
                 GuildMusicManager musicManager = AudioHandler.getDefaultAudioHandler().getGuildAudioPlayer(guild);
                 musicManager.setLastActiveMessage(new CommandMessage(
                     CommandHandler.getCommand(PlayCommand.class),
-                    new DatabaseEventHolder(GuildController.fetchGuild(avaire, guild), null),
+                    new DatabaseEventHolder(GuildController.fetchGuild(avaire, guild), null, null),
                     message, false, new String[0]
                 ));
 

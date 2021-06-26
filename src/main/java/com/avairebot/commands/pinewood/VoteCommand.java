@@ -192,7 +192,7 @@ public class VoteCommand extends Command {
                     }
 
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwables);
                 }
 
             } else {
@@ -240,7 +240,7 @@ public class VoteCommand extends Command {
                         .setTimestamp(Instant.now()).queue();
                 }
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
         }
         if (args[0].equalsIgnoreCase("show")) {
@@ -282,7 +282,7 @@ public class VoteCommand extends Command {
                 }
 
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
         }
         if (args[0].equalsIgnoreCase("list")) {
@@ -315,7 +315,7 @@ public class VoteCommand extends Command {
                         .queue();
                 }
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
         }
         if (args[0].equalsIgnoreCase("set-vote-validation-channel")) {
@@ -337,7 +337,7 @@ public class VoteCommand extends Command {
                 }
                 context.makeSuccess("Successfully closed the vote! Re-open it with the " + generateCommandPrefix(context.message) + "``vote open`` command.").queue();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
 
         }
@@ -357,7 +357,7 @@ public class VoteCommand extends Command {
                 }
                 context.makeSuccess("Successfully re-opened the vote! Close it with the " + generateCommandPrefix(context.message) + "``vote close`` command.").queue();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
 
         }
@@ -375,7 +375,7 @@ public class VoteCommand extends Command {
 
             return responses.size();
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", throwables);
         }
         return 0;
     }
@@ -500,7 +500,7 @@ public class VoteCommand extends Command {
                                 }
 
                             } catch (SQLException throwables) {
-                                throwables.printStackTrace();
+                                AvaIre.getLogger().error("ERROR: ", throwables);
                             }
                             message.addReaction("✅").queue();
                             message.addReaction("❌").queue();
@@ -513,7 +513,7 @@ public class VoteCommand extends Command {
             }
             return true;
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", throwables);
         }
 
 

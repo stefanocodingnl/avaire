@@ -122,7 +122,7 @@ public class ToggleAutoModCommand extends Command {
             context.getGuildTransformer().setFilter(b);
             context.makeSuccess("Filter has been set to: **``" + b + "``**").queue();
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 

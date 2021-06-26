@@ -232,7 +232,9 @@ public class DatabaseManager {
      */
     @WillClose
     public Set<Integer> queryInsert(String query) throws SQLException {
-        log.debug("queryInsert(String query) was called with the following SQL query.\nSQL: " + query);
+        if (log.isDebugEnabled()) {
+            log.debug("queryInsert(String query) was called with the following SQL query.\nSQL: " + query);
+        }
         Metrics.databaseQueries.labels("INSERT").inc();
         MDC.put("query", query);
 

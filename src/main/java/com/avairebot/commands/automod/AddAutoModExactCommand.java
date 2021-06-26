@@ -116,7 +116,7 @@ public class AddAutoModExactCommand  extends Command {
 
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
                 return false;
             }
         } else {
@@ -143,7 +143,7 @@ public class AddAutoModExactCommand  extends Command {
                 .queue();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         }
     }

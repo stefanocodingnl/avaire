@@ -353,7 +353,7 @@ public class PatrolRemittanceCommand extends Command {
 
                             cache.put(getRobloxId(username), context.getGuild());
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
                     }

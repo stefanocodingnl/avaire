@@ -78,7 +78,7 @@ public class RankBackgroundCommand extends Command {
             "Rank backgrounds are used for the `%srank` command, when a user has a rank",
             "background selected, their rank and experience will be displayed using a generated",
             "image instead, the background image can be changed at any time.",
-            "You can buy backgrounds using [vote points](https://discordbots.org/bot/avaire), use `%svote` for more info."
+            "You can buy backgrounds using [PineCoins](https://xeus.pinewood-builders.com/)."
         ), prefix, prefix);
     }
 
@@ -87,7 +87,7 @@ public class RankBackgroundCommand extends Command {
         return Arrays.asList(
             "`:command list` - Lists all the backgrounds available.",
             "`:command test <name>` - Displays an example of how the background will look like if you buy it.",
-            "`:command buy <name>` - Buys the background with vote points.",
+            "`:command buy <name>` - Buys the background with PineCoins.",
             "`:command use <name>` - Selects the background so it is used in the future for rank commands.",
             "`:command off` - Disables the rank background, returns to using embedded rank messages."
         );

@@ -326,7 +326,7 @@ public class EvaluationCommand extends Command {
 
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
         return true;

@@ -32,6 +32,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This is a base class for all File based implementations of {@link ConfigurationBase}
@@ -106,7 +107,7 @@ public abstract class FileConfiguration extends MemoryConfiguration {
 
         String data = saveToString();
 
-        Writer writer = new OutputStreamWriter(new FileOutputStream(file), UTFOverride && !UTFBig ? Charsets.UTF_8 : Charset.defaultCharset());
+        Writer writer = new OutputStreamWriter(new FileOutputStream(file), UTFOverride && !UTFBig ? StandardCharsets.UTF_8 : Charset.defaultCharset());
 
         try {
             writer.write(data);

@@ -71,6 +71,9 @@ import com.avairebot.onwatch.OnWatchManager;
 import com.avairebot.pinewood.VoiceWhitelistManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
+import com.avairebot.roblox.RobloxAPIManager;
+import com.avairebot.roblox.api.user.RobloxUserAPIRoutes;
+import com.avairebot.roblox.verification.VerificationManager;
 import com.avairebot.scheduler.ScheduleHandler;
 import com.avairebot.servlet.WebServlet;
 import com.avairebot.servlet.routes.*;
@@ -152,12 +155,14 @@ public class AvaIre {
     private final BotAdmin botAdmins;
     private final WebServlet servlet;
     private final FeatureBlacklist featureBlacklist;
+    private final RobloxAPIManager robloxApiManager;
     private final BlacklistManager blacklistManager;
     private final VoiceWhitelistManager voiceWhitelistManager;
     private GitLabApi gitLabApi;
     private Carbon shutdownTime = null;
     private int shutdownCode = ExitCodes.EXIT_CODE_RESTART;
     private ShardManager shardManager = null;
+
 
 
     public AvaIre(Settings settings) throws IOException, SQLException, InvalidApplicationEnvironmentException {
@@ -277,6 +282,7 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
         CategoryHandler.addCategory(this, "Reports", defaultPrefix);
         CategoryHandler.addCategory(this, "Roblox", defaultPrefix);
+        CategoryHandler.addCategory(this, "Verification", defaultPrefix);
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
@@ -395,6 +401,9 @@ public class AvaIre {
         blacklist = new Blacklist(this);
         blacklist.syncBlacklistWithDatabase();
 
+        log.info("Preparing verification and checking cache.");
+        robloxApiManager = new RobloxAPIManager(new RobloxUserAPIRoutes(this), new VerificationManager(this));
+
         log.info("Preparing report blacklist and syncing the list with the database");
         featureBlacklist = new FeatureBlacklist(this);
         featureBlacklist.syncBlacklistWithDatabase();
@@ -493,7 +502,7 @@ public class AvaIre {
         try {
             shardManager = buildShardManager();
         } catch (LoginException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -636,6 +645,10 @@ public class AvaIre {
         return featureBlacklist;
     }
 
+    public RobloxAPIManager getRobloxAPIManager() {
+        return robloxApiManager;
+    }
+
     public BlacklistManager getBlacklistManager() {
         return blacklistManager;
     }
@@ -720,7 +733,7 @@ public class AvaIre {
             log.info("Shutting down processes, waiting {} milliseconds for processes to finish shutting down.", shutdownDelay);
             Thread.sleep(shutdownDelay);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
         if (getShardManager() != null) {
@@ -769,7 +782,7 @@ public class AvaIre {
         ))
             .setToken(getConfig().getString("discord.token"))
             .setSessionController(new SessionControllerAdapter())
-            .setActivity(Activity.watching("my code start up..."))
+            .setActivity(Activity.watching("pinewood dominate the world!"))
             .setBulkDeleteSplittingEnabled(false)
             .setMemberCachePolicy(MemberCachePolicy.ALL)
             .setChunkingFilter(ChunkingFilter.NONE)

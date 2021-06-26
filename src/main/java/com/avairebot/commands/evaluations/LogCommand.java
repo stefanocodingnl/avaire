@@ -95,7 +95,7 @@ public class LogCommand extends Command {
                 context.makeSuccess("Truncated the complete eval log database (Deleted every log in the database)").queue();
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
             }
         }
         if (!isValidRobloxUser(args[0])) {
@@ -160,7 +160,7 @@ public class LogCommand extends Command {
 
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return false;
 

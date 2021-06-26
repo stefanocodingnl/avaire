@@ -202,7 +202,7 @@ public class MuteManager {
                 getTotalAmountOfMutes() - size
             );
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 

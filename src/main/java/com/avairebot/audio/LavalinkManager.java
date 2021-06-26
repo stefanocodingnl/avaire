@@ -84,7 +84,7 @@ public class LavalinkManager {
                     (String) node.get("name"), host, (String) node.get("pass")
                 );
             } catch (URISyntaxException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
             }
         }
 

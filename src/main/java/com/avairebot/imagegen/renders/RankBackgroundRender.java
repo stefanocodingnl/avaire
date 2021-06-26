@@ -211,14 +211,16 @@ public class RankBackgroundRender extends Renderer {
         createBackgroundGraphics(graphics, xpBarText);
         createLevelAndRankGraphics(graphics);
         createExperienceGraphics(graphics);
-
+        urlConnection.getInputStream().close();
+        graphics.dispose();
         return backgroundImage;
     }
 
     private BufferedImage loadAndBuildBackground() throws IOException {
         if (background.getBackgroundFile() != null) {
+            FileInputStream fileInputStream = new FileInputStream("backgrounds/" + background.getBackgroundFile());
             return resize(
-                ImageIO.read(new FileInputStream("backgrounds/" + background.getBackgroundFile())),
+                ImageIO.read(fileInputStream),
                 200, 600
             );
         }

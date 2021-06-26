@@ -465,9 +465,9 @@ public class GuildTransformer extends Transformer {
 
             if (data.getString("modules", null) != null) {
                 HashMap <String, Map <String, String>> dbModules = AvaIre.gson.fromJson(
-                    data.getString("modules"),
-                    new TypeToken <HashMap <String, Map <String, String>>>() {
-                    }.getType());
+                        data.getString("modules"),
+                        new TypeToken <HashMap <String, Map <String, String>>>() {
+                        }.getType());
 
                 for (Map.Entry <String, Map <String, String>> item : dbModules.entrySet()) {
                     modules.put(item.getKey(), item.getValue());

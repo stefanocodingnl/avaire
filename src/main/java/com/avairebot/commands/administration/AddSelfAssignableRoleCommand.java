@@ -138,7 +138,7 @@ public class AddSelfAssignableRoleCommand extends Command {
 
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
         return false;

@@ -63,7 +63,7 @@ public class RoleEventAdapter extends EventAdapter {
                     statement.set("claimable_roles", AvaIre.gson.toJson(transformer.getSelfAssignableRoles()), true);
                 });
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -92,7 +92,7 @@ public class RoleEventAdapter extends EventAdapter {
                 .where("id", event.getGuild().getId())
                 .update(statement -> statement.set("mute_role", null));
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -108,7 +108,7 @@ public class RoleEventAdapter extends EventAdapter {
                 .where("id", event.getGuild().getId())
                 .update(statement -> statement.set("autorole", null));
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -133,7 +133,7 @@ public class RoleEventAdapter extends EventAdapter {
                     statement.set("level_roles", AvaIre.gson.toJson(transformer.getLevelRoles()), true);
                 });
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -151,7 +151,7 @@ public class RoleEventAdapter extends EventAdapter {
                     statement.set("dj_role", null);
                 });
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -169,7 +169,7 @@ public class RoleEventAdapter extends EventAdapter {
                     statement.set("claimable_roles", AvaIre.gson.toJson(transformer.getSelfAssignableRoles()), true);
                 });
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 
@@ -183,7 +183,7 @@ public class RoleEventAdapter extends EventAdapter {
                     statement.set("roles_data", GuildController.buildRoleData(guild.getRoles()), true);
                 });
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 }

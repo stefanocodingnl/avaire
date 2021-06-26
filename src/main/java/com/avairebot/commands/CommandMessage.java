@@ -27,6 +27,7 @@ import com.avairebot.config.YamlConfiguration;
 import com.avairebot.contracts.commands.CommandContext;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.database.transformers.PlayerTransformer;
+import com.avairebot.database.transformers.VerificationTransformer;
 import com.avairebot.factories.MessageFactory;
 import com.avairebot.handlers.DatabaseEventHolder;
 import com.avairebot.language.I18n;
@@ -58,10 +59,12 @@ public class CommandMessage implements CommandContext {
     private final boolean mentionableCommand;
     private final String aliasArguments;
     private final DatabaseEventHolder databaseEventHolder;
+
     private final CommandContainer container;
 
     private YamlConfiguration i18n;
     private String i18nCommandPrefix;
+
 
     public CommandMessage() {
         this(null);
@@ -183,6 +186,11 @@ public class CommandMessage implements CommandContext {
     @Override
     public GuildTransformer getGuildTransformer() {
         return databaseEventHolder == null ? null : databaseEventHolder.getGuild();
+    }
+
+    @Override
+    public VerificationTransformer getVerificationTransformer() {
+        return databaseEventHolder == null ? null : databaseEventHolder.getVerification();
     }
 
     @Override

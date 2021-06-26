@@ -216,7 +216,7 @@ public class RemoveReactionRoleCommand extends Command {
                 .set("messageSlots", reactionLimits.getMessages() - ReactionController.fetchReactions(avaire, context.getGuild()).size())
                 .queue(successMessage -> successMessage.delete().queueAfter(15, TimeUnit.SECONDS, null, RestActionUtil.ignore));
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
         return false;

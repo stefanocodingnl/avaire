@@ -435,7 +435,7 @@ public class ReportUserCommand extends Command {
                                 data.set("reported_roblox_rank", groupInfo.map(value -> value.getRole().getName()).orElse(null));
                             });
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
                     }
@@ -470,7 +470,7 @@ public class ReportUserCommand extends Command {
                     return;
                 } catch (SQLException throwables) {
                     context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
-                    throwables.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwables);
                     return;
                 }
             },

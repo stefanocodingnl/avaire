@@ -73,7 +73,7 @@ public class GetGroupMemberCountsCommand extends Command {
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", e);
                 }
                 pbst.editMessage("<:PB:757736074641408022> (PB): " + PB + "\n" +
                     "<:PBST:790431720297857024> (PBST): " + PBST + "\n" +

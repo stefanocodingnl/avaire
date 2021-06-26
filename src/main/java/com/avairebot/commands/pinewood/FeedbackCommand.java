@@ -135,7 +135,7 @@ public class FeedbackCommand extends Command {
 
                 startEmojiWaiter(context, l, avaire.getWaiter(), qb);
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
 
         });
@@ -204,7 +204,7 @@ public class FeedbackCommand extends Command {
                                 });
                             } catch (SQLException throwables) {
                                 context.makeError("Something went wrong in the database, please check with the developer.").queue();
-                                throwables.printStackTrace();
+                                AvaIre.getLogger().error("ERROR: ", throwables);
                             }
                         });
                     });
@@ -213,7 +213,7 @@ public class FeedbackCommand extends Command {
                 }
 
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
         }, 5, TimeUnit.MINUTES, () -> {
             message.editMessage(context.makeEmbeddedMessage().setColor(Color.BLACK).setDescription("Stopped the suggestion system. Timeout of 5 minutes reached .").buildEmbed()).queue();

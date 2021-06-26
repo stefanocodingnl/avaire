@@ -34,6 +34,7 @@ import com.avairebot.database.collection.DataRow;
 import com.avairebot.database.controllers.GuildController;
 import com.avairebot.database.controllers.PlayerController;
 import com.avairebot.database.controllers.ReactionController;
+import com.avairebot.database.controllers.VerificationController;
 import com.avairebot.database.query.QueryBuilder;
 import com.avairebot.database.transformers.ChannelTransformer;
 import com.avairebot.database.transformers.GuildTransformer;
@@ -366,7 +367,7 @@ public class MessageEventAdapter extends EventAdapter {
                     List<String> redirects = fetchRedirect(text, new ArrayList<>());
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", e);
                 }
 
             }
@@ -685,10 +686,10 @@ public class MessageEventAdapter extends EventAdapter {
             strings.add("\n**Full list of commands**\n*https://xeus.pinewood-builders.com/commands*");
             strings.add("\nAvaIre Support Server:\n*https://xeus.pinewood-builders.com/support*");
 
-            CommandContainer commandContainer = CommandHandler.getCommands().stream()
+            /*CommandContainer commandContainer = CommandHandler.getCommands().stream()
                 .filter(container -> !container.getCategory().isGlobalOrSystem())
                 .findAny()
-                .get();
+                .get();*/
 
             /*MessageFactory.makeEmbeddedMessage(event.getMessage(), Color.decode("#E91E63"), I18n.format(
                 String.join("\n", strings),
@@ -700,37 +701,37 @@ public class MessageEventAdapter extends EventAdapter {
                 .set("botId", avaire.getSelfUser().getId())
                 .queue();*/
         } catch (Exception ex) {
-            ex.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", ex);
         }
     }
 
     private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageReceivedEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannelType().isGuild()) {
-                return new DatabaseEventHolder(null, null);
+                return new DatabaseEventHolder(null, null, null);
             }
 
             GuildTransformer guild = GuildController.fetchGuild(avaire, event.getMessage());
 
             if (guild == null || !guild.isLevels() || event.getAuthor().isBot()) {
-                return new DatabaseEventHolder(guild, null);
+                return new DatabaseEventHolder(guild, null, VerificationController.fetchGuild(avaire, event.getMessage()));
             }
-            return new DatabaseEventHolder(guild, PlayerController.fetchPlayer(avaire, event.getMessage()));
+            return new DatabaseEventHolder(guild, PlayerController.fetchPlayer(avaire, event.getMessage()), VerificationController.fetchGuild(avaire, event.getMessage()));
         });
     }
 
     private CompletableFuture <DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final MessageUpdateEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannelType().isGuild()) {
-                return new DatabaseEventHolder(null, null);
+                return new DatabaseEventHolder(null, null, null);
             }
 
             GuildTransformer guild = GuildController.fetchGuild(avaire, event.getMessage());
 
             if (guild == null || !guild.isLevels() || event.getAuthor().isBot()) {
-                return new DatabaseEventHolder(guild, null);
+                return new DatabaseEventHolder(guild, null, VerificationController.fetchGuild(avaire, event.getMessage()));
             }
-            return new DatabaseEventHolder(guild, PlayerController.fetchPlayer(avaire, event.getMessage()));
+            return new DatabaseEventHolder(guild, PlayerController.fetchPlayer(avaire, event.getMessage()), VerificationController.fetchGuild(avaire, event.getMessage()));
         });
     }
 

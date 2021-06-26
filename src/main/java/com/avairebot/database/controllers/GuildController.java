@@ -138,8 +138,9 @@ public class GuildController {
     }
 
     private static GuildTransformer loadGuildFromDatabase(AvaIre avaire, Guild guild) {
-        log.debug("Guild cache for " + guild.getId() + " was refreshed");
-
+        if (log.isDebugEnabled()) {
+            log.debug("Guild cache for " + guild.getId() + " was refreshed");
+        }
         try {
             GuildTransformer transformer = new GuildTransformer(guild, avaire.getDatabase()
                 .newQueryBuilder(Constants.GUILD_TABLE_NAME)

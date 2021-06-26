@@ -135,7 +135,7 @@ public class GlobalModCommand extends Command {
             });
             context.makeSuccess("Channel was set!").queue();
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
             context.makeError("Something went wrong...");
             return false;
         }
@@ -240,7 +240,7 @@ public class GlobalModCommand extends Command {
 
             return true;
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", throwables);
             context.makeError("Database error!").queue();
             return false;
         }

@@ -196,11 +196,12 @@ public class OnWatchlog {
         user.openPrivateChannel().queue(channel -> {
             EmbedBuilder message = MessageFactory.createEmbeddedBuilder()
                 .setColor(action.getType().getColor())
-                .setDescription(String.format("%s You have been **%s** %s " + guild.getName(),
+                .setDescription(String.format("%s You have been **%s** %s %s",
                     action.getType().getEmote(),
                     type,
                     action.getType().equals(OnWatchType.ON_WATCH)
-                        ? "in" : "from"
+                        ? "in" : "from",
+                    guild.getName()
                 ))
                 .addField("Moderator", action.getModerator().getName() + "#" + action.getModerator().getDiscriminator(), true)
                 .addField("Reason", action.getMessage(), true)

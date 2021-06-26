@@ -80,7 +80,7 @@ public class CreatePlaylist extends PlaylistSubCommand {
 
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             context.makeError("Error: " + e.getMessage()).queue();
         }
 

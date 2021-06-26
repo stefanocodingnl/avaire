@@ -116,7 +116,7 @@ public class ChannelEventAdapter extends EventAdapter {
                     statement.set("channels_data", GuildController.buildChannelData(guild.getTextChannels()), true);
                 });
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 

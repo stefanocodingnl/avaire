@@ -51,8 +51,9 @@ public class SyncPlayerUpdateReferencesWithDatabaseTask implements Task {
         String query = String.format("UPDATE `%s` SET `avatar` = ?, `username` = ?, `discriminator` = ? WHERE `user_id` = ?",
             Constants.PLAYER_EXPERIENCE_TABLE_NAME
         );
-
-        log.debug("Starting \"Player Reference\" update task with query: " + query);
+        if (log.isDebugEnabled()) {
+            log.debug("Starting \"Player Reference\" update task with query: " + query);
+        }
 
         try {
             avaire.getDatabase().queryBatch(query, preparedStatement -> {

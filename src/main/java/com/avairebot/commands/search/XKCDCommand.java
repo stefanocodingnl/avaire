@@ -135,7 +135,7 @@ public class XKCDCommand extends Command {
 
                 return new JSONObject(response.body()).get("num");
             } catch (IOException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
                 return 1;
             }
         })).intValue();

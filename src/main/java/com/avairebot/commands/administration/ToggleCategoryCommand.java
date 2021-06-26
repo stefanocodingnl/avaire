@@ -177,7 +177,7 @@ public class ToggleCategoryCommand extends Command {
                 .set("status", context.i18n("status." + (status ? "enabled" : "disabled")))
                 .queue();
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return false;
         }
 

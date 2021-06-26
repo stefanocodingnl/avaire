@@ -272,7 +272,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                             try {
                                                 qb.useAsync(true).delete();
                                             } catch (SQLException throwables) {
-                                                throwables.printStackTrace();
+                                                AvaIre.getLogger().error("ERROR: ", throwables);
                                             }
 
 
@@ -282,7 +282,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                 }
                             });
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
                     }
@@ -466,7 +466,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                             try {
                                                 qb.useAsync(true).delete();
                                             } catch (SQLException throwables) {
-                                                throwables.printStackTrace();
+                                                AvaIre.getLogger().error("ERROR: ", throwables);
                                             }
 
 
@@ -476,7 +476,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                 }
                             });
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
 
@@ -581,7 +581,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                 try {
                                                     qb.delete();
                                                 } catch (SQLException throwables) {
-                                                    throwables.printStackTrace();
+                                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                                 }
                                                 break;
                                             case "\uD83D\uDD04":
@@ -670,7 +670,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                         l.set("suggestion_message_id", p.getId());
                                                     });
                                                 } catch (SQLException throwables) {
-                                                    throwables.printStackTrace();
+                                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                                 }
                                             });
                                             msg.delete().queue();
@@ -679,13 +679,13 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                     } //👑
 
                                 } catch (SQLException throwables) {
-                                    throwables.printStackTrace();
+                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                 }
                             });
                         });
                     }
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwables);
                 }
             }
         });
@@ -695,15 +695,15 @@ public class ButtonClickEventAdapter extends EventAdapter {
     private CompletableFuture<DatabaseEventHolder> loadDatabasePropertiesIntoMemory(final ButtonClickEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannel().getType().isGuild()) {
-                return new DatabaseEventHolder(null, null);
+                return new DatabaseEventHolder(null, null, null);
             }
 
             GuildTransformer guild = GuildController.fetchGuild(avaire, event.getGuild());
 
             if (guild == null || !guild.isLevels() || event.getMember().getUser().isBot()) {
-                return new DatabaseEventHolder(guild, null);
+                return new DatabaseEventHolder(guild, null, null);
             }
-            return new DatabaseEventHolder(guild, null);
+            return new DatabaseEventHolder(guild, null, null);
         });
     }
 
