@@ -132,24 +132,24 @@ public class LockChannelsCommand extends Command {
     private boolean handleGlobalChannelLock(CommandMessage context, List <Role> r, List <TextChannel> c) {
         StringBuilder sb = new StringBuilder();
         for (TextChannel tc : c) {
-            changePermissions(r, sb, tc);
+            changePermissions(r, sb, tc, context);
         }
-        context.makeSuccess("Succesfully modified the current channels!\n" + sb.toString()).queue();
+        context.makeSuccess("Succesfully modified the current channels!\n" + sb).queue();
         return true;
     }
 
     private boolean handleChannelLock(CommandMessage context, List <Role> r) {
         StringBuilder sb = new StringBuilder();
         TextChannel tc = context.getMentionedChannels().size() == 1 ? context.getMentionedChannels().get(0) : context.channel;
-        changePermissions(r, sb, tc);
-        context.makeSuccess("Succesfully modified the current channel!\n" + sb.toString()).queue();
+        changePermissions(r, sb, tc, context);
+        context.makeSuccess("Succesfully modified the current channel!\n" + sb).queue();
         return true;
     }
 
     EnumSet <Permission> allow_see = EnumSet.of(Permission.MESSAGE_READ);
     EnumSet <Permission> deny_write = EnumSet.of(Permission.MESSAGE_WRITE);
 
-    private void changePermissions(List <Role> r, StringBuilder sb, TextChannel tc) {
+    private void changePermissions(List <Role> r, StringBuilder sb, TextChannel tc, CommandMessage context) {
         for (Role role : r) {
             PermissionOverride permissionOverride = tc.getPermissionOverride(role);
             if (permissionOverride != null) {

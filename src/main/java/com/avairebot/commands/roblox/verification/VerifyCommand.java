@@ -3,7 +3,6 @@ package com.avairebot.commands.roblox.verification;
 import com.avairebot.AvaIre;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
-import com.avairebot.contracts.verification.VerificationEntity;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,13 +38,26 @@ public class VerifyCommand extends Command {
     }
 
     @Override
+    public List <String> getMiddleware() {
+        return Arrays.asList(
+                "isOfficialPinewoodGuild"
+        );
+    }
+
+    @Override
     public List<String> getTriggers() {
         return Collections.singletonList("verify");
     }
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-        context.makeInfo("<a:loading:742658561414266890> Checking verification database <a:loading:742658561414266890>").queue(m -> {
+        if (!avaire.getBotAdmins().getUserById(context.getAuthor().getIdLong(), true).isAdmin()) {
+            return false;
+        }
+
+        return avaire.getRobloxAPIManager().getVerification().verify(context, true);
+
+        /*context.makeInfo("<a:loading:742658561414266890> Checking verification database <a:loading:742658561414266890>").queue(m -> {
             VerificationEntity verifiedRobloxUser = avaire.getRobloxAPIManager().getVerification().fetchVerification(context.getMember().getId(), true);
             if (verifiedRobloxUser == null) {
                 m.editMessage(context.makeError("No account found on the RoVer API. Please verify yourself on: https://verify.eryn.io/").requestedBy(context).buildEmbed()).queue();
@@ -58,7 +70,7 @@ public class VerifyCommand extends Command {
             }
 
             context.getGuild().modifyNickname(context.member, context.getVerificationTransformer().getNicknameFormat()
-                .replace("%USERNAME%", verifiedRobloxUser.getRobloxUsername())).queue();
+                    .replace("%USERNAME%", verifiedRobloxUser.getRobloxUsername())).queue();
 
             m.editMessage(context.makeSuccess(context.getVerificationTransformer().getWelcomeMessage()
                 .replace("%SERVER%", context.getGuild().getName())
@@ -66,6 +78,6 @@ public class VerifyCommand extends Command {
 
 
         });
-        return false;
+        return false;*/
     }
 }

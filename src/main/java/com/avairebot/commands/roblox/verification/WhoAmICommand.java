@@ -8,10 +8,11 @@ import com.avairebot.contracts.verification.VerificationEntity;
 import com.avairebot.database.collection.Collection;
 import com.avairebot.database.collection.DataRow;
 import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
+import com.avairebot.utilities.MentionableUtil;
+import net.dv8tion.jda.api.entities.User;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class WhoAmICommand extends Command {
@@ -45,12 +46,25 @@ public class WhoAmICommand extends Command {
 
     @Override
     public List<String> getTriggers() {
-        return Collections.singletonList("whoami");
+        return Arrays.asList("whoami", "rwhois");
     }
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-        VerificationEntity verifiedRobloxUser = avaire.getRobloxAPIManager().getVerification().fetchVerification(context.getMember().getId(), true);
+        VerificationEntity verifiedRobloxUser;
+
+
+        if (args.length == 1) {
+            User u = MentionableUtil.getUser(context, args);
+            if (u != null) {
+                verifiedRobloxUser = avaire.getRobloxAPIManager().getVerification().fetchVerification(u.getId(), true);
+            } else {
+                verifiedRobloxUser = avaire.getRobloxAPIManager().getVerification().fetchVerification(context.getMember().getId(), true);
+            }
+        } else {
+            verifiedRobloxUser = avaire.getRobloxAPIManager().getVerification().fetchVerification(context.getMember().getId(), true);
+        }
+
         if (verifiedRobloxUser == null) {
             context.makeError("No account found on the RoVer API. Please verify yourself on: https://verify.eryn.io/").requestedBy(context).queue();
             return false;
@@ -65,13 +79,22 @@ public class WhoAmICommand extends Command {
                     List<RobloxUserGroupRankService.Data> ranks = avaire.getRobloxAPIManager().getUserAPI().getUserRanks(verifiedRobloxUser.getRobloxId());
                     for (RobloxUserGroupRankService.Data rank : ranks) {
                         if (rank.getGroup().getId() == data.getLong("roblox_group_id")) {
-                            sb.append("\n**").append(data.getString("name")).append("** - `").append(rank.getRole().getName()).append("` (*").append(rank.getRole().getRank()).append("*)");
+                            if (rank.getRole().getRank() >= data.getInt("minimum_hr_rank")) {
+                                sb.append("\n**").append(data.getString("name")).append("** - `").append(rank.getRole().getName()).append("` (`").append(rank.getRole().getRank()).append("`)");
+                            } else {
+                                sb.append("\n").append(data.getString("name")).append(" - `").append(rank.getRole().getName()).append("` (`").append(rank.getRole().getRank()).append("`)");
+                            }
+
                         }
                     }
                 }
             }
 
-            context.makeInfo("**Roblox Username**: :rusername\n**Roblox ID**: :userId\nRanks:\n:userRanks")
+            context.makeInfo(
+                    "**Roblox Username**: :rusername\n" +
+                    "**Roblox ID**: :userId\n" +
+                    "**Ranks**:\n" +
+                    ":userRanks")
                 .set("rusername", verifiedRobloxUser.getRobloxUsername())
                 .set("userId", verifiedRobloxUser.getRobloxId())
                 .set("userRanks", sb.toString()).queue();

@@ -50,14 +50,14 @@ public class GroupRankCommand extends Command {
     @Override
     public List<String> getUsageInstructions() {
         return Collections.singletonList(
-            "`:command` - Ranking in the roblox Groups."
+                "`:command` - Ranking in the roblox Groups."
         );
     }
 
     @Override
     public List<String> getExampleUsage() {
         return Collections.singletonList(
-            "`:command` - Ranking in the roblox Groups."
+                "`:command` - Ranking in the roblox Groups."
         );
     }
 
@@ -71,15 +71,15 @@ public class GroupRankCommand extends Command {
     @Override
     public List<CommandGroup> getGroups() {
         return Collections.singletonList(
-            CommandGroups.MISCELLANEOUS
+                CommandGroups.MISCELLANEOUS
         );
     }
 
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "throttle:user,1,10",
-            "isManagerOrHigher"
+                "throttle:user,1,10",
+                "isManagerOrHigher"
         );
     }
 
@@ -121,8 +121,8 @@ public class GroupRankCommand extends Command {
         context.makeWarning("This command will allow you to rank someone in the configured group ID (``" + context.getGuildTransformer().getRobloxGroupId() + "``).").requestedBy(context).queue();
         Long botAccount = getRobloxId("PB_Xbot");
         Request.Builder request = new Request.Builder()
-            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url("https://groups.roblox.com/v2/users/{userId}/groups/roles".replace("{userId}", botAccount.toString()));
+                .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                .url("https://groups.roblox.com/v2/users/{userId}/groups/roles".replace("{userId}", botAccount.toString()));
 
         try (Response response = client.newCall(request.build()).execute()) {
             if (response.code() == 200) {
@@ -137,17 +137,17 @@ public class GroupRankCommand extends Command {
                     RobloxUserGroupRankService.Data d = b.get();
                     if (avaire.getBotAdmins().getUserById(context.getMember().getId()).isGlobalAdmin()) {
                         context.makeInfo("**Rank**: `:rank` - `:rankId`\n")
-                            .set("rankId", d.getRole().getId())
-                            .set("rank", d.getRole().getName())
-                            .setTitle(botAccount + " - PB_Xbot").requestedBy(context).queue();
+                                .set("rankId", d.getRole().getId())
+                                .set("rank", d.getRole().getName())
+                                .setTitle(botAccount + " - PB_Xbot").requestedBy(context).queue();
                     }
 
                     context.makeInfo("What Roblox user would you like to edit?").requestedBy(context).queue(v -> {
                         avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l -> {
                             return (l.getChannel().equals(context.getChannel()) &&
-                                l.getMember() != null && l.getMember().equals(context.getMember()) &&
-                                getRobloxId(l.getMessage().getContentRaw()) != null) ||
-                                l.getMessage().getContentRaw().equalsIgnoreCase("cancel");
+                                    l.getMember() != null && l.getMember().equals(context.getMember()) &&
+                                    getRobloxId(l.getMessage().getContentRaw()) != null) ||
+                                    l.getMessage().getContentRaw().equalsIgnoreCase("cancel");
                         }, k -> {
                             if (k.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
                                 context.makeInfo("Cancelled").queue();
@@ -183,63 +183,56 @@ public class GroupRankCommand extends Command {
             return;
         }
 
-        Request.Builder request = new Request.Builder()
-            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url("https://groups.roblox.com/v1/groups/{groupId}/roles".replace("{groupId}", String.valueOf(context.getGuildTransformer().getRobloxGroupId())));
 
-        try (Response response = client.newCall(request.build()).execute()) {
-            if (response.code() == 200) {
-                GroupRanksService grs = (GroupRanksService) toService(response, GroupRanksService.class);
-                if (!(grs.getRoles().size() > 0)) {
-                    context.makeError("Somehow, the group configured to this guild has no roles. Please check if the reality anchor is still running!").requestedBy(context).queue();
-                    return;
-                }
-
-                StringBuilder sb = new StringBuilder();
-                for (GroupRanksService.Role r : grs.getRoles()) {
-                    if (r.getRank() >= ownRank || r.getRank() >= maxXeusRank || r.getRank().equals(0)) {
-                        sb.append("`").append(r.getRank()).append("` - **").append(r.getName()).append("** - <:no:694270050257076304>\n");
-                    } else {
-                        sb.append("`").append(r.getRank()).append("` - **").append(r.getName()).append("** - <:yes:694268114803621908>\n");
-                    }
-                }
-
-                context.makeWarning("(**Username**: `:username` - **:rankName**)\n:ranks").setTitle(grs.getGroupId() + " - Roles").set("username", username).set("rankName", grs.getRoles().stream().filter(h -> {return h.getRank().equals(rankeeRank);}).findFirst()).set("ranks", sb.toString()).requestedBy(context).queue();
-                context.makeInfo("What rank would you like to give this user? (Please use the number, not the name of the rank. Say `cancel` to cancel)").requestedBy(context).queue(v -> {
-                    avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l ->
-                            l.getChannel().equals(context.getChannel()) &&
-                                l.getMember() != null &&
-                                l.getMember().equals(context.getMember()) &&
-                                NumberUtil.isNumeric(l.getMessage().getContentRaw()) ||
-                                l.getMessage().getContentRaw().equalsIgnoreCase("cancel"),
-                        k -> {
-                            if (k.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
-                                context.makeInfo("Cancelled").queue();
-                                return;
-                            }
-
-                            if (Integer.parseInt(k.getMessage().getContentRaw()) == 0) {
-                                context.makeError("You cannot rank someone to 0 (Guest), as this would exile them!").queue();
-                                return;
-                            }
-
-                            if (Integer.parseInt(k.getMessage().getContentRaw()) >= ownRank) {
-                                context.makeError("You're not able to rank someone higher then your own rank!").queue();
-                                return;
-                            }
-
-                            if (Integer.parseInt(k.getMessage().getContentRaw()) >= maxXeusRank) {
-                                context.makeError("You're not able to change the rank of " + username + " higher or the same rank as PB_Xbot").queue();
-                                return;
-                            }
-
-                            makeConfirmMessage(context, context.getGuildTransformer().getRobloxGroupId(), id, username, grs.getRoles(), k.getMessage().getContentRaw());
-                        });
-                });
-            }
-        } catch (IOException e) {
-            AvaIre.getLogger().error("Failed sending request to Roblox API: " + e.getMessage());
+        GroupRanksService grs = avaire.getRobloxAPIManager().getGroupAPI().fetchGroupRanks(context.getGuildTransformer().getRobloxGroupId(), false);
+        if (!(grs != null && grs.getRoles().size() > 0)) {
+            context.makeError("Somehow, the group configured to this guild has no roles. Please check if the reality anchor is still running!").requestedBy(context).queue();
+            return;
         }
+
+        StringBuilder sb = new StringBuilder();
+        for (GroupRanksService.Role r : grs.getRoles()) {
+            if (r.getRank() >= ownRank || r.getRank() >= maxXeusRank || r.getRank().equals(0)) {
+                sb.append("`").append(r.getRank()).append("` - **").append(r.getName()).append("** - <:no:694270050257076304>\n");
+            } else {
+                sb.append("`").append(r.getRank()).append("` - **").append(r.getName()).append("** - <:yes:694268114803621908>\n");
+            }
+        }
+
+        context.makeWarning("(**Username**: `:username` - **:rankName**)\n:ranks").setTitle(grs.getGroupId() + " - Roles").set("username", username).set("rankName", grs.getRoles().stream().filter(h -> {
+            return h.getRank().equals(rankeeRank);
+        }).findFirst()).set("ranks", sb.toString()).requestedBy(context).queue();
+        context.makeInfo("What rank would you like to give this user? (Please use the number, not the name of the rank. Say `cancel` to cancel)").requestedBy(context).queue(v -> {
+            avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l ->
+                            l.getChannel().equals(context.getChannel()) &&
+                                    l.getMember() != null &&
+                                    l.getMember().equals(context.getMember()) &&
+                                    NumberUtil.isNumeric(l.getMessage().getContentRaw()) ||
+                                    l.getMessage().getContentRaw().equalsIgnoreCase("cancel"),
+                    k -> {
+                        if (k.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
+                            context.makeInfo("Cancelled").queue();
+                            return;
+                        }
+
+                        if (Integer.parseInt(k.getMessage().getContentRaw()) == 0) {
+                            context.makeError("You cannot rank someone to 0 (Guest), as this would exile them!").queue();
+                            return;
+                        }
+
+                        if (Integer.parseInt(k.getMessage().getContentRaw()) >= ownRank) {
+                            context.makeError("You're not able to rank someone higher then your own rank!").queue();
+                            return;
+                        }
+
+                        if (Integer.parseInt(k.getMessage().getContentRaw()) >= maxXeusRank) {
+                            context.makeError("You're not able to change the rank of " + username + " higher or the same rank as PB_Xbot").queue();
+                            return;
+                        }
+
+                        makeConfirmMessage(context, context.getGuildTransformer().getRobloxGroupId(), id, username, grs.getRoles(), k.getMessage().getContentRaw());
+                    });
+        });
 
 
     }
@@ -268,20 +261,20 @@ public class GroupRankCommand extends Command {
         Button b1 = Button.success("yes:" + username, "Yes").withEmoji(Emoji.fromUnicode("✅"));
         Button b2 = Button.secondary("no:" + username, "No").withEmoji(Emoji.fromUnicode("❌"));
         context.getChannel().sendMessage(context.makeInfo("Are you sure you want to rank **:username** to **:rank** in `:robloxGroupId`?").requestedBy(context)
-            .set("username", username).set("rank", rank.getName() + " (`" + rank.getRank() + "`)").set("robloxGroupId", robloxGroupId).buildEmbed()).setActionRow(b1, b2).queue(v -> {
+                .set("username", username).set("rank", rank.getName() + " (`" + rank.getRank() + "`)").set("robloxGroupId", robloxGroupId).buildEmbed()).setActionRow(b1, b2).queue(v -> {
 
             avaire.getWaiter().waitForEvent(ButtonClickEvent.class, r -> r.getChannel().equals(context.getChannel()) &&
-                r.getMember() != null &&
-                r.getMember().equals(context.getMember()), send -> {
+                    r.getMember() != null &&
+                    r.getMember().equals(context.getMember()), send -> {
 
                 send.deferEdit().queue(m -> {
                     if (send.getButton().getEmoji().getName().equalsIgnoreCase("❌") || send.getButton().getEmoji().getName().equalsIgnoreCase("x")) {
                         context.makeWarning("Cancelled system, no rank has been changed.").queue();
                     } else if (send.getButton().getEmoji().getName().equalsIgnoreCase("✅")) {
                         Request.Builder request = new Request.Builder()
-                            .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-                            .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "SetRank"))
-                            .post(RequestBody.create(json, buildPayload(id, robloxGroupId, rank.getRank())));
+                                .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                                .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "SetRank"))
+                                .post(RequestBody.create(json, buildPayload(id, robloxGroupId, rank.getRank())));
 
                         try (Response response = client.newCall(request.build()).execute()) {
 
@@ -340,7 +333,7 @@ public class GroupRankCommand extends Command {
 
     public Long getRobloxFromRoverId(CommandContext context) {
         VerificationEntity robloxUser = avaire.getRobloxAPIManager()
-            .getVerification().fetchVerification(context.getMember().getId(), true);
+                .getVerification().fetchVerification(context.getMember().getId(), true);
         return robloxUser != null ? robloxUser.getRobloxId() : null;
     }
 

@@ -24,12 +24,7 @@ package com.avairebot.database.transformers;
 import com.avairebot.AvaIre;
 import com.avairebot.contracts.database.transformers.Transformer;
 import com.avairebot.database.collection.DataRow;
-import com.google.gson.reflect.TypeToken;
 import net.dv8tion.jda.api.entities.Guild;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class VerificationTransformer extends Transformer {
 
@@ -47,8 +42,7 @@ public class VerificationTransformer extends Transformer {
     private long announceChannel = 0;
     private long verifyChannel = 0;
 
-    private final Map <String, Map<String, String>> ranks = new HashMap<>();
-
+    private String grs;
 
     public VerificationTransformer(Guild guild) {
         super(null);
@@ -79,17 +73,8 @@ public class VerificationTransformer extends Transformer {
             verifyChannel = data.getLong("verify_channel");
 
             if (data.getString("ranks", null) != null) {
-                HashMap <String, Map <String, String>> dbModules = AvaIre.gson.fromJson(
-                        data.getString("ranks"),
-                        new TypeToken<HashMap<String, HashMap<String, HashMap<String, ArrayList<Integer>>>>>() {
-                        }.getType());
-
-                for (Map.Entry <String, Map <String, String>> item : dbModules.entrySet()) {
-                    ranks.put(item.getKey(), item.getValue());
-                }
+                grs = data.getString("ranks");
             }
- //           HashMap<String, HashMap<String, HashMap<String, ArrayList<Integer>>>>
-
 
             reset();
         }
@@ -179,7 +164,12 @@ public class VerificationTransformer extends Transformer {
         this.verifiedRole = verifiedRole;
     }
 
-    public Map<String, Map<String, String>> getVerifyRanks() {
-        return ranks;
+    public String getRanks() {
+        return grs;
     }
+
+    public Object toService(String json, Class<?> clazz) {
+        return AvaIre.gson.fromJson(json, clazz);
+    }
+
 }

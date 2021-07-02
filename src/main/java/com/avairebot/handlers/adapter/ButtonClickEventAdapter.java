@@ -106,7 +106,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                         if (permissionLevel >=
                                             CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
                                             if (e.getGuild().getId().equals("438134543837560832")) {
-                                                RequestFactory.makeGET("https://www.pb-kronos.dev/api/v2/database/pbst")
+                                                RequestFactory.makeGET("https://www.pb-kronos.dev/api/v2/databasex`/pbst")
                                                     .addParameter("userids", reportedRobloxId)
                                                     .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
                                                     .send((Consumer<Response>) response -> {

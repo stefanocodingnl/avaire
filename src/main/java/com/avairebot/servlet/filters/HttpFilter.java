@@ -32,7 +32,7 @@ public class HttpFilter implements Filter {
     public void handle(Request request, Response response) throws Exception {
         WebServlet.log.debug(request.requestMethod() + " " + request.pathInfo());
 
-        response.header("Access-Control-Allow-Origin", "*.pinewood-builders.com");
+        response.header("Access-Control-Allow-Origin", "pinewood-builders.com");
         response.type("application/json");
     }
 }

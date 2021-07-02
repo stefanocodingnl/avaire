@@ -41,18 +41,17 @@ public class CreateVerificationTableMigration implements Migration {
             table.Long("id").unsigned();
             table.Text("name");
 
-            table.String("nickname_group").nullable();
             table.String("nickname_format", 32).defaultValue("%USERNAME%").nullable();
             table.String("welcome_message", 2000).defaultValue("Welcome to %SERVER%, %USERNAME%!").nullable();
 
             table.Boolean("join_dm").defaultValue(true).nullable();
-            table.Boolean("nickname_users").nullable();
+            table.Boolean("nickname_users").nullable().defaultValue(true).nullable();
 
             table.Long("unverified_role").nullable();
             table.Long("verified_role").nullable();
             table.Long("announce_channel").nullable();
-
-            table.LongText("ranks");
+            table.Long("verify_channel").nullable();
+            table.LongText("ranks").nullable();
 
             table.setEngine(DatabaseEngine.InnoDB);
         });

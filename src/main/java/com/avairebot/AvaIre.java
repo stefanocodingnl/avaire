@@ -72,8 +72,6 @@ import com.avairebot.pinewood.VoiceWhitelistManager;
 import com.avairebot.plugin.PluginLoader;
 import com.avairebot.plugin.PluginManager;
 import com.avairebot.roblox.RobloxAPIManager;
-import com.avairebot.roblox.api.user.RobloxUserAPIRoutes;
-import com.avairebot.roblox.verification.VerificationManager;
 import com.avairebot.scheduler.ScheduleHandler;
 import com.avairebot.servlet.WebServlet;
 import com.avairebot.servlet.routes.*;
@@ -402,7 +400,7 @@ public class AvaIre {
         blacklist.syncBlacklistWithDatabase();
 
         log.info("Preparing verification and checking cache.");
-        robloxApiManager = new RobloxAPIManager(new RobloxUserAPIRoutes(this), new VerificationManager(this));
+        robloxApiManager = new RobloxAPIManager(this);
 
         log.info("Preparing report blacklist and syncing the list with the database");
         featureBlacklist = new FeatureBlacklist(this);
