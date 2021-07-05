@@ -11,10 +11,10 @@ public class GuildRobloxRanksService {
     }
 
     public class Group {
-        private Long id;
+        private String id;
         private List<Integer> ranks;
 
-        public Long getId() {
+        public String getId() {
             return id;
         }
 

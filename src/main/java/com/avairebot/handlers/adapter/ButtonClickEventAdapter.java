@@ -110,7 +110,7 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                                     .addParameter("userids", reportedRobloxId)
                                                     .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
                                                     .send((Consumer<Response>) response -> {
-                                                        List<LinkedTreeMap<String, Double>> service = (List<LinkedTreeMap<String, Double>>) response.toService(List.class);
+                                                        List<LinkedTreeMap<String, Long>> service = (List<LinkedTreeMap<String, Long>>) response.toService(List.class);
                                                             Long userId = reportedRobloxId;
                                                             Long points = service.size() != 0 ? service.get(0).get("Points").longValue() : 0L;
 

@@ -2,6 +2,7 @@ package com.avairebot.roblox.api.user;
 
 import com.avairebot.AppInfo;
 import com.avairebot.AvaIre;
+import com.avairebot.requests.service.user.inventory.RobloxGamePassService;
 import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
 import com.avairebot.roblox.RobloxAPIManager;
 import okhttp3.Request;
@@ -35,5 +36,24 @@ public class RobloxUserAPIRoutes {
     }
 
 
+    public List<RobloxGamePassService.Datum> getUserGamePass(Long userId, Long gamepassId) {
+        Request.Builder request = new Request.Builder()
+                .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                .url("https://inventory.roblox.com/v1/users/{userId}/items/GamePass/{gamepassId}"
+                        .replace("{userId}", userId.toString())
+                        .replace("{gamepassId}", gamepassId.toString()));
+
+        try (Response response = manager.getClient().newCall(request.build()).execute()) {
+            if (response.code() == 200) {
+                RobloxGamePassService grs = (RobloxGamePassService) manager.toService(response, RobloxGamePassService.class);
+                if (grs.hasData()) {
+                    return grs.getData();
+                }
+            }
+        } catch (IOException e) {
+            AvaIre.getLogger().error("Failed sending request to Roblox API: " + e.getMessage());
+        }
+        return null;
+    }
 
 }

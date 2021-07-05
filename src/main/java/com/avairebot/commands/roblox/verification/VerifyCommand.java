@@ -55,6 +55,7 @@ public class VerifyCommand extends Command {
             return false;
         }
 
+
         return avaire.getRobloxAPIManager().getVerification().verify(context, true);
 
         /*context.makeInfo("<a:loading:742658561414266890> Checking verification database <a:loading:742658561414266890>").queue(m -> {

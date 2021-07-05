@@ -147,16 +147,13 @@ public class VerificationCommand extends Command {
                 context.makeInfo("Ranks have not been setup yet, loading ranks from Roblox API and binding them to the guild based on the roblox group `:gId`.").set("gId", args[1]).queue();
                 return generateRobloxRanks(context, ranks);
             }
-
-            if (context.getGuildTransformer().getRobloxGroupId() != 0) {
-                GroupRanksService ranks = manager.getGroupAPI().fetchGroupRanks(context.getGuildTransformer().getRobloxGroupId(), false);
-                context.makeInfo("Ranks have not been setup yet, loading ranks from Roblox API and binding them to the guild based on the main group ID.").queue();
-                return generateRobloxRanks(context, ranks);
-            }
-
-            return sendErrorMessage(context, "Guild doesn't have a main group ID configured, neither did you supply one. Please try again.");
         }
-        return false;
+        if (context.getGuildTransformer().getRobloxGroupId() != 0) {
+            GroupRanksService ranks = manager.getGroupAPI().fetchGroupRanks(context.getGuildTransformer().getRobloxGroupId(), false);
+            context.makeInfo("Ranks have not been setup yet, loading ranks from Roblox API and binding them to the guild based on the main group ID.").queue();
+            return generateRobloxRanks(context, ranks);
+        }
+        return sendErrorMessage(context, "Guild doesn't have a main group ID configured, neither did you supply one. Please try again.");
     }
 
     private boolean setJoinDM(CommandMessage context, String[] args) {
@@ -179,7 +176,6 @@ public class VerificationCommand extends Command {
     private boolean setNicknameUsers(CommandMessage context, String[] args) {
         return false;
     }
-
 
 
     public RestAction<Message> createVerificationCategory(Guild guild) {
