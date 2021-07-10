@@ -606,7 +606,8 @@ web-servlet:
   # has a key that does not match the key below will be ignored.
   #
   authToken: 'avaire-auth-token'
-  verificationToken: 'avaire-verification-token'
+  verificationTokens:
+    - 'avaire-verify-token'
 #--------------------------------------------------------------------------
 # Vote Locking
 #--------------------------------------------------------------------------

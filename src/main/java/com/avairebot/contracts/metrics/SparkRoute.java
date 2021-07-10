@@ -27,6 +27,8 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.util.List;
+
 public abstract class SparkRoute implements Route {
 
     /**
@@ -66,7 +68,7 @@ public abstract class SparkRoute implements Route {
     protected boolean hasValidVerificationAuthorizationHeader(Request request) {
         String authorization = request.headers("Authorization");
 
-        return authorization != null && authorization.equals(getVerifyAuthorizationToken());
+        return authorization != null && getVerifyAuthorizationTokens().contains(authorization);
     }
 
     /**
@@ -89,9 +91,7 @@ public abstract class SparkRoute implements Route {
      * @return The string representing the auth token.
      */
     @SuppressWarnings("WeakerAccess")
-    protected String getVerifyAuthorizationToken() {
-        return AvaIre.getInstance().getConfig().getString("web-servlet.verificationToken",
-                AvaIre.getInstance().getConfig().getString("metrics.authToken", "avaire-auth-token")
-        );
+    protected List<String> getVerifyAuthorizationTokens() {
+        return AvaIre.getInstance().getConfig().getStringList("web-servlet.verificationTokens");
     }
 }

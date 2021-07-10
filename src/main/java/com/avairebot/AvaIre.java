@@ -207,7 +207,7 @@ public class AvaIre {
         }
 
         botAdmins = new BotAdmin(this, Collections.unmodifiableSet(new HashSet<>(
-            config.getStringList("botAccess")
+                config.getStringList("botAccess")
         )));
 
         applicationEnvironment = Environment.fromName(config.getString("environment", Environment.PRODUCTION.getName()));
@@ -280,7 +280,7 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
         CategoryHandler.addCategory(this, "Reports", defaultPrefix);
         CategoryHandler.addCategory(this, "Roblox", defaultPrefix);
-        CategoryHandler.addCategory(this, "Verification", "bv!");
+        CategoryHandler.addCategory(this, "Verification", "v!");
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
@@ -436,8 +436,7 @@ public class AvaIre {
         if (getConfig().getBoolean("web-servlet.api-routes.roblox-verification", true)) {
             servlet.registerGet("/verification/discord/:discordId", new GetRobloxUserByDiscordId());
             servlet.registerGet("/verification/roblox/:robloxId", new GetDiscordIdsByRobloxId());
-            servlet.registerPost("/verification/link/verify/:userId", new PostAccountVerificationLink());
-            servlet.registerPost("/verification/link/verify/:userId", new PostAccountVerificationLink());
+            servlet.registerPost("/verification/confirmOwnership/:robloxId", new PostAccountVerificationLink());
         }
 
         log.info("Preparing and setting up metrics");

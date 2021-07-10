@@ -2,11 +2,13 @@ package com.avairebot.contracts.verification;
 
 public class VerificationEntity {
 
+    private long discordId;
     private long robloxId;
     private String robloxUsername;
     private String provider;
 
-    public VerificationEntity(Long id, String username, String provider) {
+    public VerificationEntity(Long id, String username, Long discordId, String provider) {
+        this.discordId = discordId;
         this.robloxId = id;
         this.robloxUsername = username;
         this.provider = provider;
@@ -22,5 +24,9 @@ public class VerificationEntity {
 
     public String getProvider() {
         return provider;
+    }
+
+    public Long getDiscordId() {
+        return discordId;
     }
 }

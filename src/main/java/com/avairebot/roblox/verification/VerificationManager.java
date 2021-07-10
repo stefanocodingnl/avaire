@@ -274,7 +274,7 @@ public class VerificationManager {
             if (response.code() == 200 && response.body() != null) {
                 HashMap<String, String> responseJson = AvaIre.gson.fromJson(response.body().string(), new TypeToken<HashMap<String, String>>() {
                 }.getType());
-                VerificationEntity verificationEntity = new VerificationEntity(Long.valueOf(responseJson.get("primaryAccount")), getRobloxUsernameFromId(Long.valueOf(responseJson.get("primaryAccount"))), "bloxlink");
+                VerificationEntity verificationEntity = new VerificationEntity(Long.valueOf(responseJson.get("primaryAccount")), getRobloxUsernameFromId(Long.valueOf(responseJson.get("primaryAccount"))), Long.valueOf(discordUserId),  "bloxlink");
 
                 cache.put(discordUserId, verificationEntity);
                 return verificationEntity;
@@ -305,7 +305,7 @@ public class VerificationManager {
             if (linkedAccounts.size() == 0) {
                 return null;
             } else {
-                return new VerificationEntity(linkedAccounts.first().getLong("robloxId"), linkedAccounts.first().getString("username"), "pinewood");
+                return new VerificationEntity(linkedAccounts.first().getLong("robloxId"), linkedAccounts.first().getString("username"), Long.valueOf(discordUserId), "pinewood");
             }
         } catch (SQLException throwables) {
             return null;
@@ -322,7 +322,7 @@ public class VerificationManager {
             if (response.code() == 200 && response.body() != null) {
                 HashMap<String, String> responseJson = AvaIre.gson.fromJson(response.body().string(), new TypeToken<HashMap<String, String>>() {
                 }.getType());
-                VerificationEntity verificationEntity = new VerificationEntity(Long.valueOf(responseJson.get("robloxId")), responseJson.get("robloxUsername"), "rover");
+                VerificationEntity verificationEntity = new VerificationEntity(Long.valueOf(responseJson.get("robloxId")), responseJson.get("robloxUsername"), Long.valueOf(discordUserId), "rover");
 
                 cache.put(discordUserId, verificationEntity);
                 return verificationEntity;
