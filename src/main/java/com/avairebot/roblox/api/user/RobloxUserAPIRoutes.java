@@ -7,6 +7,7 @@ import com.avairebot.requests.service.user.rank.RobloxUserGroupRankService;
 import com.avairebot.roblox.RobloxAPIManager;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +36,21 @@ public class RobloxUserAPIRoutes {
         return null;
     }
 
+    public String getUserStatus(Long botAccount) {
+        Request.Builder request = new Request.Builder()
+                .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
+                .url("https://users.roblox.com/v1/users/{userId}".replace("{userId}", botAccount.toString()));
+
+        try (Response response = manager.getClient().newCall(request.build()).execute()) {
+            if (response.code() == 200) {
+                JSONObject json = new JSONObject(response.body().string());
+                return json.getString("description");
+            }
+        } catch (IOException e) {
+            AvaIre.getLogger().error("Failed sending request to Roblox API: " + e.getMessage());
+        }
+        return null;
+    }
 
     public List<RobloxGamePassService.Datum> getUserGamePass(Long userId, Long gamepassId) {
         Request.Builder request = new Request.Builder()

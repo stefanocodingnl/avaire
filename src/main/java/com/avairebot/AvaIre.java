@@ -74,7 +74,7 @@ import com.avairebot.plugin.PluginManager;
 import com.avairebot.roblox.RobloxAPIManager;
 import com.avairebot.scheduler.ScheduleHandler;
 import com.avairebot.servlet.WebServlet;
-import com.avairebot.servlet.routes.*;
+import com.avairebot.servlet.routes.v1.*;
 import com.avairebot.shard.ShardEntityCounter;
 import com.avairebot.shared.DiscordConstants;
 import com.avairebot.shared.ExitCodes;
@@ -280,7 +280,7 @@ public class AvaIre {
         CategoryHandler.addCategory(this, "Evaluations", defaultPrefix);
         CategoryHandler.addCategory(this, "Reports", defaultPrefix);
         CategoryHandler.addCategory(this, "Roblox", defaultPrefix);
-        CategoryHandler.addCategory(this, "Verification", defaultPrefix);
+        CategoryHandler.addCategory(this, "Verification", "bv!");
         CategoryHandler.addCategory(this, "System", getConfig().getString(
             "system-prefix", DiscordConstants.DEFAULT_SYSTEM_PREFIX
         ));
@@ -431,6 +431,13 @@ public class AvaIre {
 
         if (getConfig().getBoolean("web-servlet.api-routes.stats", true)) {
             servlet.registerGet("/stats", new GetStats());
+        }
+
+        if (getConfig().getBoolean("web-servlet.api-routes.roblox-verification", true)) {
+            servlet.registerGet("/verification/discord/:discordId", new GetRobloxUserByDiscordId());
+            servlet.registerGet("/verification/roblox/:robloxId", new GetDiscordIdsByRobloxId());
+            servlet.registerPost("/verification/link/verify/:userId", new PostAccountVerificationLink());
+            servlet.registerPost("/verification/link/verify/:userId", new PostAccountVerificationLink());
         }
 
         log.info("Preparing and setting up metrics");

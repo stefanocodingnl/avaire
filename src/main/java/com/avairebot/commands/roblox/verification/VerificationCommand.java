@@ -5,11 +5,13 @@ import com.avairebot.Constants;
 import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.database.controllers.VerificationController;
+import com.avairebot.database.transformers.VerificationTransformer;
 import com.avairebot.requests.service.group.GroupRanksService;
 import com.avairebot.requests.service.group.GuildRobloxRanksService;
 import com.avairebot.roblox.RobloxAPIManager;
 import com.avairebot.utilities.MentionableUtil;
 import com.avairebot.utilities.NumberUtil;
+import com.avairebot.utilities.RoleUtil;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.requests.RestAction;
@@ -51,7 +53,8 @@ public class VerificationCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-                "isOfficialPinewoodGuild"
+                "isOfficialPinewoodGuild",
+                "isManagerOrHigher"
         );
     }
 
@@ -62,14 +65,6 @@ public class VerificationCommand extends Command {
 
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
-        if (!avaire.getBotAdmins().getUserById(context.getAuthor().getIdLong(), true).isAdmin()) {
-            return false;
-        }
-
-        if (!(context.getAuthor().getIdLong() == 173839105615069184L)) {
-            return false;
-        }
-
         if (context.getGuildTransformer() == null) {
             context.makeError("Can't get the GuildTransformer, please try again later.").queue();
             return false;
@@ -102,7 +97,7 @@ public class VerificationCommand extends Command {
                 case "unbindall":
                     return unbindAllSubcommand(context, args);
                 case "list":
-                    return listBoundRoles(context, args, manager);
+                    return listBoundRoles(context, manager);
                 case "creategroupranks":
                     return createGroupRanks(context, args, manager);
                 default:
@@ -113,7 +108,7 @@ public class VerificationCommand extends Command {
         return false;
     }
 
-    private boolean listBoundRoles(CommandMessage context, String[] args, RobloxAPIManager manager) {
+    private boolean listBoundRoles(CommandMessage context, RobloxAPIManager manager) {
         GuildRobloxRanksService guildRanks = (GuildRobloxRanksService) manager.toService(context.getVerificationTransformer().getRanks(), GuildRobloxRanksService.class);
         if (guildRanks != null) {
             StringBuilder sb = new StringBuilder();
@@ -124,11 +119,7 @@ public class VerificationCommand extends Command {
                 if (r != null) {
                     sb.append("**").append(r.getName()).append("** - ``");
                     for (GuildRobloxRanksService.Group s : groupRankBinding.getGroups()) {
-                        sb.append(s.getId()).append("`` - ```yaml");
-                        for (Integer rank : s.getRanks()) {
-                            sb.append("\n").append(rank.toString());
-                        }
-                        sb.append("```");
+                        sb.append(s.getId()).append("`` > ```yaml\n").append(s.getRanks().get(0)).append(s.getRanks().get(s.getRanks().size() - 1)).append("```");
                     }
                 }
             }
@@ -170,6 +161,28 @@ public class VerificationCommand extends Command {
     }
 
     private boolean runBindCommand(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            //return goToBindStart(context, args);
+        }
+        VerificationTransformer verificationTransformer = context.getVerificationTransformer();
+        if (verificationTransformer == null) {
+            context.makeError("The VerificationTransformer seems to have broken, please consult the developer of the bot.").queue();
+            return false;
+        }
+
+        if (verificationTransformer.getNicknameFormat() == null) {
+            context.makeError("The nickname format is not set (Wierd, it's the default but ok then, command cancelled).").queue();
+            return false;
+        }
+
+        if (verificationTransformer.getRanks() == null || verificationTransformer.getRanks().length() < 2) {
+            context.makeError("Ranks have not been setup on this guild yet. Please ask the admins to setup the roles on this server.").queue();
+            return false;
+        }
+
+        GuildRobloxRanksService guildRanks = (GuildRobloxRanksService) avaire.getRobloxAPIManager().toService(context.getVerificationTransformer().getRanks(), GuildRobloxRanksService.class);
+
+
         return false;
     }
 
@@ -270,20 +283,22 @@ public class VerificationCommand extends Command {
             Guild g = context.getGuild();
             List<Role> r = g.getRolesByName(role.getName(), true);
             if (r.size() > 0) {
-                JSONObject roleObject = new JSONObject();
-                roleObject.put("role", r.get(0).getId());
+                if (RoleUtil.canBotInteractWithRole(context.getMessage(), r.get(0))) {
+                    JSONObject roleObject = new JSONObject();
+                    roleObject.put("role", r.get(0).getId());
 
-                JSONArray groups = new JSONArray();
-                JSONObject group = new JSONObject();
-                group.put("id", ranks.getGroupId());
-                List<Integer> Rranks = new ArrayList<>();
-                Rranks.add(role.getRank());
-                group.put("ranks", Rranks);
-                groups.put(group);
+                    JSONArray groups = new JSONArray();
+                    JSONObject group = new JSONObject();
+                    group.put("id", ranks.getGroupId());
+                    List<Integer> Rranks = new ArrayList<>();
+                    Rranks.add(role.getRank());
+                    group.put("ranks", Rranks);
+                    groups.put(group);
 
-                roleObject.put("groups", groups);
+                    roleObject.put("groups", groups);
 
-                groupRanksBindings.put(roleObject);
+                    groupRanksBindings.put(roleObject);
+                }
             }
         }
         groupRankBindings.put("groupRankBindings", groupRanksBindings);

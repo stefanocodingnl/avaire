@@ -66,7 +66,8 @@ public class GuildEventAdapter extends EventAdapter {
 
     public void onGuildPIAMemberBanEvent(GuildUnbanEvent e) {
         try {
-            QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", e.getUser().getId());
+            QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME)
+                    .where("userId", e.getUser().getId());
             Collection unbanCollection = qb.get();
             if (unbanCollection.size() > 0) {
                 e.getGuild().retrieveAuditLogs().queue(items -> {

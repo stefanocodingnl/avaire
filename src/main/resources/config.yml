@@ -587,6 +587,14 @@ web-servlet:
     #
     stats: true
 
+    # Exposes a verification route that can be used to verify users from the database.
+    # This pulls from RoVer currently, but will shift to it's own database.
+    #
+    # Route:
+    #   GET  /verification/discord/:discordId
+    #   GET  /verification/roblox/:robloxId
+    roblox-verification: true
+
   # The port the API and metrics should be exposed to, the port must not be used
   # by another application on the system, otherwise the API won't be able to
   # start up correctly.
@@ -598,7 +606,7 @@ web-servlet:
   # has a key that does not match the key below will be ignored.
   #
   authToken: 'avaire-auth-token'
-
+  verificationToken: 'avaire-verification-token'
 #--------------------------------------------------------------------------
 # Vote Locking
 #--------------------------------------------------------------------------

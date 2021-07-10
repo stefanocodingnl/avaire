@@ -226,7 +226,8 @@ public class GlobalBanCommand extends Command {
 
         String id = args[1];
         try {
-            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", id).get();
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME)
+                    .where("userId", id).get();
             if (c.size() < 1) {
                 context.makeInfo("``:userId`` was not found/is not banned.").set("userId", id).requestedBy(context).queue();
                 return makeGuildBans(context, args);

@@ -106,13 +106,13 @@ public class ButtonClickEventAdapter extends EventAdapter {
                                         if (permissionLevel >=
                                             CheckPermissionUtil.GuildPermissionCheckType.MANAGER.getLevel()) {
                                             if (e.getGuild().getId().equals("438134543837560832")) {
-                                                RequestFactory.makeGET("https://www.pb-kronos.dev/api/v2/databasex`/pbst")
+                                                RequestFactory.makeGET("https://www.pb-kronos.dev/api/v2/database/pbst")
                                                     .addParameter("userids", reportedRobloxId)
                                                     .addHeader("Access-Key", avaire.getConfig().getString("apiKeys.kronosDatabaseApiKey"))
                                                     .send((Consumer<Response>) response -> {
                                                         List<LinkedTreeMap<String, Long>> service = (List<LinkedTreeMap<String, Long>>) response.toService(List.class);
                                                             Long userId = reportedRobloxId;
-                                                            Long points = service.size() != 0 ? service.get(0).get("Points").longValue() : 0L;
+                                                            Long points = service.size() != 0 ? service.get(0).get("Points") : 0L;
 
                                                             tc.retrieveMessageById(c.getLong("report_message_id")).queue(v -> {
                                                                 if (v.getEmbeds().get(0).getColor().equals(new Color(0, 255, 0)))

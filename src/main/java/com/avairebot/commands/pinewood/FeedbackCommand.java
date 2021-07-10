@@ -112,7 +112,7 @@ public class FeedbackCommand extends Command {
             }
         }
 
-        context.makeInfo("<a:loading:742658561414266890> Loading suggestions...").queue(l -> {
+        context.makeInfo("<a:loading:742658561414266890> Loading suggestions... <a:loading:742658561414266890>").queue(l -> {
 
             QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).orderBy("suggestion_channel");
             try {
@@ -188,7 +188,7 @@ public class FeedbackCommand extends Command {
                             actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asDisabled());
                         }
 
-                        c.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
+                        c.sendMessageEmbeds(context.makeEmbeddedMessage(new Color(32, 34, 37))
                             .setAuthor("Suggestion for: " + c.getGuild().getName(), null, c.getGuild().getIconUrl())
                             .requestedBy(context.member).setDescription(p.getMessage().getContentRaw())
                             .setTimestamp(Instant.now())

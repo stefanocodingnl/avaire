@@ -247,7 +247,7 @@ public class RequestRewardCommand extends Command {
                                                             .setTimestamp(Instant.now());
 
                                                         if (context.getGuild().getMembersByEffectiveName(requestedName, true).size() > 0) {
-                                                            eb.setThumbnail("http://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" + requestedName);
+                                                            eb.setThumbnail("https://www.roblox.com/Thumbs/Avatar.ashx?x=150&y=150&Format=Png&username=" + requestedName);
                                                         }
 
                                                         avaire.getShardManager().getTextChannelById(Constants.REWARD_REQUESTS_CHANNEL_ID)
