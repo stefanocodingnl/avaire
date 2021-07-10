@@ -28,7 +28,7 @@ public class ReportDatabaseRequests {
                     .set("report_date", date)
                     .set("report_reason", report_reason, true));
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
 
@@ -40,7 +40,7 @@ public class ReportDatabaseRequests {
             Collection c = avaire.getDatabase().newQueryBuilder(Constants.REPORTS_DATABASE_TABLE_NAME).where("reported_roblox_id", id).get();
             return c.size();
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return 0;
     }

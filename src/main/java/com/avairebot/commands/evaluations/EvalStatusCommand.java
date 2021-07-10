@@ -120,7 +120,7 @@ public class EvalStatusCommand extends Command {
 
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
             return false;
     }

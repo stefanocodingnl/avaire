@@ -66,7 +66,8 @@ public class GuildEventAdapter extends EventAdapter {
 
     public void onGuildPIAMemberBanEvent(GuildUnbanEvent e) {
         try {
-            QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", e.getUser().getId());
+            QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME)
+                    .where("userId", e.getUser().getId());
             Collection unbanCollection = qb.get();
             if (unbanCollection.size() > 0) {
                 e.getGuild().retrieveAuditLogs().queue(items -> {
@@ -104,7 +105,7 @@ public class GuildEventAdapter extends EventAdapter {
 
             }
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
         }
     }
 
@@ -328,7 +329,7 @@ public class GuildEventAdapter extends EventAdapter {
             if (newContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
             if (oldContent.length() >= 2000) newContent = newContent.substring(0, 1500) + " **...**";
 
-            if (oldContent.equals(newContent) && oldMessage.getEmbedList().size() == newMessage.getEmbeds().size()) {
+            if ((newMessage.isPinned() && !oldMessage.isPinned()) || (!newMessage.isPinned() && oldMessage.isPinned()) || (oldContent.equals(newContent) && oldMessage.getEmbedList().size() == newMessage.getEmbeds().size())) {
                 if (!oldMessage.isPinned()) {
                     tc.sendMessage(MessageFactory.makeEmbeddedMessage(tc)
                         .setAuthor("A message was pinned", newMessage.getJumpUrl(), guild.getIconUrl())

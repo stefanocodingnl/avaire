@@ -198,6 +198,7 @@ public class BlacklistCommand extends Command {
         if (tc != null) {
             tc.sendMessage(context.makeInfo("[<@:id> **(``:id``)** was blacklisted from Xeus everywhere in ``:guild`` by :punisher](:link)")
                 .set("id", id)
+                .set("guild", context.getGuild().getName())
                 .set("punisher", context.getMember().getAsMention())
                 .set("link", context.getMessage().getJumpUrl()).buildEmbed()).queue();
         }

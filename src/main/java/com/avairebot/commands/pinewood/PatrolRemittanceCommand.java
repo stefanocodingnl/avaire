@@ -149,14 +149,14 @@ public class PatrolRemittanceCommand extends Command {
 
                 });
                 l.addReaction("❌").queue();
-                l.editMessage(context.makeInfo("Welcome to the recorded remittance system. With this feature, you can record your patrolling/raiding for groups that have this enabled!\n\n" + sb.toString()).buildEmbed()).queue(
+                l.editMessageEmbeds(context.makeInfo("Welcome to the recorded remittance system. With this feature, you can record your patrolling/raiding for groups that have this enabled!\n\n" + sb.toString()).buildEmbed()).queue(
                     message -> {
                         avaire.getWaiter().waitForEvent(GuildMessageReactionAddEvent.class, event -> {
                                 return event.getMember().equals(context.member) && event.getMessageId().equalsIgnoreCase(message.getId());
                             }, react -> {
                                 try {
                                     if (react.getReactionEmote().getName().equalsIgnoreCase("❌")) {
-                                        message.editMessage(context.makeWarning("Cancelled the system").buildEmbed()).queue();
+                                        message.editMessageEmbeds(context.makeWarning("Cancelled the system").buildEmbed()).queue();
                                         message.clearReactions().queue();
                                         return;
                                     }
@@ -165,10 +165,10 @@ public class PatrolRemittanceCommand extends Command {
                                     TextChannel c = avaire.getShardManager().getTextChannelById(d.getString("patrol_remittance_channel"));
                                     if (c != null) {
                                         if (avaire.getFeatureBlacklist().isBlacklisted(context.getAuthor(), c.getGuild().getIdLong(), FeatureScope.PATROL_REMITTANCE)) {
-                                            message.editMessage(context.makeError("You have been blacklisted from requesting a remittance for this guild. Please ask a **Level 4** (Or higher) member to remove you from the ``"+c.getGuild().getName()+"`` remittance blacklist.").buildEmbed()).queue();
+                                            message.editMessageEmbeds(context.makeError("You have been blacklisted from requesting a remittance for this guild. Please ask a **Level 4** (Or higher) member to remove you from the ``"+c.getGuild().getName()+"`` remittance blacklist.").buildEmbed()).queue();
                                             return;
                                         }
-                                        message.editMessage(context.makeInfo(d.getString("patrol_remittance_message", "A remittance message for ``:guild`` could not be found. Ask the HR's of ``:guild`` to set one.\n" +
+                                        message.editMessageEmbeds(context.makeInfo(d.getString("patrol_remittance_message", "A remittance message for ``:guild`` could not be found. Ask the HR's of ``:guild`` to set one.\n" +
                                             "If you'd like to request remittance, please enter evidence of this in right now." +"``` ```\n\nPlease enter a **LINK** to evidence. " +
                                             "\n**Remember, you may only post once per 24 hours. The video may *only be 2 hours* and has to have a *minimum of 30 minutes* in duration**\n\n" +
                                             "**We're accepting**:\n" +
@@ -226,7 +226,7 @@ public class PatrolRemittanceCommand extends Command {
             List<Message> messagesToRemove = new ArrayList<>();
             messagesToRemove.add(content.getMessage());
             if (content.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
-                message.editMessage(context.makeWarning("Cancelled the system").buildEmbed()).queue();
+                message.editMessageEmbeds(context.makeWarning("Cancelled the system").buildEmbed()).queue();
                 removeAllUserMessages(messagesToRemove);
                 return;
             }
@@ -240,7 +240,7 @@ public class PatrolRemittanceCommand extends Command {
 
             boolean isBlacklisted = checkIfBlacklisted(requestedId, c);
             if (isBlacklisted) {
-                message.editMessage(context.makeWarning("You're blacklisted in ``" + c.getGuild().getName() + "``, for this reason you will not be allowed to request a remittance.").buildEmbed()).queue();
+                message.editMessageEmbeds(context.makeWarning("You're blacklisted in ``" + c.getGuild().getName() + "``, for this reason you will not be allowed to request a remittance.").buildEmbed()).queue();
                 removeAllUserMessages(messagesToRemove);
                 return;
             }
@@ -281,7 +281,7 @@ public class PatrolRemittanceCommand extends Command {
         Button b2 = Button.danger("no:" + message.getId(), "No").withEmoji(Emoji.fromUnicode("❌"));
 
 
-        message.editMessage(context.makeInfo("Ok, so. I've collected everything you've told me. And this is the data I got:\n\n" +
+        message.editMessageEmbeds(context.makeInfo("Ok, so. I've collected everything you've told me. And this is the data I got:\n\n" +
             "**Username**: " + context.getMember().getEffectiveName() + "\n" +
             "**Group**: " + d.getString("name") + "\n" + (b.map(data -> "**Rank**: " + data.getRole().getName() + "\n").orElse("\n")) +
             "**Evidence**: \n" + content.getMessage().getContentRaw() +
@@ -290,7 +290,7 @@ public class PatrolRemittanceCommand extends Command {
             //l.addReaction("❌").queue();
             avaire.getWaiter().waitForEvent(ButtonClickEvent.class, r -> isValidMember(r, context, l), send -> {
                 if (send.getButton().getEmoji().getName().equalsIgnoreCase("❌") || send.getButton().getEmoji().getName().equalsIgnoreCase("x")) {
-                    message.editMessage(context.makeSuccess("Remittance has been canceled, if you want to restart the report. Do ``!pr`` in any bot-commands channel.").buildEmbed()).setActionRows(Collections.emptyList()).queue();
+                    message.editMessageEmbeds(context.makeSuccess("Remittance has been canceled, if you want to restart the report. Do ``!pr`` in any bot-commands channel.").buildEmbed()).setActionRows(Collections.emptyList()).queue();
                     removeAllUserMessages(messagesToRemove);
                 } else if (send.getButton().getEmoji().getName().equalsIgnoreCase("✅")) {
                     message.editMessage("Report has been \"sent\".").setActionRows(Collections.emptyList()).queue();
@@ -322,7 +322,7 @@ public class PatrolRemittanceCommand extends Command {
             Button b3 = Button.secondary("remove:" + message.getId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
 
 
-            tc.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
+            tc.sendMessageEmbeds(context.makeEmbeddedMessage(new Color(32, 34, 37))
                 .setAuthor("Remittance created for: " + username, null, getImageByName(context.guild, username))
                 .setDescription(
                     "**Username**: " + username + "\n" +
@@ -335,7 +335,7 @@ public class PatrolRemittanceCommand extends Command {
                 .queue(
                     finalMessage -> {
 
-                        message.editMessage(context.makeSuccess("[Your remittance has been created in the correct channel.](:link).").set("link", finalMessage.getJumpUrl())
+                        message.editMessageEmbeds(context.makeSuccess("[Your remittance has been created in the correct channel.](:link).").set("link", finalMessage.getJumpUrl())
                             .buildEmbed())
                             .queue();
                         //createReactions(finalMessage);
@@ -353,7 +353,7 @@ public class PatrolRemittanceCommand extends Command {
 
                             cache.put(getRobloxId(username), context.getGuild());
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
                     }

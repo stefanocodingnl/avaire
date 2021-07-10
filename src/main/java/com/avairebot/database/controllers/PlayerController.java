@@ -65,8 +65,9 @@ public class PlayerController {
         }
 
         return (PlayerTransformer) CacheUtil.getUncheckedUnwrapped(cache, asKey(message.getGuild(), user), () -> {
-            log.debug("User cache for " + user.getId() + " was refreshed");
-
+            if (log.isDebugEnabled()) {
+                log.debug("User cache for " + user.getId() + " was refreshed");
+            }
             try {
                 PlayerTransformer transformer = new PlayerTransformer(
                     user.getIdLong(),

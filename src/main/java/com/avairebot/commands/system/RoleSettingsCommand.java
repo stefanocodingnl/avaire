@@ -117,6 +117,14 @@ public class RoleSettingsCommand extends SystemCommand {
             case "sgi":
             case "set-group-id":
                 return runSetGroupId(context, args);
+            case "smhrr":
+            case "s-mhr-r":
+            case "set-mhr-rank":
+                return runSetMinimalHrRank(context, args);
+            case "smlr":
+            case "s-l-r":
+            case "set-ml-rank":
+                return runSetMinimalLeadRank(context, args);
             case "smr":
             case "set-main-role":
                 return runSetMainRole(context, args);
@@ -125,6 +133,77 @@ public class RoleSettingsCommand extends SystemCommand {
         }
 
 
+    }
+
+    private boolean updateMinimalLeadRank(GuildTransformer transformer, CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("minimum_lead_rank", transformer.getMinimumLeadRank());
+            });
+
+            context.makeSuccess("Set the minimal lead rank for `:guild`'s configured group (`:groupId`) to ``:id``")
+                .set("groupId", context.getGuildTransformer().getRobloxGroupId() != 0 ? context.getGuildTransformer().getRobloxGroupId() : "ID NOT SET")
+                .set("guild", context.getGuild().getName())
+                .set("id", transformer.getMinimumLeadRank()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+    }
+    private boolean updateMinimalHrRank(GuildTransformer transformer, CommandMessage context) {
+        QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).where("id", context.guild.getId());
+        try {
+            qb.update(q -> {
+                q.set("minimum_hr_rank", transformer.getMinimalHrRank());
+            });
+
+            context.makeSuccess("Set the minimal hr rank for `:guild`'s configured group (`:groupId`) to ``:id``")
+                .set("groupId", context.getGuildTransformer().getRobloxGroupId() != 0 ? context.getGuildTransformer().getRobloxGroupId() : "ID NOT SET")
+                .set("guild", context.getGuild().getName())
+                .set("id", transformer.getMinimalHrRank()).queue();
+            return true;
+        } catch (SQLException throwables) {
+            context.makeError("Something went wrong in the database, please check with the developer. (Stefano#7366)").queue();
+            return false;
+        }
+    }
+
+    private boolean runSetMinimalLeadRank(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+
+        if (NumberUtil.isNumeric(args[1])) {
+            GuildTransformer transformer = context.getGuildTransformer();
+            if (transformer == null) {
+                context.makeError("I can't pull the guilds information, please try again later.").queue();
+                return false;
+            }
+            transformer.setMinimumLeadRank(Integer.parseInt(args[1]));
+            return updateMinimalLeadRank(transformer, context);
+        } else {
+            return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
+        }
+    }
+
+    private boolean runSetMinimalHrRank(CommandMessage context, String[] args) {
+        if (args.length < 2) {
+            return sendErrorMessage(context, "Incorrect arguments");
+        }
+
+        if (NumberUtil.isNumeric(args[1])) {
+            GuildTransformer transformer = context.getGuildTransformer();
+            if (transformer == null) {
+                context.makeError("I can't pull the guilds information, please try again later.").queue();
+                return false;
+            }
+            transformer.setMinimalHrRank(Integer.parseInt(args[1]));
+            return updateMinimalHrRank(transformer, context);
+        } else {
+            return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
+        }
     }
 
     private boolean runSetGroupId(CommandMessage context, String[] args) {
@@ -143,7 +222,6 @@ public class RoleSettingsCommand extends SystemCommand {
         } else {
             return sendErrorMessage(context, "Something went wrong, please check if you ran the command correctly.");
         }
-
     }
 
     private boolean runSetMainRole(CommandMessage context, String[] args) {
@@ -208,10 +286,12 @@ public class RoleSettingsCommand extends SystemCommand {
                 case "admin":
                 case "manager":
                 case "no-links":
+                case "group-shout":
                     if (args.length > 2) {
                         return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[2]));
                     }
                     return handleToggleRole(context, role, args[1], ComparatorUtil.getFuzzyType(args[1]));
+
                 default:
                     context.makeError("Invalid role given to manage.").queue();
                     return false;
@@ -302,6 +382,20 @@ public class RoleSettingsCommand extends SystemCommand {
         }
     }
 
+    private void runGroupShoutRolesCheck(CommandMessage context, boolean b, StringBuilder sb, Set <Long> groupShouts) {
+        if (b) {
+            sb.append("\n\n**Group Shout roles**:");
+            for (Long s : groupShouts) {
+                Role r = context.getGuild().getRoleById(s);
+                if (r != null) {
+                    sb.append("\n - ").append(r.getAsMention());
+                }
+            }
+        } else {
+            sb.append("\n\n**Group Shout roles**:\n" + "" + "No roles have been found!");
+        }
+    }
+
     private void runManagerRolesCheck(CommandMessage context, boolean b, StringBuilder sb, Set <Long> managers) {
         if (b) {
             sb.append("\n\n**Manager roles**:");
@@ -353,7 +447,8 @@ public class RoleSettingsCommand extends SystemCommand {
         Set <Long> mod = transformer.getModeratorRoles();
         Set <Long> manager = transformer.getManagerRoles();
         Set <Long> admins = transformer.getAdministratorRoles();
-        Set <Long> nolinks = transformer.getNoLinksRoles();
+        Set <Long> noLinks = transformer.getNoLinksRoles();
+        Set <Long> groupShouts = transformer.getGroupShoutRoles();
         int groupId = transformer.getRobloxGroupId();
         String mainRoleId = transformer.getMainDiscordRole();
 
@@ -361,7 +456,8 @@ public class RoleSettingsCommand extends SystemCommand {
         runAdminRolesCheck(context, admins.size() > 0, sb, admins);
         runManagerRolesCheck(context, manager.size() > 0, sb, manager);
         runModRolesCheck(context, mod.size() > 0, sb, mod);
-        runNoLinksRolesCheck(context, nolinks.size() > 0, sb, nolinks);
+        runNoLinksRolesCheck(context, noLinks.size() > 0, sb, noLinks);
+        runGroupShoutRolesCheck(context, groupShouts.size() > 0, sb, groupShouts);
         runRobloxGroupIdCheck(context, sb, groupId);
         runMainRoleIdCheck(context, sb, mainRoleId);
 
@@ -410,6 +506,9 @@ public class RoleSettingsCommand extends SystemCommand {
                 if (rank.equals("no-links")) {
                     guildTransformer.getNoLinksRoles().remove(role.getIdLong());
                 }
+                if (rank.equals("group-shout")) {
+                    guildTransformer.getGroupShoutRoles().remove(role.getIdLong());
+                }
                 break;
 
             case TRUE:
@@ -424,6 +523,9 @@ public class RoleSettingsCommand extends SystemCommand {
                 }
                 if (rank.equals("no-links")) {
                     guildTransformer.getNoLinksRoles().add(role.getIdLong());
+                }
+                if (rank.equals("group-shout")) {
+                    guildTransformer.getGroupShoutRoles().add(role.getIdLong());
                 }
 
                 break;
@@ -462,12 +564,21 @@ public class RoleSettingsCommand extends SystemCommand {
                     }
                     break;
                 }
+                if (rank.equals("group-shout")) {
+                    if (guildTransformer.getGroupShoutRoles().contains(role.getIdLong())) {
+                        guildTransformer.getGroupShoutRoles().remove(role.getIdLong());
+                    } else {
+                        guildTransformer.getGroupShoutRoles().add(role.getIdLong());
+                    }
+                    break;
+                }
         }
 
         boolean isEnabled = guildTransformer.getModeratorRoles().contains(role.getIdLong()) ||
             guildTransformer.getAdministratorRoles().contains(role.getIdLong()) ||
             guildTransformer.getManagerRoles().contains(role.getIdLong()) ||
-            guildTransformer.getNoLinksRoles().contains(role.getIdLong());
+            guildTransformer.getNoLinksRoles().contains(role.getIdLong()) ||
+            guildTransformer.getGroupShoutRoles().contains(role.getIdLong());
 
         try {
             if (rank.equals("admin")) {
@@ -503,6 +614,15 @@ public class RoleSettingsCommand extends SystemCommand {
                     .update(statement -> {
                         statement.set("no_links_roles", AvaIre.gson.toJson(
                             guildTransformer.getNoLinksRoles()
+                        ), true);
+                    });
+            }
+            if (rank.equals("group-shout")) {
+                avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
+                    .where("id", context.getGuild().getId())
+                    .update(statement -> {
+                        statement.set("group_shout_roles", AvaIre.gson.toJson(
+                            guildTransformer.getGroupShoutRoles()
                         ), true);
                     });
             }

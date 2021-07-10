@@ -50,6 +50,8 @@ public class Constants {
     public static final String INSTALLED_PLUGINS_TABLE_NAME = "installed_plugins";
 
     // Pinewood Specific Tables
+    public static final String VERIFICATION_TABLE_NAME = "verification";
+    public static final String VERIFICATION_DATABASE_TABLE_NAME = "pb_verifications";
     public static final String MOTS_VOTE_TABLE_NAME = "xeus_vote";
     public static final String MOTS_VOTES_TABLE_NAME = "xeus_votes";
     public static final String MOTS_VOTABLE_TABLE_NAME = "xeus_votable";

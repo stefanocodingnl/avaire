@@ -112,7 +112,7 @@ public class FeedbackCommand extends Command {
             }
         }
 
-        context.makeInfo("<a:loading:742658561414266890> Loading suggestions...").queue(l -> {
+        context.makeInfo("<a:loading:742658561414266890> Loading suggestions... <a:loading:742658561414266890>").queue(l -> {
 
             QueryBuilder qb = avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME).orderBy("suggestion_channel");
             try {
@@ -135,7 +135,7 @@ public class FeedbackCommand extends Command {
 
                 startEmojiWaiter(context, l, avaire.getWaiter(), qb);
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
 
         });
@@ -188,7 +188,7 @@ public class FeedbackCommand extends Command {
                             actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asDisabled());
                         }
 
-                        c.sendMessage(context.makeEmbeddedMessage(new Color(32, 34, 37))
+                        c.sendMessageEmbeds(context.makeEmbeddedMessage(new Color(32, 34, 37))
                             .setAuthor("Suggestion for: " + c.getGuild().getName(), null, c.getGuild().getIconUrl())
                             .requestedBy(context.member).setDescription(p.getMessage().getContentRaw())
                             .setTimestamp(Instant.now())
@@ -204,7 +204,7 @@ public class FeedbackCommand extends Command {
                                 });
                             } catch (SQLException throwables) {
                                 context.makeError("Something went wrong in the database, please check with the developer.").queue();
-                                throwables.printStackTrace();
+                                AvaIre.getLogger().error("ERROR: ", throwables);
                             }
                         });
                     });
@@ -213,7 +213,7 @@ public class FeedbackCommand extends Command {
                 }
 
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", throwables);
             }
         }, 5, TimeUnit.MINUTES, () -> {
             message.editMessage(context.makeEmbeddedMessage().setColor(Color.BLACK).setDescription("Stopped the suggestion system. Timeout of 5 minutes reached .").buildEmbed()).queue();

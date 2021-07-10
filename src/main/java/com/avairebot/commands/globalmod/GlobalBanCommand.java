@@ -143,7 +143,7 @@ public class GlobalBanCommand extends Command {
             }
         }
 
-        int time = soft.getValue() ? 0 : 7;
+        int time = !soft.getValue() ? 0 : 7;
         String reason = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
         boolean pbacBan = false;
         if (reason.endsWith("--pbac-ban")) {
@@ -184,7 +184,7 @@ public class GlobalBanCommand extends Command {
         try {
             handleGlobalPermBan(context, args, reason);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
             context.makeError("Something went wrong adding this user to the global perm ban database.").queue();
         }
         return true;
@@ -226,10 +226,11 @@ public class GlobalBanCommand extends Command {
 
         String id = args[1];
         try {
-            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).where("userId", id).get();
+            Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME)
+                    .where("userId", id).get();
             if (c.size() < 1) {
                 context.makeInfo("``:userId`` was not found/is not banned.").set("userId", id).requestedBy(context).queue();
-                return false;
+                return makeGuildBans(context, args);
             } else if (c.size() == 1) {
                 context.makeSuccess("``:userId`` was banned by <@:punisherId> **(``:punisherId``)** for:\n```:reason```")
                     .set("userId", c.get(0).getString("userId")).set("punisherId", c.get(0).getString("punisherId")).set("reason", c.get(0).getString("reason")).queue();
@@ -243,6 +244,31 @@ public class GlobalBanCommand extends Command {
             return false;
         }
     }
+
+    private boolean makeGuildBans(CommandMessage context, String[] args) {
+        List<Guild> guilds = new ArrayList<>();
+        List<String> cGuilds = Constants.guilds;
+
+        for (String i : cGuilds) {
+            if (avaire.getShardManager().getGuildById(i) != null) {
+                guilds.add(avaire.getShardManager().getGuildById(i));
+            }
+        }
+
+        for (Guild g : guilds) {
+            g.retrieveBanList().queue(p -> {
+                for (Guild.Ban b : p) {
+                    if (b.getUser().getId().equals(args[1])) {
+                        context.makeWarning(":white_check_mark: - `"+ g.getName() +"` - `"+ (b.getReason() != null ? b.getReason() : "Reason not given...") + "`").queue();
+                    }
+                }
+            });
+        }
+
+
+        return true;
+    }
+
     private boolean syncGlobalPermBansWithGuild(CommandMessage context) {
         try {
             Collection c = avaire.getDatabase().newQueryBuilder(Constants.ANTI_UNBAN_TABLE_NAME).get();
@@ -253,7 +279,7 @@ public class GlobalBanCommand extends Command {
             context.makeSuccess("**``" + c.size() + "``** global bans where synced to this guild...").queue();
 
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
             context.makeError("Something went wrong when syncing.").queue();
             return false;
         }

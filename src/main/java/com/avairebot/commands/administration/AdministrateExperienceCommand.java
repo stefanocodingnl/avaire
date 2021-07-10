@@ -310,7 +310,7 @@ public class AdministrateExperienceCommand extends Command {
 
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             return sendErrorMessage(context, context.i18n("failedToSaveChanges"));
         }
     }

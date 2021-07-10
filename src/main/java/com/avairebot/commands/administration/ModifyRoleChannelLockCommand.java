@@ -173,7 +173,7 @@ public class ModifyRoleChannelLockCommand extends Command {
             avaire.getDatabase().newQueryBuilder(Constants.GUILD_TABLE_NAME)
                 .where("id", context.getGuild().getId())
                 .update(statement -> {
-                    statement.set("on_watch_ranks", AvaIre.gson.toJson(
+                    statement.set("lockable_channels_roles", AvaIre.gson.toJson(
                         guildTransformer.getLockableChannelRoles()
                     ), true);
                 });

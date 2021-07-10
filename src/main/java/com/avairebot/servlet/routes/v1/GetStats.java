@@ -19,7 +19,7 @@
  *
  */
 
-package com.avairebot.servlet.routes;
+package com.avairebot.servlet.routes.v1;
 
 import com.avairebot.AppInfo;
 import com.avairebot.AvaIre;

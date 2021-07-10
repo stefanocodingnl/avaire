@@ -83,8 +83,9 @@ public class ReactionController {
         }
 
         return (Collection) CacheUtil.getUncheckedUnwrapped(cache, guild.getIdLong(), () -> {
-            log.debug("Guild Reaction cache for " + guild.getId() + " was refreshed");
-
+            if (log.isDebugEnabled()) {
+                log.debug("Guild Reaction cache for " + guild.getId() + " was refreshed");
+            }
             try {
                 return avaire.getDatabase()
                     .newQueryBuilder(Constants.REACTION_ROLES_TABLE_NAME)

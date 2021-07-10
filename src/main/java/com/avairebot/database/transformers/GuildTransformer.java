@@ -64,7 +64,7 @@ public class GuildTransformer extends Transformer {
     private final Set <Long> managerRoles = new HashSet <>();
     private final Set <Long> administratorRoles = new HashSet <>();
     private final Set <Long> noLinksRoles = new HashSet <>();
-
+    private final Set <Long> groupShoutRoles = new HashSet<>();
 
     private final GuildTypeTransformer guildType;
     private boolean partner;
@@ -96,14 +96,17 @@ public class GuildTransformer extends Transformer {
     private String filterLog = null;
     private String memberToYoungChannelId = null;
     private String pinewoodEventRequestsChannelId = null;
+
     private String suggestionChannel = null;
     private String suggestionCommunityChannel = null;
     private String suggestionEmoteId = null;
     private String suggestionApprovedChannelId = null;
+
     private String reportEmoteId = null;
     private String handbookReportChannel = null;
     private String reportInfoMessage = null;
     private String voteValidationChannel = null;
+
     private String patrolRemittanceChannel = null;
     private String patrolRemittanceEmoteId = null;
     private String patrolRemittanceMessage = null;
@@ -116,7 +119,11 @@ public class GuildTransformer extends Transformer {
     private long reportCategory = 0;
     private long audit_log = 0;
     private long join_logs = 0;
+
     private int robloxGroupId = 0;
+    private int minimalHrRank = 0;
+    private int minimumLeadRank = 0;
+
     private int characterSpam = 0;
     private int emojiSpam = 0;
     private int imageSpam = 0;
@@ -184,7 +191,10 @@ public class GuildTransformer extends Transformer {
             reportEmoteId = data.getString("report_emote_id");
             handbookReportChannel = data.getString("handbook_report_channel");
             reportInfoMessage = data.getString("report_info_message");
+
             robloxGroupId = data.getInt("roblox_group_id");
+            minimalHrRank = data.getInt("minimum_hr_rank");
+            minimumLeadRank = data.getInt("minimum_lead_rank");
 
             patrolRemittanceChannel = data.getString("patrol_remittance_channel");
             patrolRemittanceEmoteId = data.getString("patrol_remittance_emote_id");
@@ -436,11 +446,28 @@ public class GuildTransformer extends Transformer {
                 }
             }
 
+            if (data.getString("group_shout_roles", null) != null) {
+                List <String> groupShoutRolesList = AvaIre.gson.fromJson(
+                    data.getString("group_shout_roles"),
+                    new TypeToken <List <String>>() {
+                    }.getType());
+
+                for (String roleId : groupShoutRolesList) {
+                    try {
+                        groupShoutRoles.add(
+                            Long.parseLong(roleId)
+                        );
+                    } catch (NumberFormatException ignored) {
+                        //
+                    }
+                }
+            }
+
             if (data.getString("modules", null) != null) {
                 HashMap <String, Map <String, String>> dbModules = AvaIre.gson.fromJson(
-                    data.getString("modules"),
-                    new TypeToken <HashMap <String, Map <String, String>>>() {
-                    }.getType());
+                        data.getString("modules"),
+                        new TypeToken <HashMap <String, Map <String, String>>>() {
+                        }.getType());
 
                 for (Map.Entry <String, Map <String, String>> item : dbModules.entrySet()) {
                     modules.put(item.getKey(), item.getValue());
@@ -604,6 +631,22 @@ public class GuildTransformer extends Transformer {
         return robloxGroupId;
     }
 
+    public int getMinimalHrRank() {
+        return minimalHrRank;
+    }
+
+    public void setMinimalHrRank(int minimalHrRank) {
+        this.minimalHrRank = minimalHrRank;
+    }
+
+    public int getMinimumLeadRank() {
+        return minimumLeadRank;
+    }
+
+    public void setMinimumLeadRank(int minimumLeadRank) {
+        this.minimumLeadRank = minimumLeadRank;
+    }
+
     public void setRobloxGroupId(int robloxGroupId) {
         this.robloxGroupId = robloxGroupId;
     }
@@ -666,6 +709,10 @@ public class GuildTransformer extends Transformer {
 
     public Set <Long> getAdministratorRoles() {
         return administratorRoles;
+    }
+
+    public Set <Long> getGroupShoutRoles() {
+        return groupShoutRoles;
     }
 
     public Set <Long> getNoLinksRoles() {

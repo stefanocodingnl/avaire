@@ -131,7 +131,6 @@ public class AutoAssignRoleCommand extends Command {
                 .set("role", role.getName())
                 .queue();
         } catch (SQLException ex) {
-            ex.printStackTrace();
             AvaIre.getLogger().error(ex.getMessage(), ex);
         }
         return true;
@@ -146,7 +145,6 @@ public class AutoAssignRoleCommand extends Command {
 
             context.makeWarning(context.i18n("disabledNow")).queue();
         } catch (SQLException ex) {
-            ex.printStackTrace();
             AvaIre.getLogger().error(ex.getMessage(), ex);
         }
 
@@ -163,7 +161,6 @@ public class AutoAssignRoleCommand extends Command {
             try {
                 updateAutorole(transformer, context, null);
             } catch (SQLException ex) {
-                ex.printStackTrace();
                 AvaIre.getLogger().error(ex.getMessage(), ex);
             }
             return context.makeWarning(context.i18n("disabled"));

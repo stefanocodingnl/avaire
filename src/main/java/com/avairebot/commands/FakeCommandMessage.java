@@ -25,6 +25,7 @@ import com.avairebot.config.YamlConfiguration;
 import com.avairebot.contracts.commands.CommandContext;
 import com.avairebot.database.transformers.GuildTransformer;
 import com.avairebot.database.transformers.PlayerTransformer;
+import com.avairebot.database.transformers.VerificationTransformer;
 import com.avairebot.handlers.DatabaseEventHolder;
 import net.dv8tion.jda.api.entities.*;
 
@@ -67,6 +68,11 @@ public class FakeCommandMessage implements CommandContext {
 
     @Override
     public GuildTransformer getGuildTransformer() {
+        return null;
+    }
+
+    @Override
+    public VerificationTransformer getVerificationTransformer() {
         return null;
     }
 

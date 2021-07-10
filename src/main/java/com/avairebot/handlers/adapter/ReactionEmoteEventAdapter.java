@@ -257,7 +257,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                     }
                                     message.clearReactions().queue();
                                 } catch (SQLException throwables) {
-                                    throwables.printStackTrace();
+                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                 }
                             }
                         }
@@ -327,7 +327,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                 });
                             }
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+                            AvaIre.getLogger().error("ERROR: ", throwables);
                         }
 
                     }
@@ -385,6 +385,15 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                     }
 
                                     if (likes == 26) {
+                                        net.dv8tion.jda.api.interactions.components.Button b1 = net.dv8tion.jda.api.interactions.components.Button.success("accept:" + e.getMessageId(), "Accept").withEmoji(Emoji.fromUnicode("✅"));
+                                        net.dv8tion.jda.api.interactions.components.Button b2 = net.dv8tion.jda.api.interactions.components.Button.danger("reject:" + e.getMessageId(), "Reject").withEmoji(Emoji.fromUnicode("❌"));
+                                        net.dv8tion.jda.api.interactions.components.Button b3 = net.dv8tion.jda.api.interactions.components.Button.secondary("remove:" + e.getMessageId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
+                                        net.dv8tion.jda.api.interactions.components.Button b4 = net.dv8tion.jda.api.interactions.components.Button.secondary("comment:" + e.getMessageId(), "Comment").withEmoji(Emoji.fromUnicode("\uD83D\uDCAC"));
+                                        net.dv8tion.jda.api.interactions.components.Button b5 = Button.danger("community-move:" + e.getMessageId(), "Move to CAS").withEmoji(Emoji.fromUnicode("\uD83D\uDC51"));
+
+                                        ActionRow actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asDisabled());
+
+
                                         if (finalCtc != null) {
                                             PlaceholderMessage mb = MessageFactory.makeEmbeddedMessage(e.getChannel(), new Color(255, 100, 0))
                                                 .setAuthor("Suggestion for: " + e.getGuild().getName() + " | " + likes + " - " + dislikes, null, e.getGuild().getIconUrl())
@@ -398,14 +407,6 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                 mb.requestedBy(m);
                                             }
 
-                                            net.dv8tion.jda.api.interactions.components.Button b1 = net.dv8tion.jda.api.interactions.components.Button.success("accept:" + e.getMessageId(), "Accept").withEmoji(Emoji.fromUnicode("✅"));
-                                            net.dv8tion.jda.api.interactions.components.Button b2 = net.dv8tion.jda.api.interactions.components.Button.danger("reject:" + e.getMessageId(), "Reject").withEmoji(Emoji.fromUnicode("❌"));
-                                            net.dv8tion.jda.api.interactions.components.Button b3 = net.dv8tion.jda.api.interactions.components.Button.secondary("remove:" + e.getMessageId(), "Delete").withEmoji(Emoji.fromUnicode("\uD83D\uDEAB"));
-                                            net.dv8tion.jda.api.interactions.components.Button b4 = net.dv8tion.jda.api.interactions.components.Button.secondary("comment:" + e.getMessageId(), "Comment").withEmoji(Emoji.fromUnicode("\uD83D\uDCAC"));
-                                            net.dv8tion.jda.api.interactions.components.Button b5 = Button.danger("community-move:" + e.getMessageId(), "Move to CAS").withEmoji(Emoji.fromUnicode("\uD83D\uDC51"));
-
-                                            ActionRow actionRow = ActionRow.of(b1.asEnabled(), b2.asEnabled(), b3.asEnabled(), b4.asEnabled(), b5.asDisabled());
-
                                             finalCtc.sendMessage(mb.buildEmbed()).setActionRows(actionRow).queue(p -> {
                                                 /*
                                                 p.addReaction("✅").queue();
@@ -417,7 +418,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                         l.set("suggestion_message_id", p.getId());
                                                     });
                                                 } catch (SQLException throwables) {
-                                                    throwables.printStackTrace();
+                                                    AvaIre.getLogger().error("ERROR: ", throwables);
                                                 }
                                             });
                                             msg.delete().queue();
@@ -435,7 +436,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                             mb.requestedBy(m);
                                         }
 
-                                        msg.editMessage(mb.buildEmbed()).queue();
+                                        msg.editMessage(mb.buildEmbed()).setActionRows(actionRow).queue();
                                         msg.clearReactions("\uD83D\uDC4D").queueAfter(1, TimeUnit.SECONDS);
                                         msg.clearReactions("\uD83D\uDC4E").queueAfter(1, TimeUnit.SECONDS);
                                     }
@@ -618,7 +619,7 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
                                                     l.set("suggestion_message_id", p.getId());
                                                 });
                                             } catch (SQLException throwables) {
-                                                throwables.printStackTrace();
+                                                AvaIre.getLogger().error("ERROR: ", throwables);
                                             }
                                         });
                                         msg.delete().queue();
@@ -631,12 +632,12 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
 
                                 } //👑
                             } catch (SQLException throwables) {
-                                throwables.printStackTrace();
+                                AvaIre.getLogger().error("ERROR: ", throwables);
                             }
                         });
                     }
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwables);
                 }
             }
         });
@@ -803,15 +804,15 @@ public class ReactionEmoteEventAdapter extends EventAdapter {
         final GuildMessageReactionAddEvent event) {
         return CompletableFuture.supplyAsync(() -> {
             if (!event.getChannel().getType().isGuild()) {
-                return new DatabaseEventHolder(null, null);
+                return new DatabaseEventHolder(null, null, null);
             }
 
             GuildTransformer guild = GuildController.fetchGuild(avaire, event.getGuild());
 
             if (guild == null || !guild.isLevels() || event.getMember().getUser().isBot()) {
-                return new DatabaseEventHolder(guild, null);
+                return new DatabaseEventHolder(guild, null, null);
             }
-            return new DatabaseEventHolder(guild, null);
+            return new DatabaseEventHolder(guild, null, null);
         });
     }
 

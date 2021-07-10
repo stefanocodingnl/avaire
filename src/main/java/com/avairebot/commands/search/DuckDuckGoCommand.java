@@ -143,7 +143,7 @@ public class DuckDuckGoCommand extends Command {
 
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             AvaIre.getLogger().error("Failed to complete search query: ", e);
         }
         return false;

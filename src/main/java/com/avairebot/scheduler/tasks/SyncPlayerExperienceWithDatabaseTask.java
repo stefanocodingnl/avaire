@@ -53,9 +53,9 @@ public class SyncPlayerExperienceWithDatabaseTask implements Task {
                 "UPDATE `%s` SET `experience` = ? + `experience`, `global_experience` = ? + `global_experience` WHERE `user_id` = ? AND `guild_id` = ?",
                 Constants.PLAYER_EXPERIENCE_TABLE_NAME
             );
-
-            log.debug("Starting \"Player Experience\" update task with query: " + query);
-
+            if (log.isDebugEnabled()) {
+                log.debug("Starting \"Player Experience\" update task with query: " + query);
+            }
             avaire.getDatabase().queryBatch(query, statement -> {
                 for (ExperienceEntity entity : experienceQueue) {
                     statement.setInt(1, entity.isExcludeLocal() ? 0 : entity.getExperience());

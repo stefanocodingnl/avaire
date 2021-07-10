@@ -77,7 +77,7 @@ public class RemoveSongFromPlaylist extends PlaylistSubCommand {
                 .set("command", command.generateCommandTrigger(context.getMessage()) + " " + playlist.getName() + " removesong <song id>")
                 .queue();
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
 
         return false;

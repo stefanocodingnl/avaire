@@ -95,7 +95,7 @@ public class LogCommand extends Command {
                 context.makeSuccess("Truncated the complete eval log database (Deleted every log in the database)").queue();
                 return true;
             } catch (SQLException e) {
-                e.printStackTrace();
+                AvaIre.getLogger().error("ERROR: ", e);
             }
         }
         if (!isValidRobloxUser(args[0])) {
@@ -120,7 +120,7 @@ public class LogCommand extends Command {
                         "I found the following logs on that user:").queue();
                     log_collection.forEach(row -> {
                         String evaluator = row.getString("evaluator") != null ? row.getString("evaluator") : "Unkown Evaluator";
-                        String profile_picture = "http://www.roblox.com/Thumbs/Avatar.ashx?x=256&y=256&Format=Png&username=" + args[0];
+                        String profile_picture = "https://www.roblox.com/Thumbs/Avatar.ashx?x=256&y=256&Format=Png&username=" + args[0];
                         String notes = row.getString("note");
                         String description = row.getString("description", null);
                         PlaceholderMessage eb = context.makeEmbeddedMessage()
@@ -160,7 +160,7 @@ public class LogCommand extends Command {
 
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return false;
 

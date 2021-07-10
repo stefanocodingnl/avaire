@@ -2105,7 +2105,7 @@ public final class Carbon {
      * @return The generated W3C time string
      */
     public String toW3cString() {
-        return String.format("%sT%s", format("yyyy-mm-dd"), toTimeOffsetString());
+        return String.format("%sT%s", format("yyyy-MM-dd"), toTimeOffsetString());
     }
 
     /**

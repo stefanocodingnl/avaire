@@ -63,7 +63,8 @@ public class GuildController {
         "guilds.automod_character_spam", "guilds.automod_emoji_spam", "guilds.automod_image_spam", "guilds.automod_link_spam",
         "guilds.automod_mass_mention", "guilds.automod_message_spam", "guilds.audit_log", "guilds.roblox_group_id",
         "guilds.member_to_young_channel_id", "guilds.join_logs", "guilds.event_request_channel", "guilds.patrol_remittance_channel",
-        "guilds.patrol_remittance_message", "guilds.patrol_remittance_emote_id", "guilds.main_discord_role", "guilds.approved_suggestion_channel"
+        "guilds.patrol_remittance_message", "guilds.patrol_remittance_emote_id", "guilds.main_discord_role", "guilds.approved_suggestion_channel",
+        "guilds.group_shout_roles", "guilds.minimum_hr_rank", "guilds.minimum_lead_rank"
     };
 
     /**
@@ -137,8 +138,9 @@ public class GuildController {
     }
 
     private static GuildTransformer loadGuildFromDatabase(AvaIre avaire, Guild guild) {
-        log.debug("Guild cache for " + guild.getId() + " was refreshed");
-
+        if (log.isDebugEnabled()) {
+            log.debug("Guild cache for " + guild.getId() + " was refreshed");
+        }
         try {
             GuildTransformer transformer = new GuildTransformer(guild, avaire.getDatabase()
                 .newQueryBuilder(Constants.GUILD_TABLE_NAME)

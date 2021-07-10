@@ -1,4 +1,4 @@
-package com.avairebot.commands.pinewood;
+package com.avairebot.commands.roblox;
 
 import com.avairebot.AppInfo;
 import com.avairebot.AvaIre;
@@ -6,7 +6,7 @@ import com.avairebot.commands.CommandMessage;
 import com.avairebot.contracts.commands.Command;
 import com.avairebot.contracts.commands.CommandGroup;
 import com.avairebot.contracts.commands.CommandGroups;
-import com.avairebot.utilities.CheckPermissionUtil;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import okhttp3.*;
 import org.json.JSONObject;
@@ -66,10 +66,10 @@ public class GroupShoutCommand extends Command {
     @Override
     public List<String> getMiddleware() {
         return Arrays.asList(
-            "throttle:user,1,10"
+            "throttle:user,1,10",
+            "isGroupShoutOrHigher"
         );
     }
-
     @Override
     public boolean onCommand(CommandMessage context, String[] args) {
 
@@ -88,22 +88,31 @@ public class GroupShoutCommand extends Command {
             return false;
         }
 
-        context.makeWarning("PLEASE BE WARNED, THIS WILL SEND A GROUP SHOUT AS **PB_XBot** (If PB_XBot has permission to shout on ``"+context.getGuildTransformer().getRobloxGroupId()+"``) TO THE GROUP CONNECTED TO THE GUILD.").queue();
-
+        if (context.getGuildTransformer().getRobloxGroupId() == 0) {
+            context.makeError("The roblox ID of this group has not been set, please request a Facilitator or above to set this for you with `;rmanage`.").queue();
+            return false;
+        }
         if (context.getGuildTransformer().getRobloxGroupId() == 0) {
             context.makeError("No group ID has been set for this guild!").queue();
             return false;
         }
 
-        context.makeInfo("What would you like to shout? (Be warned, if you're authorised to use this, then this will send **INSTANTLY** after you send the message). Say ``cancel`` to cancel sending the message.").queue(v -> {
-            avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l -> {
-                return l.getChannel().equals(context.getChannel()) && l.getMember().equals(context.getMember());
-            }, k -> {
+        if (context.getGuildTransformer().getGroupShoutRoles().size() == 0) {
+            context.makeError("No group shout roles have been set for this server, command has been disabled.").queue();
+            return false;
+        }
+        context.makeWarning("PLEASE BE WARNED, THIS WILL SEND A GROUP SHOUT AS **PB_XBot** (If PB_XBot has permission to shout on ``"+context.getGuildTransformer().getRobloxGroupId()+"``, the group connected to the guild)").queue();
+
+
+
+        context.makeInfo("What would you like to shout? (This sends instantly after you type it). Say ``cancel`` to cancel sending the message.").queue(v -> {
+            avaire.getWaiter().waitForEvent(GuildMessageReceivedEvent.class, l ->
+                l.getChannel().equals(context.getChannel()) && l.getMember().equals(context.getMember()),
+                k -> {
                 if (k.getMessage().getContentRaw().equalsIgnoreCase("cancel")) {
                     context.makeInfo("Cancelled").queue();
                     return;
                 }
-
 
                 sendMessage(context, k);
             });
@@ -114,19 +123,9 @@ public class GroupShoutCommand extends Command {
     private void sendMessage(CommandMessage context, GuildMessageReceivedEvent k) {
         String message = k.getMessage().getContentRaw();
         int charLimit = 255;
-        if ((context.getGuild().getId().equals("438134543837560832") && !context.getAuthor().getId().equals("173839105615069184")) ||
-            CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
-            if ((context.getMember().getRoles().contains(context.getGuild().getRoleById("771360204696059904")) || context.getMember().getRoles().contains(context.getGuild().getRoleById("771360069036146708"))) || CheckPermissionUtil.getPermissionLevel(context).getLevel() >= CheckPermissionUtil.GuildPermissionCheckType.MOD.getLevel()) {
-                charLimit = charLimit - context.getMember().getEffectiveName().length() + 2;
-                message = context.getMember().getEffectiveName() + ": " + message;
-            } else {
-                context.makeError("You're not authorised to use this feature.").queue();
-                return;
-            }
-        } else {
-            context.makeError("This guild is not authorised to use this feature.").queue();
-            return;
-        }
+
+        charLimit = charLimit - context.getMember().getEffectiveName().length() + 2;
+        message = context.getMember().getEffectiveName() + ": " + message;
 
         if (message.length() >= charLimit) {
             context.makeError("Sorry, but this message is to long to be sent to the group shout. (Roblox has a limit of 255 characters)").queue();
@@ -135,11 +134,24 @@ public class GroupShoutCommand extends Command {
 
         Request.Builder request = new Request.Builder()
             .addHeader("User-Agent", "Xeus v" + AppInfo.getAppInfo().version)
-            .url(avaire.getConfig().getString("URL.noblox"))
+            .url(avaire.getConfig().getString("URL.noblox").replace("%location%", "GroupShout"))
             .post(RequestBody.create(json, buildPayload(message, context.getGuildTransformer().getRobloxGroupId())));
 
         try (Response response = client.newCall(request.build()).execute()) {
-            context.makeSuccess("Message sent to the [group wall](https://www.roblox.com/groups/:RobloxID): \n```" + response.message() + "```").set("RobloxID", context.getGuildTransformer().getRobloxGroupId()).queue();
+            if (response.code() == 500) {
+                context.makeError("[PB_Xbot doesn't have permissions to group shout to the group.](https://www.roblox.com/groups/:RobloxID). See response body here: \n```:message```").set("RobloxID", context.getGuildTransformer().getRobloxGroupId())
+                    .set("message", response.body() != null ? response.body().string() : "[RESPONSE NOT FOUND/RECEIVED]").queue();
+                return;
+            }
+            context.makeSuccess("Message sent to the [group wall](https://www.roblox.com/groups/:RobloxID): \n```" + response.body().string() + "```").set("RobloxID", context.getGuildTransformer().getRobloxGroupId()).queue();
+
+            TextChannel tc = context.getGuild().getTextChannelById(context.getGuildTransformer().getAuditLogChannel());
+            if (tc != null) {
+                tc.sendMessage(context.makeWarning("The following was sent to the [group](https://www.roblox.com/groups/:RobloxID) shout by **:memberAsMention**:\n```:message```")
+                    .set("RobloxID", context.getGuildTransformer().getRobloxGroupId())
+                    .set("message", message)
+                    .set("memberAsMention", context.getMember().getAsMention()).buildEmbed()).queue();
+            }
         } catch (IOException e) {
             AvaIre.getLogger().error("Failed sending sync with beacon request: " + e.getMessage());
         }

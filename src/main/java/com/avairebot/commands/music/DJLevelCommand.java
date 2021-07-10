@@ -138,7 +138,7 @@ public class DJLevelCommand extends Command {
                 .set("info", getLevelInformation(context, level))
                 .queue();
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
             AvaIre.getLogger().error(e.getMessage(), e);
         }
 

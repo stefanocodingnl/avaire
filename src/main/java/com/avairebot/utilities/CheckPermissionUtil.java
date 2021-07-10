@@ -153,12 +153,13 @@ public class CheckPermissionUtil {
 
 
     public enum GuildPermissionCheckType {
-        FACILITATOR(6, "Facilitator / Bot Admin / Global Admin"),
-        PIA(5, "PIA / Global Moderator"),
-        ADMIN(4, "Admin / Division Leader / Local Admin"),
-        MANAGER(3, "Manager / Local Managment Mod"),
-        MOD(2, "Mod / HR / Local Mod"),
-        DJ(1, "DJ / Regular User With Music"),
+        FACILITATOR(100, "Facilitator / Bot Admin / Global Admin"),
+        PIA(90, "PIA / Global Moderator"),
+        ADMIN(80, "Admin / Division Leader / Local Admin"),
+        MANAGER(65, "Manager / Local Managment Mod"),
+        MOD(50, "Mod / HR / Local Mod"),
+        DJ(20, "DJ / Regular User With Music"),
+        GROUP_SHOUT(10, "Group Shout Permission"),
         USER(0, "Regular User");
 
         private final int permissionLevel;
@@ -214,6 +215,15 @@ public class CheckPermissionUtil {
                 if (r != null) {
                     if (member.getRoles().contains(r)) {
                         return GuildPermissionCheckType.MOD;
+                    }
+                }
+            }
+
+            for (Long roleId : guildTransformer.getGroupShoutRoles()) {
+                Role r = guild.getRoleById(roleId);
+                if (r != null) {
+                    if (member.getRoles().contains(r)) {
+                        return GuildPermissionCheckType.GROUP_SHOUT;
                     }
                 }
             }

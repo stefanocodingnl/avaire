@@ -145,7 +145,7 @@ public class DialogFlowService implements IntelligenceService {
                 }
             }
         } catch (AIServiceException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
     }
 

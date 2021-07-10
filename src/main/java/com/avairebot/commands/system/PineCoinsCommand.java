@@ -39,22 +39,22 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class VotePointsCommand extends SystemCommand {
+public class PineCoinsCommand extends SystemCommand {
 
-    private static final Logger log = LoggerFactory.getLogger(VotePointsCommand.class);
+    private static final Logger log = LoggerFactory.getLogger(PineCoinsCommand.class);
 
-    public VotePointsCommand(AvaIre avaire) {
+    public PineCoinsCommand(AvaIre avaire) {
         super(avaire);
     }
 
     @Override
     public String getName() {
-        return "Vote Points Command";
+        return "PineCoins Command";
     }
 
     @Override
     public String getDescription() {
-        return "Allows a bot administrator to give or take vote points form a user by their ID, or by mentioning them.";
+        return "Allows a bot administrator to give or take PineCoins form a user by their ID, or by mentioning them.";
     }
 
     @Override
@@ -68,14 +68,14 @@ public class VotePointsCommand extends SystemCommand {
     @Override
     public List<String> getExampleUsage() {
         return Arrays.asList(
-            "`:command give @Senither 50` - Give Senither 50 vote points.",
-            "`:command take @Senither 99` - Take 99 vote points from Senither."
+            "`:command give @Senither 50` - Give Senither 50 PineCoins.",
+            "`:command take @Senither 99` - Take 99 PineCoins from Senither."
         );
     }
 
     @Override
     public List<String> getTriggers() {
-        return Collections.singletonList("vote-point");
+        return Collections.singletonList("pine-coin");
     }
 
     @Override
@@ -103,7 +103,7 @@ public class VotePointsCommand extends SystemCommand {
         }
 
         if (user.isBot()) {
-            return sendErrorMessage(context, "You can't give or take vote points for bot accounts.");
+            return sendErrorMessage(context, "You can't give or take PineCoins for bot accounts.");
         }
 
         int amount = NumberUtil.parseInt(args[2], -1);
@@ -121,8 +121,8 @@ public class VotePointsCommand extends SystemCommand {
             }
 
             context.makeSuccess(type.equals(Type.GIVE)
-                ? ":target have successfully been given **:amount** vote points!"
-                : ":target have successfully had **:amount** vote points removed!"
+                ? ":target have successfully been given **:amount** PineCoins!"
+                : ":target have successfully had **:amount** PineCoins removed!"
             )
                 .set("target", user.getAsMention())
                 .set("amount", amount)
@@ -130,9 +130,9 @@ public class VotePointsCommand extends SystemCommand {
 
             return true;
         } catch (SQLException e) {
-            log.error("Failed to modify the vote points for the user with an ID of {}, error: {}", user.getId(), e.getMessage(), e);
+            log.error("Failed to modify the PineCoins for the user with an ID of {}, error: {}", user.getId(), e.getMessage(), e);
 
-            return sendErrorMessage(context, "Something went wrong while trying to modify the users vote points, error: {0}", e.getMessage());
+            return sendErrorMessage(context, "Something went wrong while trying to modify the users PineCoins, error: {0}", e.getMessage());
         }
     }
 

@@ -66,8 +66,8 @@ public class FeatureBlacklistCommand extends Command {
     @Override
     public List <String> getMiddleware() {
         return Arrays.asList(
-            "isOfficialPinewoodGuild",
-            "isAdminOrHigher"
+                "isOfficialPinewoodGuild",
+                "isAdminOrHigher"
         );
     }
 
@@ -241,7 +241,7 @@ public class FeatureBlacklistCommand extends Command {
 
         avaire.getFeatureBlacklist().addIdToBlacklist(featureScope, id, reason, guildId);
 
-        context.makeSuccess("The **:type** with an ID of **:id** has been added to the report blacklist of ``:guild``!")
+        context.makeSuccess("The user with an ID of ``:id`` has been added to the **:type** blacklist of ``:guild``!")
             .set("type", featureScope.getName())
             .set("id", id)
             .set("guild", featureScope.getId() != 0 ? context.getGuild().getName() : "All **official** Pinewood Discords!")

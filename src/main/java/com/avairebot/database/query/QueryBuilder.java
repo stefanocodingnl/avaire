@@ -21,6 +21,7 @@
 
 package com.avairebot.database.query;
 
+import com.avairebot.AvaIre;
 import com.avairebot.contracts.database.Database;
 import com.avairebot.contracts.database.Database.QueryType;
 import com.avairebot.contracts.database.QueryClause;
@@ -751,7 +752,7 @@ public final class QueryBuilder {
                     return dbm.getConnection().delete(dbm, this, null);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", e);
         }
         return null;
     }

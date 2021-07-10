@@ -19,7 +19,7 @@
  *
  */
 
-package com.avairebot.servlet.routes;
+package com.avairebot.servlet.routes.v1;
 
 import com.avairebot.AvaIre;
 import com.avairebot.Constants;
@@ -64,11 +64,11 @@ public class PostGuildCleanup extends SparkRoute {
         }
 
         String query = String.format("DELETE FROM `%s` WHERE `id` = ?",
-            Constants.GUILD_TABLE_NAME
+                Constants.GUILD_TABLE_NAME
         );
-
-        log.debug("Starting \"Guild Cleanup\" route task with query: " + query);
-
+        if (log.isDebugEnabled()) {
+            log.debug("Starting \"Guild Cleanup\" route task with query: " + query);
+        }
         AvaIre.getInstance().getDatabase().queryBatch(query, statement -> {
             for (Long id : idsToDelete) {
                 statement.setLong(1, id);

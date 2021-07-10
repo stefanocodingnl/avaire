@@ -168,7 +168,7 @@ public class ReportDiscordUserCommand extends Command {
                 .update(statement -> statement.set("report_discord_category", l.getIdLong()));
         } catch (SQLException throwable) {
             context.makeError("Something went wrong.").queue();
-            throwable.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", throwable);
         }
 
         context.getGuildTransformer().setReportCategory(l.getIdLong());
@@ -184,7 +184,7 @@ public class ReportDiscordUserCommand extends Command {
                 .update(statement -> statement.set("report_discord", AvaIre.gson.toJson(context.getGuildTransformer().getReportPermissionRoles()), true));
         } catch (SQLException throwable) {
             context.makeError("Something went wrong.").queue();
-            throwable.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", throwable);
         }
     }
 
@@ -214,7 +214,7 @@ public class ReportDiscordUserCommand extends Command {
                         .update(statement -> statement.set("report_discord", AvaIre.gson.toJson(context.getGuildTransformer().getReportPermissionRoles()), true));
                 } catch (SQLException throwable) {
                     context.makeError("Something went wrong.").queue();
-                    throwable.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwable);
                 }
 
             }
@@ -249,7 +249,7 @@ public class ReportDiscordUserCommand extends Command {
                         .update(statement -> statement.set("report_discord", AvaIre.gson.toJson(context.getGuildTransformer().getReportPermissionRoles()), true));
                 } catch (SQLException throwable) {
                     context.makeError("Something went wrong.").queue();
-                    throwable.printStackTrace();
+                    AvaIre.getLogger().error("ERROR: ", throwable);
                 }
 
             }

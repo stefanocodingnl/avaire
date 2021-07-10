@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019.
+ * Copyright (c) 2018.
  *
  * This file is part of AvaIre.
  *
@@ -19,29 +19,16 @@
  *
  */
 
-package com.avairebot.servlet.routes;
+package com.avairebot.servlet.routes.v1;
 
-import com.avairebot.AvaIre;
 import com.avairebot.contracts.metrics.SparkRoute;
-import org.json.JSONObject;
 import spark.Request;
 import spark.Response;
 
-public class GetVote extends SparkRoute {
+public class GetNotFoundRoute extends SparkRoute {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        String[] ids = request.params("ids").split(",");
-
-        JSONObject root = new JSONObject();
-        for (String id : ids) {
-            try {
-                root.put(id, AvaIre.getInstance().getVoteManager().hasVoted(Long.parseLong(id)));
-            } catch (NumberFormatException e) {
-                root.put(id, false);
-            }
-        }
-
-        return root;
+        return "{\"status\": 404, \"reason\": \"Requested route does not exists.\"}";
     }
 }

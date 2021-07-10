@@ -66,9 +66,9 @@ public class CleanupPlayerRecordsJob extends Job {
                 "UPDATE `%s` SET `active` = 0 WHERE `user_id` = ? AND `guild_id` = ?",
                 Constants.PLAYER_EXPERIENCE_TABLE_NAME
             );
-
-            log.debug("Starting \"Player Cleanup\" job with query: " + query);
-
+            if (log.isDebugEnabled()) {
+                log.debug("Starting \"Player Cleanup\" job with query: " + query);
+            }
             avaire.getDatabase().queryBatch(query, statement -> {
                 for (InactiveUser entity : inactiveUsers) {
                     statement.setString(1, entity.userId);

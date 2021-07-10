@@ -118,7 +118,7 @@ public class GlobalUnbanCommand extends Command {
         try {
             handleGlobalPermUnban(context, args);
         } catch (SQLException exception) {
-            exception.printStackTrace();
+            AvaIre.getLogger().error("ERROR: ", exception);
             context.makeError("Something went wrong adding this user to the global perm ban database.").queue();
         }
 
